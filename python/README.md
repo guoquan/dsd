@@ -1,8 +1,5 @@
-#usage
-
-sudo python test.py
+#tutorial usage
+sudo jupyter notebook
 
 #### Requirements
 pip install docker-py
-
-
