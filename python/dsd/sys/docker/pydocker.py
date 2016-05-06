@@ -1,12 +1,17 @@
 # Author: joe
-# Date: 2016-5-4 23:55
+# Date: 2016-5-6 15:36
 from docker import Client
+from io import BytesIO
+import os
+
 class pydocker():
     # initialize cli
-    def __init__(self):
+    def __init__(self, base_url='unix://var/run/docker.sock'):
         print 'init pydocker'
-        self.cli = Client(base_url='unix://var/run/docker.sock')
-        
+        self.cli = Client(base_url)
+    
+    '''  docker images
+    '''
     def images(self):
         images_api = self.cli.images()
         images_info_all = list()
@@ -24,8 +29,10 @@ class pydocker():
             images_info_all.append(img_info_single)
         return images_info_all
     
-    # docker ps
-    # docker ps -a
+
+    '''  docker ps
+         docker ps -a
+    '''
     def ps(self, **kwargs):
         ps_api = None
         if 'all' in kwargs:
@@ -50,36 +57,8 @@ class pydocker():
 
         return ps_all
     
-    '''
-    image (str): The image to run
-    command (str or list): The command to be run in the container
-    hostname (str): Optional hostname for the container
-    user (str or int): Username or UID
-    -d detach (bool): Detached mode: run container in the background and print new container Id
-    -i stdin_open (bool): Keep STDIN open even if not attached
-    -t tty (bool): Allocate a pseudo-TTY
-    mem_limit (float or str): Memory limit (format: [number][optional unit], where unit = b, k, m, or g)
-    ports (list of ints): A list of port numbers
-    environment (dict or list): A dictionary or a list of strings in the following format ["PASSWORD=xxx"] or {"PASSWORD": "xxx"}.
-    dns (list): DNS name servers
-    volumes (str or list):
-    volumes_from (str or list): List of container names or Ids to get volumes from. Optionally a single string joining container id's with commas
-    network_disabled (bool): Disable networking
-    name (str): A name for the container
-    entrypoint (str or list): An entrypoint
-    cpu_shares (int): CPU shares (relative weight)
-    working_dir (str): Path to the working directory
-    domainname (str or list): Set custom DNS search domains
-    memswap_limit (int):
-    host_config (dict): A HostConfig dictionary
-    mac_address (str): The Mac Address to assign the container
-    labels (dict or list): A dictionary of name-value labels (e.g. {"label1": "value1", "label2": "value2"}) or a list of names of labels to set with empty values (e.g. ["label1", "label2"])
-    volume_driver (str): The name of a volume driver/plugin.
-    stop_signal (str): The stop signal to use to stop the container (e.g. SIGINT).
-    create_container(self, image, command=None, hostname=None, user=None, detach=False, stdin_open=False, tty=False, 
-    mem_limit=None, ports=None, environment=None, dns=None, volumes=None, volumes_from=None, network_disabled=False, 
-    name=None, entrypoint=None, cpu_shares=None, working_dir=None, domainname=None, memswap_limit=None, cpuset=None, 
-    host_config=None, mac_address=None, labels=None, volume_driver=None, stop_signal=None, networking_config=None)
+
+    '''  docker run
     '''
     def run(self, **kwargs):
         image = kwargs['image']
@@ -92,7 +71,11 @@ class pydocker():
         user = kwargs.get('user', None)
         ports = kwargs.get('ports', None)
         volumes = kwargs.get('volumes', None)
-        container  = self.cli.create_container(image=image, 
+
+        # print volumes
+        volumesList = [key+':'+value for key, value in volumes.items()]
+        try:
+            container  = self.cli.create_container(image=image, 
                                                detach=detach, 
                                                stdin_open=stdin_open, 
                                                tty=tty, 
@@ -100,20 +83,170 @@ class pydocker():
                                                name=name,
                                                user=user,
                                                ports=ports.keys(),
-                                               host_config=self.cli.create_host_config(port_bindings=ports),
-                                               volumes=volumes
+                                               volumes=volumes.values(),
+                                               host_config=self.cli.create_host_config(port_bindings=ports, binds=volumesList),
                                                )
+            return container
+        except Exception, e:
+            print e
+            return None
     
-        # container  = self.cli.create_container(image='ubuntu:14.04', detach=True, stdin_open=True, tty=True, command='bash', name='testPyDocker1')
-        return container
     
-    ############################################################################
+    '''  docker start
     '''
-    container (str): The container to remove
-    v (bool): Remove the volumes associated with the container
-    link (bool): Remove the specified link and not the underlying container
-    force (bool): Force the removal of a running container (uses SIGKILL)
+    def start(self, container):
+        try:
+            response = self.cli.start(container=container)
+            return True
+        except Exception, e:
+            print e
+            return None
+        
+        
+    '''  docker stop
+    '''
+    def stop(self, **kwargs):
+        container = kwargs.get('container', None)
+        timeout = kwargs.get('timeout', 0)
+        try:
+            response = self.cli.stop(container=container, timeout=timeout)
+            return True
+        except Exception, e:
+            print e
+            return None
+        
+    
+    '''  docker attach
+    '''
+    def attach(self, **kwargs):
+        container = kwargs.get('container', None)
+        stdout = kwargs.get('stdout', False)
+        stderr = kwargs.get('stderr', False)
+        stream = kwargs.get('stream', False)
+        logs = kwargs.get('logs', None)
+        try:
+            response = self.cli.attach(container=containerId, 
+                                       stdout=stdout, 
+                                       stderr=stderr, 
+                                       stream=stream, 
+                                       logs=logs)
+            return response
+        except Exception, e:
+            print e
+            return None
+        
+    '''  docker rm
     '''
     def rm(self, **kwargs):
         container = kwargs.get('container', None)
-        self.cli.remove_container(container=container)
+        # assert(container!=None)
+        try:
+            self.cli.remove_container(container=container)
+            return True
+        except Exception, e:
+            print e
+            return None
+        
+        
+    '''  docker build
+    '''
+    def build(self, **kwargs):
+        dockerfilePath = kwargs.get('dockerfilePath', None)
+        
+        path = kwargs.get('path', None)
+        
+        tag = kwargs.get('tag', None)
+        
+        quiet = kwargs.get('quiet', True)  #  Whether to return the status
+        
+        fileobj = kwargs.get('fileobj', None)  #  A file object to use as the Dockerfile. (Or a file-like object)
+
+        nocache = kwargs.get('nocache', True)  #  Don't use the cache when set to True
+        
+        rm = kwargs.get('rm', False)  #  Remove intermediate containers. (Changed the default value to False)
+        
+        stream = kwargs.get('stream', False)  #  Return a blocking generator you can iterate over to retrieve build output as it happens
+        
+        timeout = kwargs.get('timeout', 3)  #  HTTP timeout
+        
+        custom_context = kwargs.get('custom_context', True)  #  Optional if using fileobj
+        
+        encoding = kwargs.get('encoding', 'gzip')  # The encoding for a stream. Set to gzip for compressing
+        
+        pull = kwargs.get('pull', False)  #  Downloads any updates to the FROM image in Dockerfiles
+        
+        forcerm = kwargs.get('forcerm', False)  #  Always remove intermediate containers, even after unsuccessful builds
+        
+        dockerfile = kwargs.get('dockerfile', None)  #  path within the build context to the Dockerfile
+
+        '''
+        container_limits (dict): A dictionary of limits applied to each container created by the build process. Valid keys:
+        memory (int): set memory limit for build
+        memswap (int): Total memory (memory + swap), -1 to disable swap
+        cpushares (int): CPU shares (relative weight)
+        cpusetcpus (str): CPUs in which to allow execution, e.g., "0-3", "0,1"
+        '''
+        container_limits_default = {'memory':1024,
+                                    'memswap':1024,
+                                    'cpushares':4,
+                                    'cpusetcpus':"0-3"}
+        
+        container_limits = kwargs.get('container_limits', None)  
+        
+        decode = kwargs.get('decode', False)  #  If set to True, the returned stream will be decoded into dicts on the fly. Default False.
+        
+        # read Dockerfile
+        if fileobj is None:
+            dockerfile_default = 'Dockerfile'
+            with open(os.path.join(dockerfilePath, dockerfile_default), 'r') as f:
+                dockerfileStr = f.read()
+            print dockerfileStr
+            dockerfileObj = BytesIO(dockerfileStr.encode('utf-8'))
+            fileobj = dockerfileObj
+
+        
+        '''
+        
+        try:
+            response  = self.cli.build(path=path, 
+                                       tag=tag, 
+                                       quiet=quiet, 
+                                       fileobj=fileobj, 
+                                       nocache=nocache, 
+                                       rm=rm,
+                                       stream=stream,
+                                       timeout=timeout,
+                                       custom_context=custom_context,
+                                       encoding=encoding,
+                                       pull=pull,
+                                       forcerm=forcerm,
+                                       dockerfile=dockerfile
+                                       )
+            return response
+        except Exception, e:
+            print Exception
+            print e
+            return None
+        '''
+        try:
+            response = [line for line in self.cli.build(fileobj=fileobj, tag=tag)]
+            return response
+        except Exception, e:
+            print e
+            return None
+        
+    
+    '''  docker rmi
+    '''
+    def rmi(self, **kwargs):
+        image = kwargs.get('image', None)
+        force  = kwargs.get('force', False)
+        noprune  = kwargs.get('noprune', False)
+        try:
+            self.cli.remove_image(image=image,
+                                  force=force,
+                                  noprune=noprune)
+            return True
+        except Exception, e:
+            print e
+            return None
