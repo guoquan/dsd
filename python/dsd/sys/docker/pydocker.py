@@ -1,5 +1,3 @@
-# Author: joe
-# Date: 2016-5-6 15:36
 from docker import Client
 from io import BytesIO
 import os
@@ -71,9 +69,18 @@ class pydocker():
         user = kwargs.get('user', None)
         ports = kwargs.get('ports', None)
         volumes = kwargs.get('volumes', None)
+        devices = kwargs.get('devices', None)
+        
+        # volumes
+        volumesList = None
+        if volumes is not None:
+            volumesList = [key+':'+value for key, value in volumes.items()]
+        
+        # devices
+        devicesList = None
+        if devices is not None:
+            devicesList = [dev+':'+dev+':rwm' for dev in devices]
 
-        # print volumes
-        volumesList = [key+':'+value for key, value in volumes.items()]
         try:
             container  = self.cli.create_container(image=image, 
                                                detach=detach, 
@@ -84,7 +91,10 @@ class pydocker():
                                                user=user,
                                                ports=ports.keys(),
                                                volumes=volumes.values(),
-                                               host_config=self.cli.create_host_config(port_bindings=ports, binds=volumesList),
+                                               host_config=self.cli.create_host_config(
+                                                                                        port_bindings=ports, 
+                                                                                        binds=volumesList,
+                                                                                        devices=devicesList),
                                                )
             return container
         except Exception, e:
