@@ -1,0 +1,17 @@
+<html>
+<h3>Welcome to DSD!</h3>
+<a href='/logout'>logout</a>
+<form action="{{ url_for('login') }}" method=post>
+    <dl>
+      <dt>Username:
+      <dd><input type=text name=Username>
+      <dt>Password:
+      <dd><input type=password name=Password>
+      <dt>Max_Container_Count:
+      <dd><input type=text name=Max_Container_Count>
+      <dt>Max_Disk_Space:
+      <dd><input type=text name=Max_Disk_Space>
+      <dd><input type=submit value=Login>
+    </dl>
+  </form>
+</html>
