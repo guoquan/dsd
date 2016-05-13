@@ -1,15 +1,23 @@
 FROM ubuntu:14.04
 MAINTAINER Guo Quan <guoquan@gmail.com>
 
-ENV REFRESHED_AT 2016-05-06
+ENV REFRESHED_AT 2016-05-12
 RUN apt-get update
+
+# Python: we are python based
+RUN apt-get install -y git python python-dev python-pip python-setuptools && \
+    pip install -U pip
 
 # Nginx: front-end web server
 RUN apt-get install -y nginx
 
-# Python: we are python driven
-RUN apt-get install -y python python-pip && \
-    pip install -U pip
+# Jupyter: we develop with jupyter
+RUN pip install ipython jupyter
+
+# Tini: support jupyter running
+ENV TINI_VERSION v0.8.4
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /usr/bin/tini
+RUN chmod +x /usr/bin/tini
 
 # Flask: web-container
 RUN pip install flask
@@ -21,14 +29,15 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927 && \
 RUN apt-get install -y mongodb-org
 RUN pip install pymongo
 
-# expose 80 (http) and 443 (https) for Nginx, and 5000 for flask
-EXPOSE 80 443 5000
+# expose 80 (http) and 443 (https) for Nginx, and 5000 for flask, 8888 for jupyter
+EXPOSE 80 443 5000 8888
 
 # expose some directories to the host
-VOLUME ["/root/workspace", "/etc/nginx" ]
+VOLUME ["/root/dsd", "/etc/nginx/conf.d", "/root/workspace"]
 
 # set workdir to workspace
 WORKDIR /root/workspace
 
-# default start bash for development
-CMD ["bash"]
+# default start jupyter using tini
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--port=8888","--no-browser"]
