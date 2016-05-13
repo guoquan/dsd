@@ -10,13 +10,15 @@ Otherwise it will purely run mongodb deamon.
 
 DB name: `db_dsd`
 collections:
+
 | name  | description |
-|-------|-------------|
+| ------- | ------------- |
 | `users` | user table  |
 
 users properties:
+
 | name  | description |
-|-------|-------------|
+| ------- | ------------- |
 | `Username` | username |
 | `Password` | (TODO, hashed) password |
 | `User_Type` | `'Admin'`/`'Common'` |
