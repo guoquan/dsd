@@ -1,10 +1,7 @@
-import pymongo
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash
 from flask import render_template
-
-app = Flask(__name__)
-app.secret_key='123edft654edfgY^%R#$%^&**&^'
-
+import pymongo
+from dsd.ui.web import app
 
 def encrypt_password(password):#TBC
     return password
@@ -105,7 +102,3 @@ def logout():
     session.pop('User_Type', None)
     flash('You were logged out')
     return redirect(url_for('index'))
-
-if __name__ == "__main__":
-    app.debug = True
-    app.run(host='0.0.0.0')
