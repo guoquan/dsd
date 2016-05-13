@@ -11,14 +11,28 @@ Don't have to use different container for different service now.
 
 # How to
 
+For runtime, we run detached
 ```bash
-sudo docker run --rm \
-    --name dsd-console \
+sudo docker run -d \
+    --name dsd-console-runtime \
     -p 10080:80 -p 15000:5000 -p 18888:8888 \
     -v ~/.ssh:/root/.ssh \
-    -v ../..:/root/dsd \
+    -v ~/dsd:/root/dsd \
     -v nginx-conf:/etc/nginx/conf.d \
     -v workspace:/root/workspace \
+    dsd-console
+```
+
+For development time, we run clean, also expose dsd root in workspace
+```bash
+sudo docker run --rm \
+    --name dsd-console-devel \
+    -p 10080:80 -p 15000:5000 -p 18888:8888 \
+    -v ~/.ssh:/root/.ssh \
+    -v ~/dsd:/root/dsd \
+    -v nginx-conf:/etc/nginx/conf.d \
+    -v workspace:/root/workspace \
+    -v ~/dsd:/root/workspace/dsd \
     dsd-console
 ```
 
