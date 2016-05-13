@@ -17,8 +17,8 @@ See `tutorial-pydocker.ipynb`.
 We use mongodb. Initialize database by the script `init_db.sh`.
 
 ```bash
-source init_db.sh
-mongo init_db.js
+chmod u+x init_db.sh
+./init_db.sh
 ```
 
 The script will also initialize directories, database, and basic structure that are needed if they are not exist.
@@ -45,5 +45,6 @@ The server is a `flask` web app.
 Simply run `run.py`.
 
 ```bash
+chmod u+x run.py
 ./run.py
 ```
