@@ -16,7 +16,7 @@ sudo docker run --rm \
     --name dsd-console \
     -p 10080:80 -p 15000:5000 -p 18888:8888 \
     -v ~/.ssh:/root/.ssh \
-    -v ../..:/root/dsd \
+    -v ~/dsd:/root/dsd \
     -v nginx-conf:/etc/nginx/conf.d \
     -v workspace:/root/workspace \
     dsd-console
