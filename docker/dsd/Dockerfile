@@ -40,4 +40,5 @@ WORKDIR /root/workspace
 
 # default start jupyter using tini
 ENTRYPOINT ["/usr/bin/tini", "--"]
+ENV SHELL bash
 CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--port=8888","--no-browser"]
