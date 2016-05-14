@@ -14,7 +14,7 @@ Don't have to use different container for different service now.
 For runtime, we run detached
 ```bash
 sudo docker run -d \
-    --name dsd-console-runtime \
+    --name=dsd-console-runtime \
     -p 10080:80 -p 15000:5000 -p 18888:8888 \
     -v ~/.ssh:/root/.ssh \
     -v ~/dsd:/root/dsd \
@@ -26,7 +26,8 @@ sudo docker run -d \
 For development time, we run clean, also expose dsd root in workspace
 ```bash
 sudo docker run --rm \
-    --name dsd-console-devel \
+    --name=dsd-console-devel \
+    --add-host=dockerhost:$(ip route | awk '/docker0/ { print $NF }') \
     -p 10080:80 -p 15000:5000 -p 18888:8888 \
     -v ~/.ssh:/root/.ssh \
     -v ~/dsd:/root/dsd \

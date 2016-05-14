@@ -1,27 +1,6 @@
-from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash
-from flask import render_template
-import pymongo
+from flask import Flask, request, session, redirect, url_for, abort, render_template, flash
 from dsd.ui.web import app
-
-def encrypt_password(password):#TBC
-    return password
-
-def check_login(username, password):
-    client = pymongo.MongoClient()
-    db = client.db_dsd
-    cursor = db.users.find({'Username':username})
-    if cursor.count() == 0:
-        return False, 'No such user!', None
-    elif encrypt_password(password) == cursor[0]['Password']:
-        return True, 'Login succeed!', cursor[0]['User_Type']
-    else:
-        return False, 'Password mismatch!', None
-
-def is_login():
-    return 'Is_Login' in session and session['Is_Login'] == '1'
-            
-def is_admin():
-    return is_login() and session['User_Type'] == 'Admin'
+from dsd.ui.web.functions import *
 
 @app.route("/", methods=['GET'])
 def index():
@@ -45,14 +24,16 @@ def login():
         if state:
             session['Is_Login'] = '1'
             session['User_Type'] = user_type
+            flash('Login as %s. Welcome!' % username)
             return redirect(url_for('index'))
         else:
             session.pop('Is_Login', None)
             session.pop('User_Type', None)
+            flash('Invalid login. Login again.')
             return render_template('login.html',error=error)
     else:
         flash('Invalid login. Login again.')
-        return redrect(url_for('index'));
+        return redrect(url_for('index'))
 
 @app.route("/manage/user", methods=['GET'])
 def manage_user():
@@ -65,16 +46,13 @@ def manage_user():
 @app.route('/manage/user/add', methods=['POST'])
 def manage_user_add():
     if is_admin():
-        # connect to db
-        client = pymongo.MongoClient()
-        db = client.db_dsd
         # create user
         username = request.form.get('Username')
         password = request.form.get('Password')
         max_container_count = request.form.get('Max_Container_Count')
         max_disk_space = request.form.get('Max_Disk_Space')
         user_type = request.form.get('User_Type')
-        db.users.save(
+        db().users.save(
             {'Username':username,
              'Password':encrypt_password(password),
              'User_Type':user_type,
@@ -84,7 +62,7 @@ def manage_user_add():
         return redirect(url_for('manage_user'))
     else:
         flash('Invalid login. Login again.')
-        return redrect(url_for('index'));
+        return redrect(url_for('index'))
 
 @app.route('/manage/user/remove', methods=['POST'])
 def manage_user_remove():
@@ -94,7 +72,7 @@ def manage_user_remove():
         return redirect(url_for('manage_user'))
     else:
         flash('Invalid login. Login again.')
-        return redrect(url_for('index'));
+        return redrect(url_for('index'))
 
 @app.route('/logout')
 def logout():
