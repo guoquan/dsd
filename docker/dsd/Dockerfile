@@ -29,6 +29,9 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927 && \
 RUN apt-get install -y mongodb-org
 RUN pip install pymongo
 
+# docker-py: python interface to interact with docker
+RUN pip install docker-py
+
 # expose 80 (http) and 443 (https) for Nginx, and 5000 for flask, 8888 for jupyter
 EXPOSE 80 443 5000 8888
 
