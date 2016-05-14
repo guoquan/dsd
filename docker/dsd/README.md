@@ -17,7 +17,7 @@ sudo docker run -d \
     --name=dsd-console-runtime \
     -p 10080:80 -p 15000:5000 -p 18888:8888 \
     -v ~/.ssh:/root/.ssh \
-    -v ~/dsd:/root/dsd \
+    -v $(cd ../..; pwd):/root/dsd \
     -v nginx-conf:/etc/nginx/conf.d \
     -v workspace:/root/workspace \
     dsd-console
@@ -30,10 +30,10 @@ sudo docker run --rm \
     --add-host=dockerhost:$(ip route | awk '/docker0/ { print $NF }') \
     -p 10080:80 -p 15000:5000 -p 18888:8888 \
     -v ~/.ssh:/root/.ssh \
-    -v ~/dsd:/root/dsd \
+    -v $(cd ../..; pwd):/root/dsd \
     -v nginx-conf:/etc/nginx/conf.d \
     -v workspace:/root/workspace \
-    -v ~/dsd:/root/workspace/dsd \
+    -v $(cd ../..; pwd):/root/workspace/dsd \
     dsd-console
 ```
 
