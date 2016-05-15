@@ -99,6 +99,7 @@ class pydocker():
             return container
         except Exception, e:
             print e
+            raise e
             return None
     
     
@@ -110,6 +111,7 @@ class pydocker():
             return True
         except Exception, e:
             print e
+            raise e
             return None
         
         
@@ -123,6 +125,7 @@ class pydocker():
             return True
         except Exception, e:
             print e
+            raise e
             return None
         
     
@@ -143,6 +146,7 @@ class pydocker():
             return response
         except Exception, e:
             print e
+            raise e
             return None
         
     '''  docker rm
@@ -155,6 +159,7 @@ class pydocker():
             return True
         except Exception, e:
             print e
+            raise e
             return None
         
         
@@ -214,35 +219,12 @@ class pydocker():
             dockerfileObj = BytesIO(dockerfileStr.encode('utf-8'))
             fileobj = dockerfileObj
 
-        
-        '''
-        
-        try:
-            response  = self.cli.build(path=path, 
-                                       tag=tag, 
-                                       quiet=quiet, 
-                                       fileobj=fileobj, 
-                                       nocache=nocache, 
-                                       rm=rm,
-                                       stream=stream,
-                                       timeout=timeout,
-                                       custom_context=custom_context,
-                                       encoding=encoding,
-                                       pull=pull,
-                                       forcerm=forcerm,
-                                       dockerfile=dockerfile
-                                       )
-            return response
-        except Exception, e:
-            print Exception
-            print e
-            return None
-        '''
         try:
             response = [line for line in self.cli.build(fileobj=fileobj, tag=tag)]
             return response
         except Exception, e:
             print e
+            raise e
             return None
         
     
@@ -259,4 +241,5 @@ class pydocker():
             return True
         except Exception, e:
             print e
+            raise e
             return None
