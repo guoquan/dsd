@@ -1,4 +1,4 @@
-FROM ubuntu:14.04
+FROM nvidia/cuda:7.5
 MAINTAINER Guo Quan <guoquan@gmail.com>
 
 ENV REFRESHED_AT 2016-05-12
