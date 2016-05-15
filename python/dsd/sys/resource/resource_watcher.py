@@ -3,7 +3,6 @@ import os
 import os.path
 import time
 import psutil
-import docker
 from pynvml import *
 
 
@@ -15,7 +14,7 @@ class ResourceWatcher(object):
         nvmlInit()
 
     @staticmethod
-    def cpu_percent(interval=None, percpu=False, stream=False):
+    def cpu_percent(interval=None, percpu=False):
         """return a float or a list representing the CPU utilization
 
         Args:
@@ -24,12 +23,8 @@ class ResourceWatcher(object):
                 cpu time elapsed since the class .
             percpu: When percpu is true return a list representing every cpu
                 core utilization
-            stream: If seet to true,return a stream instead of current states
         """
-        if stream is True:
-            yield psutil.cpu_percent(interval, percpu)
-        else:
-            return psutil.cpu_percent(interval, percpu)
+        return psutil.cpu_percent(interval, percpu)
 
     @staticmethod
     def get_path_size(path):
@@ -68,18 +63,13 @@ class ResourceWatcher(object):
         return psutil.disk_usage(path)
 
     @staticmethod
-    def memory(stream=False):
+    def memory():
         """Return statistics about system memory usage as a namedtuple.
 
-        Args:
-            stream: If set to True, a stream will be return.
         Return:
             (total: xxx, available: xxx, percent: xxx, used: xxx, free: xxx)
         """
-        if stream is True:
-            yield psutil.virtual_memory()
-        else:
-            return psutil.virtual_memory()
+        return psutil.virtual_memory()
 
     @staticmethod
     def get_graphical_device_num():
@@ -91,7 +81,7 @@ class ResourceWatcher(object):
         return nvmlDeviceGetName(handle)
 
     @staticmethod
-    def graphical_memory(dev_idx, stream=False):
+    def graphical_memory(dev_idx):
         """Return statistics about graphical memory usage as a namedtuple.
 
         Return:
@@ -99,10 +89,7 @@ class ResourceWatcher(object):
         """
         handle = nvmlDeviceGetHandleByIndex(dev_idx)
         info = nvmlDeviceGetMemoryInfo(handle)
-        if stream is True:
-            yield info
-        else:
-            return info
+        return info
 
     @staticmethod
     def pids():
