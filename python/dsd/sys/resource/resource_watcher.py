@@ -10,8 +10,8 @@ class ResourceWatcher(object):
 
     def __init__(self):
         psutil.cpu_percent()
-        self.cli = docker.Client(base_url='unix://var/run/docker.sock')
         nvmlInit()
+        time.sleep(0.1)
 
     @staticmethod
     def cpu_percent(interval=None, percpu=False):
@@ -30,21 +30,21 @@ class ResourceWatcher(object):
     def get_path_size(path):
         """Return the size of a file or a dir in bytes."""
         if not os.path.exists(path):
+            print 'the path does not exists'
             return 0
 
         if os.path.isfile(path):
             return os.path.getsize(path)
 
         total_size = 0
-        print os.walk(path)
         for root, dirs, files in os.walk(path):
             for directory in dirs:
                 total_size += ResourceWatcher.get_path_size(
                     os.path.join(root, directory))
-                print directory, total_size
+                # print directory, total_size
             for file in files:
                 total_size += os.path.getsize(os.path.join(root, file))
-                print file, total_size
+                # print file, total_size
         return total_size
 
     @staticmethod
@@ -54,11 +54,7 @@ class ResourceWatcher(object):
         Only disk partition statistics can be showed.
 
         Return:
-            (total: xxx, used: xxx, free: xxx, percentage: xxx)
-
-        Sample:
-            usage = disk_usage('/')
-            print usage.total
+            (total: xxx, used: xxx, free: xxx, percent: xxx)
         """
         return psutil.disk_usage(path)
 
