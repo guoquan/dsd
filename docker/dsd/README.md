@@ -33,7 +33,7 @@ Please avoid any conflict, for example, port assignment.
 
 For runtime, run detached and with formal port assignment.
 ```bash
-sudo docker run -d \
+sudo nvidia-docker run -d \
     --name=dsd-console-runtime \
     -p 80:80 -p 5000:5000 -p 8888:8888 \
     -v ~/.ssh:/root/.ssh \
@@ -45,7 +45,7 @@ sudo docker run -d \
 
 For development time, run clean, also expose dsd root in workspace for development
 ```bash
-sudo docker run --rm \
+sudo nvidia-docker run --rm \
     --name=dsd-console-devel \
     --add-host=dockerhost:$(ip route | awk '/docker0/ { print $NF }') \
     -p 10080:80 -p 15000:5000 -p 18888:8888 \
