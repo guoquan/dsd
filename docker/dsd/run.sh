@@ -12,20 +12,22 @@ name()
 
 container_alive()
 {
-    sudo docker port $1 >/dev/null 2>&1
-    echo $?
+    [ -z $(sudo docker ps -aq -f name=$1) ]
 }
 
 wait_container()
 {
-    while [ "$(container_alive $1)" != 0 ]; do
+    while $(container_alive $1); do
+        echo -e "$(container_alive $1)\r"
         sleep ${2:-1}s
     done
 }
 
 get_link()
 {
-    echo ${3:-http}://$(sudo docker port $1 $2)
+    IF="$(route | grep "default" | awk '{OFS=" "}{ print $NF }')"
+    IP="$(ip route | awk 'NR>1 && /'$IF'/ {print $NF}')"
+    echo ${3:-http}://$(sudo docker port $1 $2 | sed 's/0.0.0.0/'$IP'/g')
 }
 
 NEW_UUID=$(uuid 8)
@@ -35,10 +37,10 @@ NEW_NAME=$(name $NEW_UUID)
 sudo echo hello sudo >/dev/null
 
 (
-wait_container $NEW_NAME 1
+wait_container $NEW_NAME 0.1
 # expose 80 (http) and 443 (https) for Nginx, and 5000 for flask, 8888 for jupyter
 echo -e \
-    "\n\n" \
+    "\n" \
     "\n=====================================" \
     "\nContainer: $NEW_NAME" \
     "\n-------------------------------------" \
@@ -50,12 +52,12 @@ echo -e \
     "\n=====================================" \
     "\n\n"
 ) & (
-sudo docker run --rm -P $1 \
+ID=$(sudo docker run --rm -P $1 \
     --name=$NEW_NAME \
     --add-host=dockerhost:$(ip route | awk '/docker0/ { print $NF }') \
     -v ~/.ssh:/root/.ssh \
     -v $(pwd)/nginx-conf:/etc/nginx/conf.d \
     -v $(pwd)/workspace:/root/workspace \
     -v $(cd ../..; pwd):/root/workspace/dsd \
-    dsd-console
+    dsd-console)
 )
