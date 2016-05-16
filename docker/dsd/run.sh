@@ -52,7 +52,7 @@ echo -e \
     "\n=====================================" \
     "\n\n"
 ) & (
-ID=$(sudo docker run --rm -P $1 \
+ID=$(sudo nvidia-docker run --rm -P $1 \
     --name=$NEW_NAME \
     --add-host=dockerhost:$(ip route | awk '/docker0/ { print $NF }') \
     -v ~/.ssh:/root/.ssh \
