@@ -59,5 +59,5 @@ ID=$(sudo nvidia-docker run --rm -P $1 \
     -v $(pwd)/nginx-conf:/etc/nginx/conf.d \
     -v $(pwd)/workspace:/root/workspace \
     -v $(cd ../..; pwd):/root/workspace/dsd \
-    dsd-console)
+    dsdgroup/dsd-console)
 )

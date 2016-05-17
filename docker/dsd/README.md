@@ -40,7 +40,7 @@ sudo nvidia-docker run -d \
     -v $(cd ../..; pwd):/root/dsd \
     -v $(pwd)/nginx-conf:/etc/nginx/conf.d \
     -v $(pwd)/workspace:/root/workspace \
-    dsd-console
+    dsdgroup/dsd-console
 ```
 
 For development time, run clean, also expose dsd root in workspace for development
@@ -54,7 +54,7 @@ sudo nvidia-docker run --rm \
     -v $(pwd)/nginx-conf:/etc/nginx/conf.d \
     -v $(pwd)/workspace:/root/workspace \
     -v $(cd ../..; pwd):/root/workspace/dsd \
-    dsd-console
+    dsdgroup/dsd-console
 ```
 
 The code above uses port 18888 for jupyter, 10080 for nginx, and 15000 for flask.
