@@ -1,4 +1,4 @@
-FROM nvidia/cuda:7.5
+FROM nvidia/cuda:7.5-runtime
 MAINTAINER Guo Quan <guoquan@gmail.com>
 
 ENV REFRESHED_AT 2016-05-12
