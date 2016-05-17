@@ -33,19 +33,19 @@ Please avoid any conflict, for example, port assignment.
 
 For runtime, run detached and with formal port assignment.
 ```bash
-sudo docker run -d \
+sudo nvidia-docker run -d \
     --name=dsd-console-runtime \
     -p 80:80 -p 5000:5000 -p 8888:8888 \
     -v ~/.ssh:/root/.ssh \
     -v $(cd ../..; pwd):/root/dsd \
     -v $(pwd)/nginx-conf:/etc/nginx/conf.d \
     -v $(pwd)/workspace:/root/workspace \
-    dsd-console
+    dsdgroup/dsd-console
 ```
 
 For development time, run clean, also expose dsd root in workspace for development
 ```bash
-sudo docker run --rm \
+sudo nvidia-docker run --rm \
     --name=dsd-console-devel \
     --add-host=dockerhost:$(ip route | awk '/docker0/ { print $NF }') \
     -p 10080:80 -p 15000:5000 -p 18888:8888 \
@@ -54,7 +54,7 @@ sudo docker run --rm \
     -v $(pwd)/nginx-conf:/etc/nginx/conf.d \
     -v $(pwd)/workspace:/root/workspace \
     -v $(cd ../..; pwd):/root/workspace/dsd \
-    dsd-console
+    dsdgroup/dsd-console
 ```
 
 The code above uses port 18888 for jupyter, 10080 for nginx, and 15000 for flask.

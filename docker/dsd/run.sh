@@ -52,12 +52,12 @@ echo -e \
     "\n=====================================" \
     "\n\n"
 ) & (
-ID=$(sudo docker run --rm -P $1 \
+ID=$(sudo nvidia-docker run --rm -P $1 \
     --name=$NEW_NAME \
     --add-host=dockerhost:$(ip route | awk '/docker0/ { print $NF }') \
     -v ~/.ssh:/root/.ssh \
     -v $(pwd)/nginx-conf:/etc/nginx/conf.d \
     -v $(pwd)/workspace:/root/workspace \
     -v $(cd ../..; pwd):/root/workspace/dsd \
-    dsd-console)
+    dsdgroup/dsd-console)
 )
