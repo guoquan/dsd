@@ -1,5 +1,5 @@
-<html>
-<h3>Welcome to DSD!</h3>
+{% extends "base.html" %}
+{% block content %}
 <a href="{{ url_for('logout') }}">logout</a>
 <form action="{{ url_for('manage_user_add') }}" method="POST">
     <dl>
@@ -16,4 +16,4 @@
       <dd><input type="submit" value="Add">
     </dl>
 </form>
-</html>
+{% endblock %}

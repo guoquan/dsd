@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- meta -->
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    {% if title %}
+    <title>{{title}} - microblog</title>
+    {% else %}
+    <title>MILAB-DSD</title>
+    {% endif %}
+
+    <!-- stylesheets -->
+    <link rel="stylesheet" href="{{url_for('static',filename = 'assets/css/bootstrap.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static',filename = 'assets/css/font-awesome.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static',filename = 'assets/css/animate.css')}}">
+    <link rel="stylesheet" href="{{url_for('static',filename = 'assets/css/owl.carousel.css')}}">
+    <link rel="stylesheet" href="{{url_for('static',filename = 'assets/css/owl.theme.css')}}">
+    <link rel="stylesheet" href="{{url_for('static',filename = 'assets/css/style.css')}}">
+    <link rel="stylesheet" href="{{url_for('static',filename = 'assets/css/style_csss.css')}}"  type="text/css" rel="stylesheet" media="all">
+
+    <!-- scripts -->
+    <script type="text/javascript" src="{{url_for('static', filename='assets/js/jquery-2.1.3.min.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='assets/js/jquery.form.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='assets/js/bootstrap.min.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='assets/js/owl.carousel.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='assets/js/jquery.hoverdir.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='assets/js/modernizr.custom.97074.js')}}"></script>
+
+    </head>
+  <body>
+    <div>Microblog: <a href="/index">Home</a></div>
+    <hr>
+    {% block content %}{% endblock %}
+  </body>
+</html>
