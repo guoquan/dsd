@@ -1,5 +1,5 @@
 FROM nvidia/cuda:7.5-runtime
-MAINTAINER Guo Quan <guoquan@gmail.com>
+MAINTAINER Guo Quan <guoquanscu@gmail.com>
 
 ENV REFRESHED_AT 2016-05-12
 RUN apt-get update
