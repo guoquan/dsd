@@ -1,26 +1,48 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <!-- meta -->
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <head>
+        <!-- meta -->
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    {% if title %}
-    <title>{{title}} - microblog</title>
-    {% else %}
-    <title>MILAB-DSD</title>
-    {% endif %}
+        {% if title %}
+        <title>{{title}} - MILAB-DSD</title>
+        {% else %}
+        <title>MILAB-DSD</title>
+        {% endif %}
 
-    <!-- stylesheets -->
-    <link rel="stylesheet" href="{{url_for('static',filename = 'assets/css/bootstrap.min.css')}}">
-    <link rel="stylesheet" href="{{url_for('static',filename = 'assets/css/font-awesome.min.css')}}">
-    <link rel="stylesheet" href="{{url_for('static',filename = 'assets/css/animate.css')}}">
-    <link rel="stylesheet" href="{{url_for('static',filename = 'assets/css/owl.carousel.css')}}">
-    <link rel="stylesheet" href="{{url_for('static',filename = 'assets/css/owl.theme.css')}}">
-    <link rel="stylesheet" href="{{url_for('static',filename = 'assets/css/style.css')}}">
-    <link rel="stylesheet" href="{{url_for('static',filename = 'assets/css/style_csss.css')}}"  type="text/css" rel="stylesheet" media="all">
+        <!-- stylesheets -->
+        <link rel="stylesheet" href="{{url_for('static',filename = 'assets/css/bootstrap.min.css')}}">
+        <link rel="stylesheet" href="{{url_for('static',filename = 'assets/css/font-awesome.min.css')}}">
+        <link rel="stylesheet" href="{{url_for('static',filename = 'assets/css/animate.css')}}">
+        <link rel="stylesheet" href="{{url_for('static',filename = 'assets/css/owl.carousel.css')}}">
+        <link rel="stylesheet" href="{{url_for('static',filename = 'assets/css/owl.theme.css')}}">
+        <link rel="stylesheet" href="{{url_for('static',filename = 'assets/css/style.css')}}">
+        <link rel="stylesheet" href="{{url_for('static',filename = 'assets/css/style_csss.css')}}"  type="text/css" rel="stylesheet" media="all">
+        <!--<link rel="stylesheet" href="{{url_for('static',filename = 'assets/css/dsd.css')}}">-->
 
+        <style type="text/css">
+            body,button, input, select, textarea,h1 ,h2, h3, h4, h5, h6 { font-family: Times New Roman, Microsoft YaHei, '宋体' , Tahoma, Helvetica, Arial, "\5b8b\4f53", sans-serif;}
+            body{
+                font-size: 18px;
+            }
+        </style>
+    </head>
+    <!-- header -->
+    <body class="blog-content container">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul class=flashes>
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </body>
+    <!-- footer -->
     <!-- scripts -->
     <script type="text/javascript" src="{{url_for('static', filename='assets/js/jquery-2.1.3.min.js')}}"></script>
     <script type="text/javascript" src="{{url_for('static', filename='assets/js/jquery.form.js')}}"></script>
@@ -28,11 +50,4 @@
     <script type="text/javascript" src="{{url_for('static', filename='assets/js/owl.carousel.js')}}"></script>
     <script type="text/javascript" src="{{url_for('static', filename='assets/js/jquery.hoverdir.js')}}"></script>
     <script type="text/javascript" src="{{url_for('static', filename='assets/js/modernizr.custom.97074.js')}}"></script>
-
-    </head>
-  <body>
-    <div>Microblog: <a href="/index">Home</a></div>
-    <hr>
-    {% block content %}{% endblock %}
-  </body>
 </html>

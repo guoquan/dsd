@@ -1,0 +1,42 @@
+{% extends "manage_base.html" %}
+{% block manage_content %}
+<div class='row'>
+    <div class='row'>
+        <h4>container List</h4>
+    </div>
+    <div class='row'>
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>name</th>
+                    <th>container_id</th>
+                    <th>image</th>
+                    <th>created</th>
+                    <th>gpu</th>
+                    <th>max_disk</th>
+                    <th>max_memory</th>
+                    <th>operation</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for container in container_lst %}
+                    <tr>
+                        <td>{{ loop.index0 + 1 }}</td>
+                        <td>{{ container["container_name"] }}</td>
+                        <td>3/{{ container["container_id"] }}</td>
+                        <td>200/{{ container["image"] }}</td>
+                        <td>{{ container["user"] }}</td>
+                        <td>{{ container["gpu"] }}</td>
+                        <td>{{ container["max_disk"] }}</td>
+                        <td>{{ container["max_memory"] }}</td>
+                        <td>
+                            <a href="{{ url_for('logout') }}">del</a>
+                            <a href="{{ url_for('logout') }}">edit</a>
+                        </td>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
