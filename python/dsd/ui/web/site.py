@@ -24,52 +24,15 @@ def login():
         if state:
             session['Is_Login'] = '1'
             session['User_Type'] = user_type
-            flash('Login as %s. Welcome!' % username)
-            return redirect(url_for('index'))
+            if user_type.upper() == "ADMIN":
+                return redirect(url_for('manage.index'))
+            else:
+                return redirect(url_for('index'))
         else:
             session.pop('Is_Login', None)
             session.pop('User_Type', None)
             flash('Invalid login. Login again.')
             return render_template('login.html',error=error)
-    else:
-        flash('Invalid login. Login again.')
-        return redrect(url_for('index'))
-
-@app.route("/manage/user", methods=['GET'])
-def manage_user():
-    if is_admin():
-        return render_template('manage_user.html')
-    else:
-        flash('Invalid login. Login again.')
-        return redrect(url_for('index'));
-
-@app.route('/manage/user/add', methods=['POST'])
-def manage_user_add():
-    if is_admin():
-        # create user
-        username = request.form.get('Username')
-        password = request.form.get('Password')
-        max_container_count = request.form.get('Max_Container_Count')
-        max_disk_space = request.form.get('Max_Disk_Space')
-        user_type = request.form.get('User_Type')
-        db().users.save(
-            {'Username':username,
-             'Password':encrypt_password(password),
-             'User_Type':user_type,
-             'Max_Container_Count':max_container_count,
-             'Max_Disk_Space':max_disk_space})
-        flash('User %s created.' % username)
-        return redirect(url_for('manage_user'))
-    else:
-        flash('Invalid login. Login again.')
-        return redrect(url_for('index'))
-
-@app.route('/manage/user/remove', methods=['POST'])
-def manage_user_remove():
-    if is_admin():
-        # TODO implement user remove
-        flash('Not implemented yet.')
-        return redirect(url_for('manage_user'))
     else:
         flash('Invalid login. Login again.')
         return redrect(url_for('index'))
