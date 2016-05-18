@@ -47,12 +47,42 @@ def manage_user_remove():
         flash('Invalid login. Login again.')
         return redrect(url_for('index'))
 
+ 
 @app.route("/manage/gpu", methods=['GET'])
 def manage_gpu():
     if is_admin():
         user_lst = list(db().users.find())
         print user_lst
         return render_template('manage_user.html', user_lst=user_lst)
+    else:
+        flash('Invalid login. Login again.')
+        return redrect(url_for('index'));
+
+@app.route("/manage/container", methods=['GET'])
+def manage_container():
+    if is_admin():
+        container_lst = list(db().containers.find())
+        print container_lst
+        return render_template('manage_container.html', container_lst=container_lst)
+    else:
+        flash('Invalid login. Login again.')
+        return redrect(url_for('index'));
+@app.route("/manage/container/add", methods=['GET'])
+def manage_container_add():
+    if is_admin():
+        user_lst = list(db().users.find())
+        db().containers.save({
+            'container_name':'test-jp2t',
+            'container_id':'d4cdc086814f5c65e484c806861afb102c47a11d0ebca42ab40a880eb53fa511',
+            'image':'dsd-console',
+            'created':'1463531671',
+            'user':user_lst[1],
+            'gpu':[0],
+            'max_disk':20020,
+            'max_memory':3000})
+        container_lst = list(db().containers.find())
+        print container_lst
+        return render_template('manage_container.html', container_lst=container_lst)
     else:
         flash('Invalid login. Login again.')
         return redrect(url_for('index'));
