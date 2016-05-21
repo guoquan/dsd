@@ -1,19 +1,39 @@
-{% extends "base.html" %}
-{% block content %}
-<a href="{{ url_for('logout') }}">logout</a>
-<form action="{{ url_for('manage_user_add') }}" method="POST">
-    <dl>
-      <dt>Username:
-      <dd><input type="text" name="Username">
-      <dt>Password:
-      <dd><input type="password" name="Password">
-      <dt>Max_Container_Count:
-      <dd><input type="text" name="Max_Container_Count">
-      <dt>Max_Disk_Space:
-      <dd><input type="text" name="Max_Disk_Space">
-      <dt>User_Type:
-      <dd><input type="text" name="User_Type">
-      <dd><input type="submit" value="Add">
-    </dl>
-</form>
+{% extends "manage_base.html" %}
+{% block manage_content %}
+<div class='row'>
+    <div class='row'>
+        <h4>User List</h4>
+    </div>
+    <div class='row'>
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>user_name</th>
+                    <th>containers_cnt</th>
+                    <th>disk_space</th>
+                    <th>user_type</th>
+                    <th>operation</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in user_lst %}
+                    <tr>
+                        <th>{{ loop.index0 + 1 }}</th>
+                        <th>{{ user["Username"] }}</th>
+                        <th>3/{{ user["Max_Container_Count"] }}</th>
+                        <th>200/{{ user["Max_Disk_Space"] }}</th>
+                        <th>{{ user["User_Type"] }}</th>
+                        <th>
+                            <a href="{{ url_for('logout') }}">del</a>
+                            <a href="{{ url_for('logout') }}">edit</a>
+                        </th>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="row">
+        <a href="/manage/user/add">add user</a>
+    </div>
+</div>
 {% endblock %}
