@@ -2,37 +2,29 @@
 {% block manage_content %}
 <div class='row'>
     <div class='row'>
-        <h4>container List</h4>
+        <h4>image List</h4>
     </div>
     <div class='row'>
         <table class="table table-bordered table-hover">
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>owner</th>
-                    <th>gpu</th>
-                    <th>max_disk</th>
-                    <th>max_memory</th>
                     <th>operation</th>
-                    {% for container_key in container_lst[0].keys() %}
-                        <th>{{container_key}}</th>
+                    {% for image_key in image_lst[0].keys() %}
+                        <th>{{image_key}}</th>
                     {% endfor %}
                 </tr>
             </thead>
             <tbody>
-                {% for container in container_lst %}
+                {% for image in image_lst %}
                     <tr>
                         <td>{{ loop.index0 + 1 }}</td>
-                        <td>{{ container["owner"] }}</td>
-                        <td>{{ container["gpu"] }}</td>
-                        <td>{{ container["max_disk"] }}</td>
-                        <td>{{ container["max_memory"] }}</td>
                         <td>
                             <a href="{{ url_for('logout') }}">del</a>
                             <a href="{{ url_for('logout') }}">edit</a>
                         </td>
-                        {% for container_key in container.keys() %}
-                            <td>{{container[container_key]}}</td>
+                        {% for image_key in image.keys() %}
+                            <td>{{image[image_key]}}</td>
                         {% endfor %}
                 {% endfor %}
             </tbody>

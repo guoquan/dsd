@@ -57,11 +57,28 @@ def manage_gpu():
     else:
         flash('Invalid login. Login again.')
         return redrect(url_for('index'));
-
+@app.route("/manage/image", methods=['GET'])
+def manage_image():
+    if is_admin():
+        image_lst = docker().images()
+        #container_lst = list(db().containers.find())
+        return render_template('manage_image.html', image_lst=image_lst)
+    else:
+        flash('Invalid login. Login again.')
+        return redrect(url_for('index'));
 @app.route("/manage/container", methods=['GET'])
 def manage_container():
     if is_admin():
-        container_lst = list(db().containers.find())
+        container_lst = []
+        user_container_lst = list(db().containers.find())
+        all_containers = docker().ps(all=True)
+        for ps_container in all_containers:
+            for user_container in user_container_lst:
+                if ps_container['container_id'] == user_container['container_id']:
+                    user_container = dict(user_container, **ps_container)
+                    container_lst.append(user_container)
+                    break
+        #container_lst = list(db().containers.find())
         print container_lst
         return render_template('manage_container.html', container_lst=container_lst)
     else:
