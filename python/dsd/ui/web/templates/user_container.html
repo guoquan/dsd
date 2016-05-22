@@ -1,18 +1,15 @@
-{% extends "manage_base.html" %}
-{% block manage_content %}
+{% extends "user_base.html" %}
+{% block user_content %}
 <div class='row'>
     <div class='row'>
         <h4>container List</h4>
     </div>
+    {% if container_lst %}
     <div class='row'>
         <table class="table table-bordered table-hover">
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>owner</th>
-                    <th>gpu</th>
-                    <th>max_disk</th>
-                    <th>max_memory</th>
                     <th>operation</th>
                     {% for container_key in container_lst[0].keys() %}
                         <th>{{container_key}}</th>
@@ -23,13 +20,11 @@
                 {% for container in container_lst %}
                     <tr>
                         <td>{{ loop.index0 + 1 }}</td>
-                        <td>{{ container["owner"] }}</td>
-                        <td>{{ container["gpu"] }}</td>
-                        <td>{{ container["max_disk"] }}</td>
-                        <td>{{ container["max_memory"] }}</td>
                         <td>
-                            <a href="{{ url_for('logout') }}">del</a>
-                            <a href="{{ url_for('logout') }}">edit</a>
+                            <a href="/user/container/del?id={{container['container_id']}}">del</a>
+                            <a href="/user/container/restart?id={{container['container_id']}}">restart</a>
+                            <a href="/user/container/stop?id={{container['container_id']}}">stop</a>
+                            <a href="/user/container/start?id={{container['container_id']}}">start</a>
                         </td>
                         {% for container_key in container.keys() %}
                             <td>{{container[container_key]}}</td>
@@ -38,5 +33,10 @@
             </tbody>
         </table>
     </div>
+    {% else %}
+    <div class='row'>
+        <h3> none container existed</h3>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

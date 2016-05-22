@@ -6,9 +6,9 @@ from dsd.ui.web.functions import *
 def index():
     if is_login():
         if session['User_Type'] == 'Admin':
-            return render_template('main_page.html')
+            return redirect(url_for('manage.index'))
         if session['User_Type'] == 'Common':
-            return render_template('jupyter_page.html')
+            return redirect(url_for('user.index'))
     else:
         return render_template('welcome_page.html')
 
@@ -23,11 +23,9 @@ def login():
         state, error, user_type = check_login(username, password)
         if state:
             session['Is_Login'] = '1'
+            session['user_name'] = username
             session['User_Type'] = user_type
-            if user_type.upper() == "ADMIN":
-                return redirect(url_for('manage.index'))
-            else:
-                return redirect(url_for('index'))
+            return redirect(url_for('index'))
         else:
             session.pop('Is_Login', None)
             session.pop('User_Type', None)

@@ -1,0 +1,34 @@
+{% extends "manage_base.html" %}
+{% block manage_content %}
+<div class='row'>
+    <div class='row'>
+        <h4>image List</h4>
+    </div>
+    <div class='row'>
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>operation</th>
+                    {% for image_key in image_lst[0].keys() %}
+                        <th>{{image_key}}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for image in image_lst %}
+                    <tr>
+                        <td>{{ loop.index0 + 1 }}</td>
+                        <td>
+                            <a href="/manage/image/del?id={{image['id']}}">del</a>
+                            <!--<a href="{{ url_for('logout') }}">edit</a>-->
+                        </td>
+                        {% for image_key in image.keys() %}
+                            <td>{{image[image_key]}}</td>
+                        {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
