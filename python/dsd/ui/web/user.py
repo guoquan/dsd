@@ -14,6 +14,7 @@ def user_container():
         for ps_container in all_containers:
             for user_container in user_container_lst:
                 if ps_container['container_id'] == user_container['container_id']:
+                    print ps_container
                     user_container = dict(user_container, **ps_container)
                     container_lst.append(user_container)
         return render_template('user_container.html', container_lst=container_lst)
@@ -52,12 +53,37 @@ def user_container_add():
 @app.route("/user/container/del", endpoint='user.container.del', methods=['GET'])
 def user_container_del():
     if is_login():
-        container = 'f7b8bf9aa94d06130c131103ed55e13b5397468dbae8896c2d1bee272efca938'
+        container = request.args.get('id')
         flag = docker().rm(container=container)
         if flag is None:
             flash('Failed to create a container. Please check the input and try again.')
         else:
             db().containers.remove({'container_id':container,})
+            return redirect(url_for('user.container'))
+    else:
+        flash('Invalid login. Login again.')
+        return redrect(url_for('index'));
+@app.route("/user/container/stop", endpoint='user.container.stop', methods=['GET'])
+def user_container_stop():
+    if is_login():
+        container = request.args.get('id')
+        flag = docker().stop(container=container)
+        if flag is None:
+            flash('Failed to stop a container. Please check the input and try again.')
+        else:
+            print 'stoped'
+            return redirect(url_for('user.container'))
+    else:
+        flash('Invalid login. Login again.')
+        return redrect(url_for('index'));
+@app.route("/user/container/start", endpoint='user.container.start', methods=['GET'])
+def user_container_start():
+    if is_login():
+        container = request.args.get('id')
+        flag = docker().start(container=container)
+        if flag is None:
+            flash('Failed to start a container. Please check the input and try again.')
+        else:
             return redirect(url_for('user.container'))
     else:
         flash('Invalid login. Login again.')

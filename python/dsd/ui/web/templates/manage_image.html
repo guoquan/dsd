@@ -20,8 +20,8 @@
                     <tr>
                         <td>{{ loop.index0 + 1 }}</td>
                         <td>
-                            <a href="{{ url_for('logout') }}">del</a>
-                            <a href="{{ url_for('logout') }}">edit</a>
+                            <a href="/manage/image/del?id={{image['id']}}">del</a>
+                            <!--<a href="{{ url_for('logout') }}">edit</a>-->
                         </td>
                         {% for image_key in image.keys() %}
                             <td>{{image[image_key]}}</td>

@@ -4,6 +4,7 @@
     <div class='row'>
         <h4>container List</h4>
     </div>
+    {% if container_lst %}
     <div class='row'>
         <table class="table table-bordered table-hover">
             <thead>
@@ -20,10 +21,10 @@
                     <tr>
                         <td>{{ loop.index0 + 1 }}</td>
                         <td>
-                            <a href="{{ url_for('user.container.del') }}">del</a>
-                            <a href="{{ url_for('logout') }}">restart</a>
-                            <a href="{{ url_for('logout') }}">stop</a>
-                            <a href="{{ url_for('logout') }}">start</a>
+                            <a href="/user/container/del?id={{container['container_id']}}">del</a>
+                            <a href="/user/container/restart?id={{container['container_id']}}">restart</a>
+                            <a href="/user/container/stop?id={{container['container_id']}}">stop</a>
+                            <a href="/user/container/start?id={{container['container_id']}}">start</a>
                         </td>
                         {% for container_key in container.keys() %}
                             <td>{{container[container_key]}}</td>
@@ -32,5 +33,10 @@
             </tbody>
         </table>
     </div>
+    {% else %}
+    <div class='row'>
+        <h3> none container existed</h3>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
