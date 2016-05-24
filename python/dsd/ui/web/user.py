@@ -28,18 +28,20 @@ def user_container_add():
             image_lst = docker().images()
             return render_template('user_container_add.html', image_lst=image_lst)
         else:
-            image = request.form['image']
+            image_tag = request.form['image']
+            img = list(db().images.find({'RepoTags':image_tag}))
+            ports = img[0]['ports'].split(',')
+            ports = [int(port) for port in ports]
             name = request.form['name']
-                    # run it
+            # run it
             container = docker().run(detach=True,
-                                     image=image,
+                                     image=image_tag,
                                      name = name,
-                                     ports = {},
-                                     volumes = {})
+                                     ports = ports,
+                                     volumes = {},)
             if not container:
                 flash('Failed to create a container. Please check the input and try again.')
             else:
-                print '--'*20,container
                 db().containers.save({
                         'container_id':container['Id'],
                         'user':session['user_name'],
