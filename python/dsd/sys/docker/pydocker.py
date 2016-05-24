@@ -71,15 +71,27 @@ class pydocker():
         volumes = kwargs.get('volumes', None)
         devices = kwargs.get('devices', None)
         
+        # ports
+        portsContainer = None
+        portsMap = None
+        if ports is not None:
+            # got the ports in container
+            portsContainer = ports.keys()
+            portsMap = ports
         # volumes
         volumesList = None
+        volumesContainer = None
         if volumes is not None:
+            volumesContainer = volumes.values()
             volumesList = [key+':'+value for key, value in volumes.items()]
         
         # devices
         devicesList = None
         if devices is not None:
-            devicesList = [dev+':'+dev+':rwm' for dev in devices]
+            # convert dev id to dev path
+            devicesPath = ['/dev/nvidia{}'.format(devId) for devId in devices]
+            devicesStrList = ['/dev/nvidia-uvm', '/dev/nvidiactl']+ devicesPath
+            devicesList = [dev+':'+dev+':rwm' for dev in devicesStrList]
 
         try:
             container  = self.cli.create_container(image=image, 
@@ -89,10 +101,10 @@ class pydocker():
                                                command=command, 
                                                name=name,
                                                user=user,
-                                               ports=ports.keys(),
-                                               volumes=volumes.values(),
+                                               ports=portsContainer,
+                                               volumes=volumesContainer,
                                                host_config=self.cli.create_host_config(
-                                                                                        port_bindings=ports, 
+                                                                                        port_bindings=portsMap, 
                                                                                         binds=volumesList,
                                                                                         devices=devicesList),
                                                )
