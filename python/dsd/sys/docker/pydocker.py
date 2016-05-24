@@ -67,17 +67,25 @@ class pydocker():
         command = kwargs.get('command', None)
         name = kwargs.get('name', None)
         user = kwargs.get('user', None)
-        ports = kwargs.get('ports', None)
+        ports_dict = kwargs.get('ports_dict', None)
+        ports_list = kwargs.get('ports_list', None)
         volumes = kwargs.get('volumes', None)
         devices = kwargs.get('devices', None)
-        
+                   
         # ports
         portsContainer = None
         portsMap = None
-        if ports is not None:
+        # ports_dict
+        if ports_dict is not None:
             # got the ports in container
-            portsContainer = ports.keys()
-            portsMap = ports
+            portsContainer = ports_dict.values()
+            portsMap = { v:k for (k,v) in ports_dict.items()}
+        if ports_list is not None:
+            # got the ports in container
+            portsContainer += ports_list
+            # concatenate all maps
+            portsMap.update({ p:None for p in ports_list})
+            
         # volumes
         volumesList = None
         volumesContainer = None
