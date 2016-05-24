@@ -12,31 +12,39 @@
                     <th>#</th>
                     <th>operation</th>
                     {% for container_key in container_lst[0].keys() %}
-                        <th>{{container_key}}</th>
+                    <th>{{container_key}}</th>
                     {% endfor %}
                 </tr>
             </thead>
             <tbody>
                 {% for container in container_lst %}
-                    <tr>
-                        <td>{{ loop.index0 + 1 }}</td>
-                        <td>
-                            <a href="/user/container/del?id={{container['container_id']}}">del</a>
-                            <a href="/user/container/restart?id={{container['container_id']}}">restart</a>
-                            <a href="/user/container/stop?id={{container['container_id']}}">stop</a>
-                            <a href="/user/container/start?id={{container['container_id']}}">start</a>
-                        </td>
-                        {% for container_key in container.keys() %}
-                            <td>{{container[container_key]}}</td>
+                <tr>
+                    <td>{{ loop.index0 + 1 }}</td>
+                    <td>
+                        <a href="/user/container/del?id={{container['container_id']}}">del</a>
+                        <a href="/user/container/restart?id={{container['container_id']}}">restart</a>
+                        <a href="/user/container/stop?id={{container['container_id']}}">stop</a>
+                        <a href="/user/container/start?id={{container['container_id']}}">start</a>
+                    </td>
+                    {% for container_key in container.keys() %}
+                    {% if container_key == 'port'%}
+                    <td>
+                        {% for port_ in container['port']%}
+                        <a href="http://192.168.7.170:{{port_['PublicPort']}}" target='_blank'>{{port_['PrivatePort']}}</a>
                         {% endfor %}
-                {% endfor %}
+                    </td>
+                    {% else %}
+                    <td>{{container[container_key]}}</td>
+                    {% endif %}
+                    {% endfor %}
+                    {% endfor %}
             </tbody>
         </table>
     </div>
     {% else %}
     <div class='row'>
         <h3> none container existed</h3>
-        </div>
+    </div>
     {% endif %}
 </div>
 {% endblock %}

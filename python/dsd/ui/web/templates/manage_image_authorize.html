@@ -1,0 +1,28 @@
+{% extends "manage_base.html" %}
+{% block manage_content %}
+<div class='row text-left'>
+    <br>
+    <div class='col-md-8 col-md-offset-1'>
+        <form action="{{ url_for('image.authorize') }}" method=post>
+            <legend>save image</legend>
+            <div class="form-group">
+                <label for="id">image_id</label>
+                <input class="form-control" id="id" name="id" value="{{image['id']}}"/>
+            </div>
+            <div class="form-group">
+                <label for="RepoTags">RepoTags</label>
+                <input class="form-control" id="RepoTags" name="RepoTags" value="{{image['RepoTags']}}"
+            </div>
+            <div class="form-group">
+                <label for="Ports">ports</label>
+                <input type="text" class="form-control" id="ports" name="ports" placeholder="8888">
+            </div>
+            <div class="form-group">
+                <label for="description">description</label>
+                <input type="text" class="form-control" id="description" name="description" placeholder="This image is used for ...">
+            </div>
+            <button type="submit" class="btn btn-success btn-lg btn-block">save image</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

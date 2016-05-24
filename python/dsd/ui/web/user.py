@@ -14,9 +14,15 @@ def user_container():
         for ps_container in all_containers:
             for user_container in user_container_lst:
                 if ps_container['container_id'] == user_container['container_id']:
-                    print ps_container
-                    user_container = dict(user_container, **ps_container)
-                    container_lst.append(user_container)
+                    port = [{'PrivatePort':con['PrivatePort'],'PublicPort':con['PublicPort']} for con in ps_container['port']]
+                    container = {'status':ps_container['status'],
+                                 'name':ps_container['name'],
+                                 'image':ps_container['image'], 
+                                 'state':ps_container['state'], 
+                                 'port':port, 
+                                 'gpu':user_container['gpu'],
+                                'container_id':ps_container['container_id']}
+                    container_lst.append(container)
         return render_template('user_container.html', container_lst=container_lst)
     else:
         flash('Invalid login. Login again.')
@@ -25,25 +31,31 @@ def user_container():
 def user_container_add():
     if is_login():
         if request.method == 'GET':
-            image_lst = docker().images()
+            image_lst = db().images.find()
             return render_template('user_container_add.html', image_lst=image_lst)
         else:
-            image = request.form['image']
+            image_tag = request.form['image']
+            img = list(db().images.find({'RepoTags':image_tag}))
+            ports = img[0]['ports'].split(',')
+            ports = [int(port) for port in ports]
             name = request.form['name']
-                    # run it
+            workspace = "/home/%s/" % session['user_name']
+            devices = [0,1]
+            # run it
             container = docker().run(detach=True,
-                                     image=image,
+                                     image=image_tag,
                                      name = name,
-                                     ports = {},
-                                     volumes = {})
+                                     ports_dict={},
+                                     ports_list = ports,
+                                     volumes={workspace:'/root/workspace','/home/wjyong/data':'/home/data'}, 
+                                     devices=devices,)
             if not container:
                 flash('Failed to create a container. Please check the input and try again.')
             else:
-                print '--'*20,container
                 db().containers.save({
                         'container_id':container['Id'],
                         'user':session['user_name'],
-                        'gpu':[0],
+                        'gpu':devices,
                         'max_disk':20020,
                         'max_memory':3000})
             return redirect(url_for('user.container'))
@@ -71,7 +83,6 @@ def user_container_stop():
         if flag is None:
             flash('Failed to stop a container. Please check the input and try again.')
         else:
-            print 'stoped'
             return redirect(url_for('user.container'))
     else:
         flash('Invalid login. Login again.')

@@ -7,3 +7,4 @@ from dsd.ui.web import site
 from dsd.ui.web import container
 from dsd.ui.web import manage
 from dsd.ui.web import user
+from dsd.ui.web import images
