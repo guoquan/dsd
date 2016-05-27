@@ -37,9 +37,9 @@ sudo nvidia-docker run -d \
     --name=dsd-console-runtime \
     -p 80:80 -p 5000:5000 -p 8888:8888 \
     -v ~/.ssh:/root/.ssh \
-    -v $(cd ../..; pwd):/root/dsd \
-    -v $(pwd)/nginx-conf:/etc/nginx/conf.d \
-    -v $(pwd)/workspace:/root/workspace \
+    -v $(cd ../..; pwd):/root/dsd:ro \
+    -v $(pwd)/nginx-conf:/etc/nginx/conf.d:ro \
+    -v $(pwd)/workspace:/root/workspace:ro \
     dsdgroup/dsd-console
 ```
 
@@ -50,7 +50,7 @@ sudo nvidia-docker run --rm \
     --add-host=dockerhost:$(ip route | awk '/docker0/ { print $NF }') \
     -p 10080:80 -p 15000:5000 -p 18888:8888 \
     -v ~/.ssh:/root/.ssh \
-    -v $(cd ../..; pwd):/root/dsd \
+    -v $(cd ../..; pwd):/root/dsd:ro \
     -v $(pwd)/nginx-conf:/etc/nginx/conf.d \
     -v $(pwd)/workspace:/root/workspace \
     -v $(cd ../..; pwd):/root/workspace/dsd \

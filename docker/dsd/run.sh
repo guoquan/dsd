@@ -12,13 +12,16 @@ name()
 
 container_alive()
 {
-    [ -z $(sudo docker ps -aq -f name=$1) ]
+    [[ ! -z $(sudo docker ps -aq -f name=$1) ]]
 }
 
 wait_container()
 {
-    while $(container_alive $1); do
-        echo -e "$(container_alive $1)\r"
+    WAIT_COUNT=0
+    DEC=("-" "\\" "|" "/")
+    while ! $(container_alive $1); do
+        printf "\r[ ${DEC[$(( $WAIT_COUNT % ${#DEC[@]} ))]} ] [ Time elapsed: $(bc <<< "$WAIT_COUNT * ${2:-1}") ] "
+        ((WAIT_COUNT++))
         sleep ${2:-1}s
     done
 }
@@ -30,6 +33,7 @@ get_link()
     echo ${3:-http}://$(sudo docker port $1 $2 | sed 's/0.0.0.0/'$IP'/g')
 }
 
+POLL_INTERVAL=0.1
 NEW_UUID=$(uuid 8)
 NEW_NAME=$(name $NEW_UUID)
 
@@ -37,27 +41,33 @@ NEW_NAME=$(name $NEW_UUID)
 sudo echo hello sudo >/dev/null
 
 (
-wait_container $NEW_NAME 0.1
-# expose 80 (http) and 443 (https) for Nginx, and 5000 for flask, 8888 for jupyter
-echo -e \
-    "\n" \
-    "\n=====================================" \
-    "\nContainer: $NEW_NAME" \
-    "\n-------------------------------------" \
-    "\nUse the following links:" \
-    "\n* $(get_link $NEW_NAME 80/tcp) for nginx on http" \
-    "\n* $(get_link $NEW_NAME 443/tcp https) for nginx on https" \
-    "\n* $(get_link $NEW_NAME 5000/tcp) for flask" \
-    "\n* $(get_link $NEW_NAME 8888/tcp) for jupyter" \
-    "\n=====================================" \
-    "\n\n"
+wait_container $NEW_NAME $POLL_INTERVAL
+sleep 1s; if $(container_alive $NEW_NAME); then
+    # expose 80 (http) and 443 (https) for Nginx, and 5000 for flask, 8888 for jupyter
+    echo -e \
+        "\n" \
+        "\n=====================================" \
+        "\nContainer: $NEW_NAME" \
+        "\n-------------------------------------" \
+        "\nUse the following links:" \
+        "\n* $(get_link $NEW_NAME 80/tcp) for nginx on http" \
+        "\n* $(get_link $NEW_NAME 443/tcp https) for nginx on https" \
+        "\n* $(get_link $NEW_NAME 5000/tcp) for flask" \
+        "\n* $(get_link $NEW_NAME 8888/tcp) for jupyter" \
+        "\n=====================================" \
+        "\n\n"
+else
+    echo "Container not start normally. Check and try again."
+fi
 ) & (
-ID=$(sudo nvidia-docker run --rm -P $1 \
+sudo nvidia-docker run --rm -P $@ \
     --name=$NEW_NAME \
     --add-host=dockerhost:$(ip route | awk '/docker0/ { print $NF }') \
     -v ~/.ssh:/root/.ssh \
+    -v $(cd ../..; pwd):/root/dsd:ro \
     -v $(pwd)/nginx-conf:/etc/nginx/conf.d \
     -v $(pwd)/workspace:/root/workspace \
     -v $(cd ../..; pwd):/root/workspace/dsd \
-    dsdgroup/dsd-console)
+    dsdgroup/dsd-console
+sleep $(bc <<< "1 + 2 * $POLL_INTERVAL")s
 )
