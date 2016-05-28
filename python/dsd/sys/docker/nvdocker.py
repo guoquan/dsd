@@ -1,57 +1,85 @@
 from docker import Client
+from urlparse import urljoin
+
 class NvDocker():
-    def __init__(self, base_url='http://0.0.0.0:3476'):
+    def __init__(self, base_url='http://localhost:3476'):
         self.base_url = base_url
         self.cli = Client(base_url)
-        
+    
+    def _get(self, path):
+        return self.cli.get(urljoin(self.base_url, path))
+    
     def _queryInfo(self):
-        self.status = self.cli.get(self.base_url+'/gpu/status/json').json()
+        return self._get('/gpu/info/json').json()
         
     def _queryStatus(self):
-        self.info = self.cli.get(self.base_url+'/gpu/info/json').json()
+        return self._get('/gpu/status/json').json()
         
-    def _queryGpuInfo(self):
-        self._queryInfo()
-        self._queryStatus()
+    def _queryCli(self, dev=None):
+        if dev:
+            if dev is 'all':
+                return self._get('/docker/cli/json').json()
+            elif isinstance(dev, list):
+                return self._get('/docker/cli/json?dev=' + '+'.join(dev)).json()
+        else:
+            return {'VolumeDriver':'',
+                    'Volumes':[],
+                    'Devices':[]}
         
-    def GpuInfo(self):
-        self._queryGpuInfo()
+    def gpuInfo(self):
+        info = self._queryInfo()
+        status = self._queryStatus()
         
-        self.devicesCount = len(self.info['Devices'])
         gpuStatus = list()
-        for i in range(self.devicesCount):
+        for dev_info, dev_status in zip(info['Devices'], status['Devices']):
             infoSingle = dict()
             ############## From info
             # Card name
-            infoSingle['Model'] = self.info['Devices'][i]['Model']
+            infoSingle['Model'] = dev_info['Model']
             # device path
-            infoSingle['Path'] = self.info['Devices'][i]['Path']
+            infoSingle['Path'] = dev_info['Path']
             # memory total
-            infoSingle['Memory_Total'] = self.info['Devices'][i]['Memory']['Global']
+            infoSingle['MemoryTotal'] = dev_info['Memory']['Global']
             ############## From status
             # memory used
-            infoSingle['Memory_Used'] = self.status['Devices'][i]['Memory']['GlobalUsed']
+            infoSingle['MemoryUsed'] = dev_status['Memory']['GlobalUsed']
             # gpu utilization
-            infoSingle['Utilization_Gpu'] = self.status['Devices'][i]['Utilization']['GPU']
+            infoSingle['UtilizationGpu'] = dev_status['Utilization']['GPU']
             # memory utilization
-            infoSingle['Utilization_Memory'] = self.status['Devices'][i]['Utilization']['Memory']
+            infoSingle['UtilizationMemory'] = dev_status['Utilization']['Memory']
             # temperature
-            infoSingle['Temperature'] = self.status['Devices'][i]['Temperature']
+            infoSingle['Temperature'] = dev_status['Temperature']
             # processes
-            infoSingle['Processes'] = self.status['Devices'][i]['Processes']
+            infoSingle['Processes'] = dev_status['Processes']
             
             gpuStatus.append(infoSingle)
             
         return gpuStatus
      
     # cuda version, driver version
-    def GpuGlobalInfo(self):
-        self._queryGpuInfo()
+    def gpuGlobalInfo(self):
+        info = self._queryInfo()
         
         gpuGlobalInfo = dict()
         # cuda version
-        gpuGlobalInfo['Cuda_Version'] = self.info['Version']['CUDA']
+        gpuGlobalInfo['CudaVersion'] = info['Version']['CUDA']
         # driver version
-        gpuGlobalInfo['Driver_Version'] = self.info['Version']['Driver']
+        gpuGlobalInfo['DriverVersion'] = info['Version']['Driver']
 
         return gpuGlobalInfo
+
+    def cliStrings(self, dev=None):
+        cli = self._queryCli(dev)
+        # {"VolumeDriver":"nvidia-docker",
+        #  "Volumes":["nvidia_driver_352.39:/usr/local/nvidia:ro"],
+        #  "Devices":["/dev/nvidia0",
+        #             "/dev/nvidia1",
+        #             "/dev/nvidiactl",
+        #             "/dev/nvidia-uvm"]}
+        
+        cliQuery = {'VolumeDriver': cli['VolumeDriver'],
+               'Volumes': [tuple(volume.split(':')) for volume in cli['Volumes']],
+               'Devices': cli['Devices']
+              }
+        return cliQuery
+    
