@@ -16,8 +16,8 @@ def namedtuple_with_defaults(typename, field_names, default_values=()):
 HC = namedtuple_with_defaults('HC', ['h', 'c']) # host, container
 HCP = namedtuple_with_defaults('HCP', ['h', 'c', 'p']) # host, container, privilege
 
-def _defualtJoin(strings, deli=':', defualt=''):
-    return deli.join([string if string else '' for string in strings])
+def _defaultJoin(strings, deli=':', default=''):
+    return deli.join([string if string is not None else default for string in strings])
 
 def _trimJoin(strings, deli=':'):
     return deli.join([string for string in strings if string])
@@ -25,7 +25,6 @@ def _trimJoin(strings, deli=':'):
 class PyDocker():
     # initialize cli
     def __init__(self, base_url='unix://var/run/docker.sock'):
-        print 'init pydocker'
         self.cli = Client(base_url)
     
     '''  docker images
@@ -91,7 +90,7 @@ class PyDocker():
             volumes=[], volume_driver=None):
         if image is None:
             raise ValueError('Must specify an image to create a container!')
-                   
+            
         # ports
         # ports is a list of HC tuple
         portList = [port.c for port in ports]
@@ -100,23 +99,22 @@ class PyDocker():
         # volumes
         # volumes is a list of HCP tuple
         volumes = [volume for volume in volumes if volume.c]
-        volumeList = [volume.c for volume in volumes]
-        volumeMapList = [_trimJoin(volume) for volume in volumes]
+        volumeList = []#[volume.c for volume in volumes]
+        volumeMapList = []#[_trimJoin(volume) for volume in volumes]
         
         # devices
         # devices is a list of HCP tuple
+        devices_ = []
         for device in devices:
-            if device.h and device.c:
-                continue
-            elif not device.h and device.c:
-                devices.remove(device)
-                devices.append(HCP(device.c, device.c, device.p))
-            elif not device.c and device.h:
-                devices.remove(device)
-                devices.append(HCP(device.h, device.h, device.p))
+            if device.h is not None and device.c is not None:
+                devices_.append(device)
+            elif device.h is None and device.c is not None:
+                devices_.append(HCP(device.c, device.c, device.p))
+            elif device.c is None and device.h is not None:
+                devices_.append(HCP(device.h, device.h, device.p))
             else:
                 devices.remove(device)
-        deviceMapList = [_defaultJoin(device, default='rwm') for device in devices]
+        deviceMapList = [_defaultJoin(device, default='rwm') for device in devices_]
         
         # prepare host_config
         host_config = self.cli.create_host_config(port_bindings=portMap,

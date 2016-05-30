@@ -1,5 +1,6 @@
 from docker import Client
 from urlparse import urljoin
+from dsd.sys.docker import HC, HCP
 
 class NvDocker():
     def __init__(self, base_url='http://localhost:3476'):
@@ -20,7 +21,7 @@ class NvDocker():
             if dev is 'all':
                 return self._get('/docker/cli/json').json()
             elif isinstance(dev, list):
-                return self._get('/docker/cli/json?dev=' + '+'.join(dev)).json()
+                return self._get('/docker/cli/json?dev=' + '+'.join([str(d) for d in dev])).json()
         else:
             return {'VolumeDriver':'',
                     'Volumes':[],
@@ -68,7 +69,7 @@ class NvDocker():
 
         return gpuGlobalInfo
 
-    def cliStrings(self, dev=None):
+    def cliParams(self, dev=None):
         cli = self._queryCli(dev)
         # {"VolumeDriver":"nvidia-docker",
         #  "Volumes":["nvidia_driver_352.39:/usr/local/nvidia:ro"],
@@ -76,10 +77,10 @@ class NvDocker():
         #             "/dev/nvidia1",
         #             "/dev/nvidiactl",
         #             "/dev/nvidia-uvm"]}
-        
-        cliQuery = {'VolumeDriver': cli['VolumeDriver'],
-               'Volumes': [tuple(volume.split(':')) for volume in cli['Volumes']],
-               'Devices': cli['Devices']
+
+        params = {'volume_driver': cli['VolumeDriver'],
+               'volumes': [HCP(*volume.split(':')) for volume in cli['Volumes']],
+               'devices': [HCP(device) for device in cli['Devices']]
               }
-        return cliQuery
+        return params
     
