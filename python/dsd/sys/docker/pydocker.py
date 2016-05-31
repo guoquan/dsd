@@ -99,8 +99,8 @@ class PyDocker():
         # volumes
         # volumes is a list of HCP tuple
         volumes = [volume for volume in volumes if volume.c]
-        volumeList = []#[volume.c for volume in volumes]
-        volumeMapList = []#[_trimJoin(volume) for volume in volumes]
+        volumeList = [volume.c for volume in volumes]
+        volumeMapList = [_trimJoin(volume) for volume in volumes]
         
         # devices
         # devices is a list of HCP tuple
@@ -114,7 +114,8 @@ class PyDocker():
                 devices_.append(HCP(device.h, device.h, device.p))
             else:
                 devices.remove(device)
-        deviceMapList = [_defaultJoin(device, default='rwm') for device in devices_]
+        devices = devices_
+        deviceMapList = [_defaultJoin(device, default='rwm') for device in devices]
         
         # prepare host_config
         host_config = self.cli.create_host_config(port_bindings=portMap,
@@ -277,3 +278,9 @@ class PyDocker():
             print e
             raise e
             return None
+
+    ''' docker volume inspect
+    '''
+    def volume_inspect(self, name):
+        return self.cli.inspect_volume(name)
+        
