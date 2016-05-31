@@ -1,11 +1,30 @@
 from docker import Client
 from io import BytesIO
 import os
+import collections
+
+def namedtuple_with_defaults(typename, field_names, default_values=()):
+    T = collections.namedtuple(typename, field_names)
+    T.__new__.__defaults__ = (None,) * len(T._fields)
+    if isinstance(default_values, collections.Mapping):
+        prototype = T(**default_values)
+    else:
+        prototype = T(*default_values)
+    T.__new__.__defaults__ = tuple(prototype)
+    return T
+
+HC = namedtuple_with_defaults('HC', ['h', 'c']) # host, container
+HCP = namedtuple_with_defaults('HCP', ['h', 'c', 'p']) # host, container, privilege
+
+def _defaultJoin(strings, deli=':', default=''):
+    return deli.join([string if string is not None else default for string in strings])
+
+def _trimJoin(strings, deli=':'):
+    return deli.join([string for string in strings if string])
 
 class PyDocker():
     # initialize cli
     def __init__(self, base_url='unix://var/run/docker.sock'):
-        print 'init pydocker'
         self.cli = Client(base_url)
     
     '''  docker images
@@ -59,63 +78,59 @@ class PyDocker():
     '''  docker run
     '''
     def run(self, **kwargs):
-        image = kwargs['image']
-        assert(image!=None)
-        detach = kwargs.get('detach', False)
-        stdin_open = kwargs.get('stdin_open', False)
-        tty = kwargs.get('tty', False)
-        command = kwargs.get('command', None)
-        name = kwargs.get('name', None)
-        user = kwargs.get('user', None)
-        ports_dict = kwargs.get('ports_dict', None)
-        ports_list = kwargs.get('ports_list', None)
-        volumes = kwargs.get('volumes', None)
-        devices = kwargs.get('devices', None)
-                   
-        # ports
-        portsContainer = None
-        portsMap = None
-        # ports_dict
-        if ports_dict is not None:
-            # got the ports in container
-            portsContainer = ports_dict.values()
-            portsMap = { v:k for (k,v) in ports_dict.items()}
-        if ports_list is not None:
-            # got the ports in container
-            portsContainer += ports_list
-            # concatenate all maps
-            portsMap.update({ p:None for p in ports_list})
+        container = self.create(**kwargs)
+        return self.start(container)
+        
+    '''  create a container but not run
+    '''
+    def create(self, image,
+            detach=False, stdin_open=False, tty=False,
+            command=None, name=None, user=None,
+            ports=[], devices=[],
+            volumes=[], volume_driver=None):
+        if image is None:
+            raise ValueError('Must specify an image to create a container!')
             
+        # ports
+        # ports is a list of HC tuple
+        portList = [port.c for port in ports]
+        portMap = {port.c:port.h for port in ports}
+        
         # volumes
-        volumesList = None
-        volumesContainer = None
-        if volumes is not None:
-            volumesContainer = volumes.values()
-            volumesList = [key+':'+value for key, value in volumes.items()]
+        # volumes is a list of HCP tuple
+        volumes = [volume for volume in volumes if volume.c]
+        volumeList = [volume.c for volume in volumes]
+        volumeMapList = [_trimJoin(volume) for volume in volumes]
         
         # devices
-        devicesList = None
-        if devices is not None:
-            # convert dev id to dev path
-            devicesPath = ['/dev/nvidia{}'.format(devId) for devId in devices]
-            devicesStrList = ['/dev/nvidia-uvm', '/dev/nvidiactl']+ devicesPath
-            devicesList = [dev+':'+dev+':rwm' for dev in devicesStrList]
-
+        # devices is a list of HCP tuple
+        devices_ = []
+        for device in devices:
+            if device.h is not None and device.c is not None:
+                devices_.append(device)
+            elif device.h is None and device.c is not None:
+                devices_.append(HCP(device.c, device.c, device.p))
+            elif device.c is None and device.h is not None:
+                devices_.append(HCP(device.h, device.h, device.p))
+            else:
+                devices.remove(device)
+        devices = devices_
+        deviceMapList = [_defaultJoin(device, default='rwm') for device in devices]
+        
+        # prepare host_config
+        host_config = self.cli.create_host_config(port_bindings=portMap,
+                                                  binds=volumeMapList,
+                                                  devices=deviceMapList)
+        
+        # tr create container
         try:
-            container  = self.cli.create_container(image=image, 
-                                               detach=detach, 
-                                               stdin_open=stdin_open, 
-                                               tty=tty, 
-                                               command=command, 
-                                               name=name,
-                                               user=user,
-                                               ports=portsContainer,
-                                               volumes=volumesContainer,
-                                               host_config=self.cli.create_host_config(
-                                                                                        port_bindings=portsMap, 
-                                                                                        binds=volumesList,
-                                                                                        devices=devicesList),
-                                               )
+            container = self.cli.create_container(image=image,
+                                                  detach=detach, stdin_open=stdin_open, tty=tty,
+                                                  command=command, name=name, user=user,
+                                                  ports=portList,
+                                                  volumes=volumeList,
+                                                  volume_driver=volume_driver,
+                                                  host_config=host_config)
             return container
         except Exception, e:
             print e
@@ -263,3 +278,9 @@ class PyDocker():
             print e
             raise e
             return None
+
+    ''' docker volume inspect
+    '''
+    def volume_inspect(self, name):
+        return self.cli.inspect_volume(name)
+        
