@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block header %}
+{{ super() }}
+<div class="navbar-collapse collapse">
+    <ul class="nav navbar-nav navbar-right">
+      <li><a href="#"><span class="glyphicon glyphicon-user"></span>Profile</a></li>
+      <li><a href="{{ url_for('logout') }}"><span class="glyphicon glyphicon-log-in"></span>Logout</a></li>
+    </ul>
+</div>
+<!--/.navbar-collapse -->
+{% endblock header %}
+
+{% block content %}
+{{ super() }}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+            {% block panel_sidebar %}
+            <ul class="nav nav-sidebar">
+                <li class="active"><a href="/manage">Overview <span class="sr-only">(current)</span></a></li>
+                <li><a href="/manage/gpu">GPU Manage</a></li>
+                <li><a href="/image">Images Manage</a></li>
+                <li><a href="/manage/container">containers manage</a></li>
+                <li><a href="">dockerfiles</a></li>
+            </ul>
+            <hr>
+            <ul class="nav nav-sidebar">
+                <li><a href="/manage/user">User manage</a></li>
+                <li><a href="">Nav item again</a></li>
+                <li><a href="">One more nav</a></li>
+            </ul>
+            {% endblock panel_sidebar %}
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            {% block manage_content %}
+            {% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock content %}
