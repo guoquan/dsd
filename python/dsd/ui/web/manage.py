@@ -1,6 +1,7 @@
 from flask import Flask, request, session, redirect, url_for, abort, render_template, flash
 from dsd.ui.web import app
-from dsd.ui.web.functions import *
+from dsd.ui.web.utils import *
+
 @app.route("/manage", endpoint='manage.index', methods=['GET'])
 def index():
     return render_template('manage_main.html')

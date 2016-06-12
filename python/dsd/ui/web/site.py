@@ -1,6 +1,6 @@
 from flask import Flask, request, session, redirect, url_for, abort, render_template, flash
 from dsd.ui.web import app
-from dsd.ui.web.functions import *
+from dsd.ui.web.utils import *
 
 @app.route("/", methods=['GET'])
 def index():
@@ -10,7 +10,7 @@ def index():
         if session['User_Type'] == 'Common':
             return redirect(url_for('user.index'))
     else:
-        return render_template('welcome_page.html')
+        return render_template('index.html')
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():

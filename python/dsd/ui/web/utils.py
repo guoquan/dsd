@@ -1,6 +1,8 @@
 from flask import session
 import pymongo
-from dsd.sys.docker.pydocker import pydocker as Docker
+from dsd.sys.docker.pydocker import PyDocker as Docker
+from dsd.sys.docker.nvdocker import NvDocker as NVD
+import socket
 
 def db():
     client = pymongo.MongoClient()
@@ -26,5 +28,20 @@ def is_admin():
     return is_login() and session['User_Type'] == 'Admin'
 
 def docker():
-    return Docker(base_url='tcp://dockerhost:4243')
+    try:
+        socket.gethostbyname('dockerhost')
+        base_url = 'http://dockerhost:4243'
+    except socket.error:
+        base_url = 'unix:///var/run/docker.sock'
+
+    return Docker(base_url=base_url)
+
+def nvd():
+    try:
+        socket.gethostbyname('dockerhost')
+        base_url = 'http://dockerhost:3476'
+    except socket.error:
+        base_url = 'http://localhost:3476'
+
+    return NVD(base_url=base_url)
     
