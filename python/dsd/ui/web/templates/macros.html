@@ -1,0 +1,5 @@
+{% macro sidebar_li(text, url='#', bs_icon='') -%}
+<li class="{% if request.path==url %}active{% endif %} {% if '#'==url %}disabled{% endif %}" >
+    <a href="{{ url }}">{% if ''!=bs_icon %}<span class="glyphicon glyphicon-{{ bs_icon }}"></span> {% endif %}{{ text }}{% if request.path==url %} <span class="sr-only">(current)</span>{% endif %}</a>
+</li>
+{%- endmacro %}

@@ -1,43 +1,12 @@
-{% extends "base.html" %}
-{% block content %}
-<nav class="navbar navbar-inverse">
-    <div class="container-fluid">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="#">DSD {{ session['user_name']}}</a>
-        </div>
-        <div id="navbar" class="navbar-collapse collapse">
-            <ul class="nav navbar-nav navbar-right">
-                <li><a href="#">Dashboard</a></li>
-                <li><a href="#">Settings</a></li>
-                <li><a href='/logout'>Log out</a></li>
-            </ul>
-        </div>
-    </div>
-</nav>
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-sm-3 sidebar">
-            <ul class="nav nav-sidebar">
-                <li class="active"><a href="/user">Overview <span class="sr-only">(current)</span></a></li>
-                <li><a href="/user/container">containers</a></li>
-            </ul>
-            <br/>
-            <ul class="nav nav-sidebar">
-                <li><a href="/user/container/add">add container</a></li>
-            </ul>
-        </div>
-        <div class="col-sm-9  main">
-            {% block user_content %}
-            {% endblock %}
-        </div>
-    </div>
-</div>
+{% extends "base-panel.html" %}
 
-
-{% endblock %}
+{% block panel_sidebar_control %}
+{% import 'macros.html' as M %}
+<ul class="nav nav-stacked">
+    {{ M.sidebar_li('Dashboard', url_for('user.index')) }}
+    {{ M.sidebar_li('Container', url_for('user.container')) }}
+</ul>
+<ul class="nav nav-stacked">
+    {{ M.sidebar_li('Add Container', url_for('user_container_add')) }}
+</ul>
+{% endblock panel_sidebar_control %}

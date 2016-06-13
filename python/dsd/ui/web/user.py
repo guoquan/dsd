@@ -4,7 +4,7 @@ from dsd.ui.web.utils import *
 
 @app.route("/user", endpoint='user.index', methods=['GET'])
 def index():
-    return render_template('user_main.html')
+    return render_template('user_index.html')
 @app.route("/user/container",endpoint='user.container', methods=['GET'])
 def user_container():
     if is_login():
@@ -18,9 +18,9 @@ def user_container():
                     port = [{'PrivatePort':con['PrivatePort'],'PublicPort':con['PublicPort']} for con in ps_container['port']]
                     container = {'status':ps_container['status'],
                                  'name':ps_container['name'],
-                                 'image':ps_container['image'], 
-                                 'state':ps_container['state'], 
-                                 'port':port, 
+                                 'image':ps_container['image'],
+                                 'state':ps_container['state'],
+                                 'port':port,
                                  'gpu':user_container['gpu'],
                                 'container_id':ps_container['container_id']}
                     container_lst.append(container)
@@ -48,7 +48,7 @@ def user_container_add():
                                      name = name,
                                      ports_dict={},
                                      ports_list = ports,
-                                     volumes={workspace:'/root/workspace','/home/wjyong/data':'/home/data'}, 
+                                     volumes={workspace:'/root/workspace','/home/wjyong/data':'/home/data'},
                                      devices=devices,)
             if not container:
                 flash('Failed to create a container. Please check the input and try again.')

@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <!-- meta -->
     {% block head_meta %}
@@ -12,17 +11,17 @@
 
     {% block head_title %}
     {% if title %}
-    <title>{{title}} - DSD-MILab</title>
+    <title>{{title}} - DSD</title>
     {% else %}
-    <title>DSD-MILab</title>
+    <title>DSD - Data Science Docker</title>
     {% endif %}
     {% endblock head_title %}
 
-    <!-- stylesheets -->
+    <!-- scripts -->
     {% block head_css %}
-    <link href="{{url_for('static', filename='assets/vendor/bootstrap/css/bootstrap.min.css')}}" type="text/css" rel="stylesheet" media="all">
-    <link href="{{url_for('static', filename='assets/vendor/bootstrap/hack/ie10-viewport-bug-workaround.css')}}" type="text/css" rel="stylesheet" media="all">
-    <link href="{{url_for('static', filename='assets/css/dsd.css')}}" type="text/css" rel="stylesheet" media="all">
+    <link href="{{url_for('static', filename='assets/vendor/bootstrap/css/bootstrap.min.css')}}" type="text/css" rel="stylesheet">
+    <link href="{{url_for('static', filename='assets/vendor/bootstrap/hack/ie10-viewport-bug-workaround.css')}}" type="text/css" rel="stylesheet">
+    <link href="{{url_for('static', filename='assets/css/dsd.css')}}" type="text/css" rel="stylesheet">
     {% endblock head_css %}
 
     <!-- stylesheets -->
@@ -35,14 +34,15 @@
     {% endblock head_scripts %}
 </head>
 
-<body class="container-fluid">
+<body>
     <!-- header -->
     <div id="header">
-        <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
             <div class="container-fluid">
+                <!-- block header -->
                 {% block header %}
                 <div class="navbar-header">
-                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse" aria-expanded="false" aria-controls="navbar">
                         <span class="sr-only">Toggle navigation</span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
@@ -51,16 +51,19 @@
                     <a class="navbar-brand" href="{{ url_for('index') }}">DSD - Data Science Docker</a>
                 </div>
                 {% endblock header %}
+                <!-- endblock header -->
             </div>
         </div>
     </div>
+
     <!-- content -->
     <div id="content">
+        <!-- block content -->
         {% block content %}
-        <div class="container">
-            {% block content_flash %}
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
+        {% block content_flash %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="container-fluid">
             <ul id="flashes" class="flashes list-group collapse in">
                 {% for category, message in messages %}
                 {% if category == 'message' %}
@@ -75,29 +78,32 @@
                     <button type="button" class="btn btn-default" data-toggle="collapse" data-target="ul#flashes"><span class="glyphicon glyphicon-check"></span>Dismissed</button>
                 </li>
             </ul>
-            {% endif %}
-            {% endwith %}
-            {% endblock content_flash %}
         </div>
-
+        {% endif %}
+        {% endwith %}
+        {% endblock content_flash %}
         {% endblock content %}
+        <!-- endblock content -->
     </div>
+
     <!-- footer -->
     <div id="footer">
-        {% block footer_content %}
-        <hr>
         <div class="container">
-            <p>&copy; Copyright 2016, <a href="#">Machine Intelligence Lab</a>.</p>
+            <!-- block footer -->
+            {% block footer %}
+            <hr />
+            <p>&copy; Copyright 2016, <a href="http://www.machineilab.org">Machine Intelligence Lab</a>.</p>
+            {% endblock footer %}
+            <!-- endblock footer -->
         </div>
-        {% endblock footer_content %}
     </div>
-</body>
-<!-- scripts -->
-{% block scripts %}
-<script src="{{url_for('static', filename='assets/vendor/jquery/jquery-2.2.4.min.js')}}" type="text/javascript" ></script>
-<script src="{{url_for('static', filename='assets/vendor/bootstrap/js/bootstrap.min.js')}}" type="text/javascript" ></script>
-<script src="{{url_for('static', filename='assets/vendor/bootstrap/hack/ie10-viewport-bug-workaround.js')}}" type="text/javascript" ></script>
-<script src="{{url_for('static', filename='assets/js/dsd.js')}}" type="text/javascript" ></script>
-{% endblock scripts %}
 
+    <!-- scripts -->
+    {% block scripts %}
+    <script src="{{url_for('static', filename='assets/vendor/jquery/jquery-2.2.4.min.js')}}" type="text/javascript" ></script>
+    <script src="{{url_for('static', filename='assets/vendor/bootstrap/js/bootstrap.min.js')}}" type="text/javascript" ></script>
+    <script src="{{url_for('static', filename='assets/vendor/bootstrap/hack/ie10-viewport-bug-workaround.js')}}" type="text/javascript" ></script>
+    <script src="{{url_for('static', filename='assets/js/dsd.js')}}" type="text/javascript" ></script>
+    {% endblock scripts %}
+</body>
 </html>
