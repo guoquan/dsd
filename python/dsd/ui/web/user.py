@@ -5,7 +5,8 @@ from dsd.ui.web.utils import *
 @app.route("/user", endpoint='user.index', methods=['GET'])
 def index():
     return render_template('user_index.html')
-@app.route("/user/container",endpoint='user.container', methods=['GET'])
+
+@app.route("/user/container", endpoint='user.container', methods=['GET'])
 def user_container():
     if is_login():
         #container_lst = docker().ps(all=True)
@@ -28,7 +29,8 @@ def user_container():
     else:
         flash('Invalid login. Login again.')
         return redrect(url_for('index'));
-@app.route("/user/container/add", methods=['GET', 'POST'])
+
+@app.route("/user/container/add", endpoint='user.container.add', methods=['GET', 'POST'])
 def user_container_add():
     if is_login():
         if request.method == 'GET':
@@ -43,26 +45,29 @@ def user_container_add():
             workspace = "/home/%s/" % session['user_name']
             devices = [0,1]
             # run it
-            container = docker().run(detach=True,
-                                     image=image_tag,
-                                     name = name,
-                                     ports_dict={},
-                                     ports_list = ports,
-                                     volumes={workspace:'/root/workspace','/home/wjyong/data':'/home/data'},
-                                     devices=devices,)
-            if not container:
-                flash('Failed to create a container. Please check the input and try again.')
-            else:
+            try:
+                container = docker().run(detach=True,
+                                image=image_tag,
+                                name=name,
+                                ports_dict={},
+                                ports_list=ports,
+                                volumes={workspace:'/root/workspace','/home/wjyong/data':'/home/data'},
+                                devices=devices,)
                 db().containers.save({
-                        'container_id':container['Id'],
-                        'user':session['user_name'],
-                        'gpu':devices,
-                        'max_disk':20020,
-                        'max_memory':3000})
+                                'container_id':container['Id'],
+                                'user':session['user_name'],
+                                'gpu':devices,
+                                'max_disk':20020,
+                                'max_memory':3000})
+                flash('Container created.')
+            except Exception as e:
+                flash('Failed to create a container. Please check the input and try again.')
+
             return redirect(url_for('user.container'))
     else:
         flash('Invalid login. Login again.')
         return redrect(url_for('index'));
+
 @app.route("/user/container/del", endpoint='user.container.del', methods=['GET'])
 def user_container_del():
     if is_login():
@@ -76,6 +81,7 @@ def user_container_del():
     else:
         flash('Invalid login. Login again.')
         return redrect(url_for('index'));
+
 @app.route("/user/container/stop", endpoint='user.container.stop', methods=['GET'])
 def user_container_stop():
     if is_login():
@@ -88,6 +94,7 @@ def user_container_stop():
     else:
         flash('Invalid login. Login again.')
         return redrect(url_for('index'));
+
 @app.route("/user/container/start", endpoint='user.container.start', methods=['GET'])
 def user_container_start():
     if is_login():

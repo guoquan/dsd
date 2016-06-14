@@ -1,4 +1,4 @@
-#content, #footer, #content *, #footer * {
+#content, #footer {
    font-size: 18px;
    /*line-height: 2;*/
 }

@@ -1,11 +1,11 @@
 {% extends "user_base.html" %}
-{% block user_content %}
-<div class='row'>
-    <div class='row'>
-        <h4>container List</h4>
-    </div>
+
+{% block panel_content %}
+<!-- user-container -->
+<div>
+    <h1 class="page-header">Containers</h1>
     {% if container_lst %}
-    <div class='row'>
+    <div class="table-responsive">
         <table class="table table-bordered table-hover">
             <thead>
                 <tr>
@@ -42,9 +42,8 @@
         </table>
     </div>
     {% else %}
-    <div class='row'>
-        <h3> none container existed</h3>
-    </div>
+    <p>No container exist. You can create one <a href="{{ url_for('user.container.add') }}">here</a>!</p>
     {% endif %}
 </div>
-{% endblock %}
+<!-- end user-container -->
+{% endblock panel_content %}

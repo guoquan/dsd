@@ -1,23 +1,33 @@
 {% extends "user_base.html" %}
-{% block user_content %}
-<div class='row' >
-    <form class="form" action="{{ url_for('user_container_add') }}" method="POST">
-        <div class="form-group">
-            <label for="name" class="control-label">name:</label>
-            <input type="text" id="name" name="name" placeholder="name">
-        </div>
-        <div class="form-group">
-            <label for="image" class="control-label">image:</label>
-            <select id="image" name="image" placeholder="image">
-                <option>image</option>
-                {% for image in image_lst%}
-                <option>{{image['RepoTags']}}</option>
-                {% endfor %}
-            </select>
-        </div>
 
-        <button type="submit" class="btn btn-primary">Add</button>
+{% block panel_content %}
+<!-- user-container-add -->
+<div>
+    <h1 class="page-header">Add Container</h1>
+    <form class="form-horizontal" action="{{ url_for('user.container.add') }}" method="post">
+        <div class="form-group">
+            <label for="name" class="col-sm-2 control-label">Name</label>
+            <div class="col-sm-10">
+                <input class="form-control" id="name" name="name" placeholder="Container's Name">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="image" class="col-sm-2 control-label">Image</label>
+            <div class="col-sm-10">
+                <select class="form-control" id="image" name="image">
+                    <option disabled>Choose an Image</option>
+                    {% for image in image_lst%}
+                    <option>{{image['RepoTags']}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" class="btn btn-primary">Add</button>
+            </div>
+        </div>
     </form>
 </div>
-
-{% endblock %}
+<!-- end user-container-add -->
+{% endblock panel_content %}
