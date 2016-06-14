@@ -4,8 +4,13 @@ from dsd.ui.web.utils import *
 
 @app.route("/manage", endpoint='manage.index', methods=['GET'])
 def index():
-    return render_template('manage_main.html')
-@app.route("/manage/user", methods=['GET'])
+    if is_admin():
+        return render_template('manage_main.html')
+    else:
+        flash('Invalid login. Login again.')
+        return redrect(url_for('index'));
+
+@app.route("/manage/user", endpoint='manage.user', methods=['GET'])
 def manage_user():
     if is_admin():
         user_lst = list(db().users.find())
@@ -14,7 +19,7 @@ def manage_user():
         flash('Invalid login. Login again.')
         return redrect(url_for('index'));
 
-@app.route('/manage/user/add', methods=['GET', 'POST'])
+@app.route('/manage/user/add', endpoint='manage.user.add', methods=['GET', 'POST'])
 def manage_user_add():
     if is_admin():
         # create user
@@ -38,7 +43,7 @@ def manage_user_add():
         flash('Invalid login. Login again.')
         return redrect(url_for('index'))
 
-@app.route('/manage/user/remove', methods=['POST'])
+@app.route('/manage/user/remove', endpoint='manage.user.remove', methods=['POST'])
 def manage_user_remove():
     if is_admin():
         # TODO implement user remove
@@ -48,16 +53,16 @@ def manage_user_remove():
         flash('Invalid login. Login again.')
         return redrect(url_for('index'))
 
- 
-@app.route("/manage/gpu", methods=['GET'])
+
+@app.route("/manage/gpu", endpoint='manage.gpu', methods=['GET'])
 def manage_gpu():
     if is_admin():
-        user_lst = list(db().users.find())
-        print user_lst
-        return render_template('manage_user.html', user_lst=user_lst)
+        container_lst = list(db().containers.find())
+        return render_template('manage_gpu.html', container_lst=container_lst)
     else:
         flash('Invalid login. Login again.')
         return redrect(url_for('index'));
+
 @app.route("/manage/image", endpoint='manage.image', methods=['GET'])
 def manage_image():
     if is_admin():
@@ -67,9 +72,10 @@ def manage_image():
     else:
         flash('Invalid login. Login again.')
         return redrect(url_for('index'));
-@app.route("/manage/image/del", endpoint='manage.image.del', methods=['GET'])
-def manage_image_del():
-    if is_login():
+
+@app.route("/manage/image/remove", endpoint='manage.image.remove', methods=['GET'])
+def manage_image_remove():
+    if is_admin():
         image = request.args.get('id')
         flag = docker().rmi(image=image)
         if flag is None:
@@ -79,6 +85,7 @@ def manage_image_del():
     else:
         flash('Invalid login. Login again.')
         return redrect(url_for('index'));
+
 @app.route("/manage/container", methods=['GET'])
 def manage_container():
     if is_admin():

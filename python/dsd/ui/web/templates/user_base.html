@@ -1,7 +1,8 @@
 {% extends "base-panel.html" %}
+{% import 'macros.html' as M %}
 
 {% block panel_sidebar_control %}
-{% import 'macros.html' as M %}
+{{ super() }}
 <ul class="nav nav-stacked">
     {{ M.sidebar_li('Dashboard', url_for('user.index')) }}
     {{ M.sidebar_li('Container', url_for('user.container')) }}

@@ -68,8 +68,8 @@ def user_container_add():
         flash('Invalid login. Login again.')
         return redrect(url_for('index'));
 
-@app.route("/user/container/del", endpoint='user.container.del', methods=['GET'])
-def user_container_del():
+@app.route("/user/container/remove", endpoint='user.container.remove', methods=['GET'])
+def user_container_remove():
     if is_login():
         container = request.args.get('id')
         flag = docker().rm(container=container)
