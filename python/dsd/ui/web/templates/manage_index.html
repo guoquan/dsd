@@ -1,8 +1,8 @@
-{% extends "user_base.html" %}
+{% extends "manage_base.html" %}
 
 {% block panel_content %}
 {{ super() }}
-<!-- user dashboard -->
+<!-- manage dashboard -->
 <div>
     <h1 class="page-header">Dashboard</h1>
     <div class="row">
@@ -17,6 +17,33 @@
                     <li class="list-group-item">Password is not safe.</li>
                 </ul>
                 <div class="panel-footer"><a href="#">Details &raquo;</a></div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">Users</div>
+                <div class="panel-body">
+                    <p>Status of users.</p>
+                </div>
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>type</th>
+                            <th>Memory-Usage</th>
+                            <th>Volatile</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>K20</td>
+                            <td>300/2000</td>
+                            <td>80%</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="panel-footer"><a href="{{ url_for('manage.user') }}">Details &raquo;</a></div>
             </div>
         </div>
         <div class="col-md-6">
@@ -43,7 +70,34 @@
                         </tr>
                     </tbody>
                 </table>
-                <div class="panel-footer"><a href="{{ url_for('user.container') }}">Details &raquo;</a></div>
+                <div class="panel-footer"><a href="{{ url_for('manage.container') }}">Details &raquo;</a></div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">Images</div>
+                <div class="panel-body">
+                    <p>Status of the images.</p>
+                </div>
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>type</th>
+                            <th>Memory-Usage</th>
+                            <th>Volatile</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>K20</td>
+                            <td>300/2000</td>
+                            <td>80%</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="panel-footer"><a href="{{ url_for('manage.image') }}">Details &raquo;</a></div>
             </div>
         </div>
         <div class="col-md-6">
@@ -76,10 +130,10 @@
                         </tr>
                     </tbody>
                 </table>
-                <div class="panel-footer"><a href="{{ url_for('user.container') }}">Details &raquo;</a></div>
+                <div class="panel-footer"><a href="{{ url_for('manage.gpu') }}">Details &raquo;</a></div>
             </div>
         </div>
     </div>
 </div>
-<!-- end user dashboard -->
+<!-- end manage dashboard -->
 {% endblock panel_content %}

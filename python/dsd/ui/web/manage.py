@@ -5,10 +5,10 @@ from dsd.ui.web.utils import *
 @app.route("/manage", endpoint='manage.index', methods=['GET'])
 def index():
     if is_admin():
-        return render_template('manage_main.html')
+        return render_template('manage_index.html')
     else:
         flash('Invalid login. Login again.')
-        return redrect(url_for('index'));
+        return redirect(url_for('index'));
 
 @app.route("/manage/user", endpoint='manage.user', methods=['GET'])
 def manage_user():
@@ -17,7 +17,7 @@ def manage_user():
         return render_template('manage_user.html', user_lst=user_lst)
     else:
         flash('Invalid login. Login again.')
-        return redrect(url_for('index'));
+        return redirect(url_for('index'));
 
 @app.route('/manage/user/add', endpoint='manage.user.add', methods=['GET', 'POST'])
 def manage_user_add():
@@ -41,7 +41,7 @@ def manage_user_add():
             return redirect(url_for('manage_user'))
     else:
         flash('Invalid login. Login again.')
-        return redrect(url_for('index'))
+        return redirect(url_for('index'))
 
 @app.route('/manage/user/remove', endpoint='manage.user.remove', methods=['POST'])
 def manage_user_remove():
@@ -51,17 +51,17 @@ def manage_user_remove():
         return redirect(url_for('manage_user'))
     else:
         flash('Invalid login. Login again.')
-        return redrect(url_for('index'))
+        return redirect(url_for('index'))
 
 
 @app.route("/manage/gpu", endpoint='manage.gpu', methods=['GET'])
 def manage_gpu():
     if is_admin():
-        container_lst = list(db().containers.find())
-        return render_template('manage_gpu.html', container_lst=container_lst)
+        gpu_lst = nvd().gpuInfo()
+        return render_template('manage_gpu.html', gpu_lst=gpu_lst)
     else:
         flash('Invalid login. Login again.')
-        return redrect(url_for('index'));
+        return redirect(url_for('index'));
 
 @app.route("/manage/image", endpoint='manage.image', methods=['GET'])
 def manage_image():
@@ -71,7 +71,7 @@ def manage_image():
         return render_template('manage_image.html', image_lst=image_lst)
     else:
         flash('Invalid login. Login again.')
-        return redrect(url_for('index'));
+        return redirect(url_for('index'));
 
 @app.route("/manage/image/remove", endpoint='manage.image.remove', methods=['GET'])
 def manage_image_remove():
@@ -84,9 +84,9 @@ def manage_image_remove():
             return redirect(url_for('manage.image'))
     else:
         flash('Invalid login. Login again.')
-        return redrect(url_for('index'));
+        return redirect(url_for('index'));
 
-@app.route("/manage/container", methods=['GET'])
+@app.route("/manage/container", endpoint='manage.container', methods=['GET'])
 def manage_container():
     if is_admin():
         container_lst = []
@@ -103,8 +103,9 @@ def manage_container():
         return render_template('manage_container.html', container_lst=container_lst)
     else:
         flash('Invalid login. Login again.')
-        return redrect(url_for('index'));
-@app.route("/manage/container/add", methods=['GET'])
+        return redirect(url_for('index'));
+
+@app.route("/manage/container/add", endpoint='manage.container.add', methods=['GET'])
 def manage_container_add():
     if is_admin():
         user_lst = list(db().users.find())
@@ -122,4 +123,4 @@ def manage_container_add():
         return render_template('manage_container.html', container_lst=container_lst)
     else:
         flash('Invalid login. Login again.')
-        return redrect(url_for('index'));
+        return redirect(url_for('index'));

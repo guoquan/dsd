@@ -1,18 +1,18 @@
 {% extends "base-panel.html" %}
 {% import 'macros.html' as M %}
 
-{% block header %}
+{% block header_controls %}
 {{ super() }}
-<div class="navbar-collapse collapse">
-    <ul class="nav navbar-nav navbar-right">
-        {{ M.sidebar_li('System Settings') }}
-    </ul>
-</div>
-<!--/.navbar-collapse -->
-{% endblock header %}
+<!-- admin header controls !-->
+<ul class="nav navbar-nav navbar-right">
+    {{ M.sidebar_li('System Settings') }}
+</ul>
+<!-- end admin header controls !-->
+{% endblock header_controls %}
 
 {% block panel_sidebar_control %}
 {{ super() }}
+<!-- admin sidebar controls !-->
 <ul class="nav nav-stacked">
     {{ M.sidebar_li('Dashboard', url_for('manage.index')) }}
     {{ M.sidebar_li('GPUs', url_for('manage.gpu')) }}
@@ -26,4 +26,5 @@
 <ul class="nav nav-stacked">
     {{ M.sidebar_li('System Settings') }}
 </ul>
+<!-- end admin sidebar controls !-->
 {% endblock panel_sidebar_control %}

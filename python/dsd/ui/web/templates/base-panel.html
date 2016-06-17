@@ -6,19 +6,19 @@
 <link href="{{url_for('static', filename='assets/css/panel.css')}}" type="text/css" rel="stylesheet">
 {% endblock head_css %}
 
-{% block header %}
+{% block header_controls %}
 {{ super() }}
-<div class="navbar-collapse collapse">
-    <ul class="nav navbar-nav navbar-right">
-        {{ M.sidebar_li(session['user_name'], bs_icon='user') }}
-        {{ M.sidebar_li('Logout', url_for('logout'), bs_icon='log-out') }}
-    </ul>
-</div>
-<!--/.navbar-collapse -->
-{% endblock header %}
+<!-- common header controls !-->
+<ul class="nav navbar-nav navbar-right">
+    {{ M.sidebar_li(session['user_name'], bs_icon='user') }}
+    {{ M.sidebar_li('Logout', url_for('logout'), bs_icon='log-out') }}
+</ul>
+<!-- end common header controls !-->
+{% endblock header_controls %}
 
 {% block content %}
 {{ super() }}
+<!-- panel framework !-->
 <div class="container-fluid">
     <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
@@ -41,4 +41,5 @@
         </div>
     </div>
 </div>
+<!-- end panel framework !-->
 {% endblock content %}

@@ -50,6 +50,10 @@
                     </button>
                     <a class="navbar-brand" href="{{ url_for('index') }}">DSD - Data Science Docker</a>
                 </div>
+                <div class="navbar-collapse collapse">
+                    {% block header_controls %}
+                    {% endblock header_controls %}
+                </div>
                 {% endblock header %}
                 <!-- endblock header -->
             </div>

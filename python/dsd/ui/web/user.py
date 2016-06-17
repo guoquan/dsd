@@ -28,7 +28,7 @@ def user_container():
         return render_template('user_container.html', container_lst=container_lst)
     else:
         flash('Invalid login. Login again.')
-        return redrect(url_for('index'));
+        return redirect(url_for('index'));
 
 @app.route("/user/container/add", endpoint='user.container.add', methods=['GET', 'POST'])
 def user_container_add():
@@ -66,7 +66,7 @@ def user_container_add():
             return redirect(url_for('user.container'))
     else:
         flash('Invalid login. Login again.')
-        return redrect(url_for('index'));
+        return redirect(url_for('index'));
 
 @app.route("/user/container/remove", endpoint='user.container.remove', methods=['GET'])
 def user_container_remove():
@@ -80,7 +80,7 @@ def user_container_remove():
             return redirect(url_for('user.container'))
     else:
         flash('Invalid login. Login again.')
-        return redrect(url_for('index'));
+        return redirect(url_for('index'));
 
 @app.route("/user/container/stop", endpoint='user.container.stop', methods=['GET'])
 def user_container_stop():
@@ -93,7 +93,7 @@ def user_container_stop():
             return redirect(url_for('user.container'))
     else:
         flash('Invalid login. Login again.')
-        return redrect(url_for('index'));
+        return redirect(url_for('index'));
 
 @app.route("/user/container/start", endpoint='user.container.start', methods=['GET'])
 def user_container_start():
@@ -106,4 +106,4 @@ def user_container_start():
             return redirect(url_for('user.container'))
     else:
         flash('Invalid login. Login again.')
-        return redrect(url_for('index'));
+        return redirect(url_for('index'));

@@ -28,7 +28,7 @@ def image():
                                authorized_image_lst=authorized_image_lst)
     else:
         flash('Invalid login. Login again.')
-        return redrect(url_for('index'));
+        return redirect(url_for('index'));
 @app.route("/image/del", endpoint='image.del', methods=['GET'])
 def image_del():
     if is_admin():
@@ -40,7 +40,7 @@ def image_del():
             return redirect(url_for('image'))
     else:
         flash('Invalid login. Login again.')
-        return redrect(url_for('index'));
+        return redirect(url_for('index'));
 
 @app.route("/image/authorize", endpoint='image.authorize', methods=['GET', 'POST'])
 def image_authorize():
@@ -62,7 +62,7 @@ def image_authorize():
             return redirect(url_for('image'))
     else:
         flash('Invalid login. Login again.')
-        return redrect(url_for('index'));
+        return redirect(url_for('index'));
 @app.route("/image/revoke", endpoint='image.revoke', methods=['GET'])
 def image_revoke():
     if is_admin():
@@ -71,4 +71,4 @@ def image_revoke():
         return redirect(url_for('image'))
     else:
         flash('Invalid login. Login again.')
-        return redrect(url_for('index'));
+        return redirect(url_for('index'));

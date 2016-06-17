@@ -3,6 +3,7 @@
 
 {% block panel_sidebar_control %}
 {{ super() }}
+<!-- user sidebar controls !-->
 <ul class="nav nav-stacked">
     {{ M.sidebar_li('Dashboard', url_for('user.index')) }}
     {{ M.sidebar_li('Container', url_for('user.container')) }}
@@ -10,4 +11,5 @@
 <ul class="nav nav-stacked">
     {{ M.sidebar_li('Add Container', url_for('user.container.add')) }}
 </ul>
+<!-- end user sidebar controls !-->
 {% endblock panel_sidebar_control %}

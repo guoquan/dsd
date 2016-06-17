@@ -33,7 +33,7 @@ def login():
             return render_template('login.html',error=error)
     else:
         flash('Invalid login. Login again.')
-        return redrect(url_for('index'))
+        return redirect(url_for('index'))
 
 @app.route('/logout')
 def logout():
