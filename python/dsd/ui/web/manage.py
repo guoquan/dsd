@@ -1,6 +1,7 @@
 from flask import Flask, request, session, redirect, url_for, abort, render_template, flash
 from dsd.ui.web import app
 from dsd.ui.web.utils import *
+import requests
 
 @app.route("/manage", endpoint='manage.index', methods=['GET'])
 def index():
@@ -57,7 +58,11 @@ def manage_user_remove():
 @app.route("/manage/gpu", endpoint='manage.gpu', methods=['GET'])
 def manage_gpu():
     if is_admin():
-        gpu_lst = nvd().gpuInfo()
+        try:
+            gpu_lst = nvd().gpuInfo()
+        except requests.ConnectionError as ce:
+            gpu_lst = []
+            pass
         return render_template('manage_gpu.html', gpu_lst=gpu_lst)
     else:
         flash('Invalid login. Login again.')
