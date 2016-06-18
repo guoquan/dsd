@@ -7,13 +7,46 @@
     <h1 class="page-header">Images</h1>
     <div class="panel panel-info">
         <div class="panel-heading">Authorized Images</div>
-
+        {% if authorized_image_lst %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <legend>authorized image List</legend>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>operation</th>
+                        {% for image_key in authorized_image_lst[0].keys() %}
+                        {% if image_key != 'id' %}
+                        <th>{{image_key}}</th>
+                        {% endif %}
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for image in authorized_image_lst %}
+                    <tr>
+                        <td>{{ loop.index0 + 1 }}</td>
+                        <td>
+                            <a href="/image/revoke?id={{image['id']}}">revoke</a>
+                        </td>
+                        {% for image_key in image.keys() %}
+                        {% if image_key != 'id' %}
+                        <td>{{image[image_key]}}</td>
+                        {% endif %}
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
     </div>
     <div class="panel panel-default">
         <div class="panel-heading">All Images</div>
         <div class="panel-body">
             <p>Add authorized image from the list below.</p>
         </div>
+        {% if image_lst %}
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
@@ -36,80 +69,48 @@
                         {% for image_key in image.keys() %}
                         <td>{{image[image_key]}}</td>
                         {% endfor %}
-                        {% endfor %}
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
-    </div>
-    <div class='row'>
-        <div class='col-md-4 text-left'>
-            <div class='row'>
-                {% if unauthorized_image_lst %}
-                <table class="table table-bordered table-hover">
-                    <legend>unauthorized image List</legend>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>operation</th>
-                            {% for image_key in unauthorized_image_lst[0].keys() %}
-                            {% if image_key != 'id' %}
-                            <th>{{image_key}}</th>
-                            {% endif %}
-                            {% endfor %}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for image in unauthorized_image_lst %}
-                        <tr>
-                            <td>{{ loop.index0 + 1 }}</td>
-                            <td>
-                                <a href="/image/authorize?id={{image['id']}}">authorize</a>
-                            </td>
-                            {% for image_key in image.keys() %}
-                            {% if image_key != 'id' %}
-                            <td>{{image[image_key]}}</td>
-                            {% endif %}
-                            {% endfor %}
-                            {% endfor %}
-                    </tbody>
-                </table>
-                {% endif %}
-            </div>
+        {% endif %}
+        {% if image_dict %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>repository</th>
+                        <th>tags</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- % for repo, images in image_dict.iteritems() % !-->
+                    {% for repo, images in image_lst|groupby('repository') %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ repo }}</td>
+                        <td>
+                        {% for image in images %}
+                        <button class="btn btn-default" data-toggle="collapse" data-target="#image_{{ repo }}_{{ image['tag'] }}">
+                            {{ image['tag'] }}
+                        </button>
+                        {% endfor %}
+                        </td>
+                    </tr>
+                    {% for image in images %}
+                    <tr id="image_{{ repo }}_{{ image['tag'] }}" class="collapse">
+                        <td colspan="3">
+                            {{ image['tag'] }} | {{ image['created']|timestamp2datetime }} | {{ image['size'] }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-        <div class='col-md-4 col-md-offset-1 text-left'>
-            <div class='row'>
-                {% if authorized_image_lst %}
-                <table class="table table-bordered table-hover">
-                    <legend>authorized image List</legend>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>operation</th>
-                            {% for image_key in authorized_image_lst[0].keys() %}
-                            {% if image_key != 'id' %}
-                            <th>{{image_key}}</th>
-                            {% endif %}
-                            {% endfor %}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for image in authorized_image_lst %}
-                        <tr>
-                            <td>{{ loop.index0 + 1 }}</td>
-                            <td>
-                                <a href="/image/revoke?id={{image['id']}}">revoke</a>
-                            </td>
-                            {% for image_key in image.keys() %}
-                            {% if image_key != 'id' %}
-                            <td>{{image[image_key]}}</td>
-                            {% endif %}
-                            {% endfor %}
-                            {% endfor %}
-                    </tbody>
-                </table>
-                {% endif %}
-            </div>
-        </div>
+        {% endif %}
     </div>
 </div>
 <!-- end manage images -->

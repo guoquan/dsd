@@ -1,31 +1,32 @@
 from flask import Flask, request, session, redirect, url_for, abort, render_template, flash
 from dsd.ui.web import app
 from dsd.ui.web.utils import *
+import itertools
+import datetime
+
+def groupby(data, keyfunc):
+    data = sorted(data, key=keyfunc)
+    keys = []
+    groups = []
+    for k, g in itertools.groupby(data, keyfunc):
+        keys.append(k)
+        groups.append(list(g))      # Store group iterator as a list
+    return dict(zip(keys, groups))
+
+@app.template_filter('timestamp2datetime')
+def jinja2_filter_timestamp2datetime(timestamp):
+    return str(datetime.datetime.fromtimestamp(timestamp))
 
 @app.route("/manage/image", endpoint='manage.image', methods=['GET'])
 def manage_image():
     if is_admin():
-        unauthorized_image_lst = []
-        authorized_image_lst = []
-        image_lst = docker().images()
-        db_image_lst = list(db().images.find())
-        for image in image_lst:
-            unauthorized = True
-            if len(db_image_lst) > 0:
-                for db_image in db_image_lst:
-                    if image['id'] == db_image['id']:
-                        unauthorized = False
-                        authorized_image = {'id':image['id'], 'RepoTags':image['RepoTags'],
-                                       'ports':db_image['ports'],'description':db_image['description']}
-                        authorized_image_lst.append(authorized_image)
-                        break
-            if unauthorized:
-                unauthorized_image = {'id':image['id'], 'RepoTags':image['RepoTags']}
-                unauthorized_image_lst.append(unauthorized_image)
-
-        return render_template('manage_image.html', image_lst=image_lst,
-                               unauthorized_image_lst=unauthorized_image_lst,
-                               authorized_image_lst=authorized_image_lst)
+        all_images = docker().images()
+        all_images_d = groupby(all_images, lambda image: image['repository'] if 'repository' in image else None)
+        authorized_images = list(db().images.find())
+        return render_template('manage_image.html',
+                            image_lst=all_images,
+                            image_dict=all_images_d,
+                            authorized_image_lst=authorized_images)
     else:
         flash('Invalid login. Login again.')
         return redirect(url_for('index'))
