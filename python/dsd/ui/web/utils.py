@@ -2,28 +2,34 @@ from flask import session
 import pymongo
 from dsd.sys.docker.pydocker import PyDocker as Docker
 from dsd.sys.docker.nvdocker import NvDocker as NVD
+import hashlib, binascii
 import socket
 
-def db():
-    client = pymongo.MongoClient()
-    db = client.db_dsd
-    return db
 
-def encrypt_password(password):#TBC
-    return password
+def getDB():
+    client = pymongo.MongoClient()
+    db = client.dsd
+    return db
+db = getDB()
+
+STATIC_SALT = 'jafdNDxe5^M^Zk4v'
+def encrypt_password(password, username, salt):
+    salt = STATIC_SALT + username + password + salt
+    dk = hashlib.pbkdf2_hmac('sha256', password, salt, 100000)
+    return binascii.hexlify(dk)
 
 def check_login(username, password):
-    cursor = db().users.find({'Username':username})
-    if cursor.count() == 0:
-        return False, 'No such user!', None
-    elif encrypt_password(password) == cursor[0]['Password']:
-        return True, 'Login succeed!', cursor[0]['User_Type']
+    user = db.users.find_one({'username':username})
+    if not user:
+        return None, 'No such user!'
+    elif encrypt_password(password, username, user['salt']) == user['password']:
+        return user, 'Login succeed!'
     else:
-        return False, 'Password mismatch!', None
+        return None, 'Password mismatch!'
 
 def is_login():
     return 'Is_Login' in session and session['Is_Login'] == '1'
-            
+
 def is_admin():
     return is_login() and session['User_Type'] == 'Admin'
 
@@ -44,4 +50,3 @@ def nvd():
         base_url = 'http://localhost:3476'
 
     return NVD(base_url=base_url)
-    

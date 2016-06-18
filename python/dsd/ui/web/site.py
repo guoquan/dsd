@@ -20,24 +20,23 @@ def login():
     elif request.method == 'POST':
         username = request.form.get('Username')
         password = request.form.get('Password')
-        state, error, user_type = check_login(username, password)
-        if state:
-            session['Is_Login'] = '1'
-            session['user_name'] = username
-            session['User_Type'] = user_type
+        user, error = check_login(username, password)
+        if user:
+            session['is_login'] = True
+            session['user'] = user
             return redirect(url_for('index'))
         else:
-            session.pop('Is_Login', None)
-            session.pop('User_Type', None)
+            session.pop('is_login', None)
+            session.pop('user', None)
             flash('Invalid login. Login again.')
-            return render_template('login.html',error=error)
+            return render_template('login.html', error=error)
     else:
         flash('Invalid login. Login again.')
         return redirect(url_for('index'))
 
 @app.route('/logout')
 def logout():
-    session.pop('Is_Login', None)
-    session.pop('User_Type', None)
+    session.pop('is_login', None)
+    session.pop('user', None)
     flash('You were logged out')
     return redirect(url_for('index'))
