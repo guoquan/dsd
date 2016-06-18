@@ -1,82 +1,84 @@
 {% extends "manage_base.html" %}
 
+{% block head_css %}
+{{ super() }}
+<style>
+.collapse-inline.in {
+    display: inline-block;
+}
+</style>
+{% endblock head_css %}
+
 {% block panel_content %}
 {{ super() }}
 <!-- manage GPUs -->
 <div>
     <h1 class="page-header">GPUs</h1>
-    {% if gpu_lst %}
-    <div class="table-responsive">
-        <table class="table table-bordered table-hover">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Model</th>
-                    <th>Path</th>
-                    <th>Memory</th>
-                    <th>Utilization GPU</th>
-                    <th>Utilization Memory</th>
-                    <th>Temperature</th>
-                    <th>Operations</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for gpu in gpu_lst %}
-                <tr>
-                    <td>{{ loop.index0 + 1 }}</td>
-                    <td>{{ gpu["Model"] }}</td>
-                    <td>{{ gpu["Path"] }}</td>
-                    <td>{{ gpu['MemoryUsed'] }} / {{ gpu['MemoryTotal'] }}MB</td>
-                    <td>{{ gpu["UtilizationGpu"] }}</td>
-                    <td>{{ gpu["UtilizationMemory"] }}</td>
-                    <td>{{ gpu["Temperature"] }}</td>
-                    <td>
-                        <span class="btn-group" role="group">
-                            <a class="btn btn-warning btn-sm" href="#" role="button">Stop All</a>
-                            <a class="btn btn-danger btn-sm" href="#" role="button">Kill All</a>
-                        </span>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="8">
-                        Processes:
-                        <ul class="list-group">
-                            {% for proc in gpu['Processes'] %}
-                            <li class="list-group-item">
-                                <span class="dropdown" style="">
-                                    <button class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" type="button">
-                                        Actions
-                                        <span class="caret"></span>
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li class="dropdown-header">DANGEROUS</li>
-                                        <li><a href="#" role="button">Stop</a></li>
-                                        <li><a href="#" role="button">Kill</a></li>
-                                        <li>
-                                            <span class="btn-group" role="group">
-                                                <a class="btn btn-warning btn-sm" href="#" role="button">Stop</a>
-                                                <a class="btn btn-danger btn-sm" href="#" role="button">Kill</a>
-                                            </span>
-                                        </li>
-                                    </ul>
-                                </span>
-                                <span>
-                                    PID: {{ proc['PID'] }} |
-                                    Name: {{ proc['Name'] }} |
-                                    Memory: {{ proc['MemoryUsed'] }} 'MB'
-                                </span>
-                            </li>
-                            {% endfor %}
-                        </ul>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="panel panel-info">
+        <div class="panel-heading"></div>
+        {% if gpu_lst %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Model</th>
+                        <th>Path</th>
+                        <th>Memory</th>
+                        <th>Utilization GPU</th>
+                        <th>Utilization Memory</th>
+                        <th>Temperature</th>
+                        <th>Operations</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for gpu in gpu_lst %}
+                    <tr>
+                        <td>{{ loop.index0 + 1 }}</td>
+                        <td>{{ gpu["Model"] }}</td>
+                        <td>{{ gpu["Path"] }}</td>
+                        <td>{{ gpu['MemoryUsed'] }} / {{ gpu['MemoryTotal'] }}MB</td>
+                        <td>{{ gpu["UtilizationGpu"] }}</td>
+                        <td>{{ gpu["UtilizationMemory"] }}</td>
+                        <td>{{ gpu["Temperature"] }}</td>
+                        <td>
+                            <span class="btn-group" role="group">
+                                <a class="btn btn-warning btn-sm" href="#" role="button">Stop All</a>
+                                <a class="btn btn-danger btn-sm" href="#" role="button">Kill All</a>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="8">
+                            Processes:
+                            <ul class="list-group">
+                                {% for proc in gpu['Processes'] %}
+                                <li class="list-group-item">
+                                    <span>
+                                        <button class="btn btn-default" data-toggle="collapse" data-target="#action_{{ proc['PID'] }}">Actions</button>
+                                        <span id="action_{{ proc['PID'] }}" class="collapse collapse-inline"><span class="btn-group" role="group">
+                                            <a class="btn btn-warning btn-sm" href="#" role="button">Stop</a>
+                                            <a class="btn btn-danger btn-sm" href="#" role="button">Kill</a>
+                                        </span></span>
+                                    </span>
+                                    <span>
+                                        PID: {{ proc['PID'] }} |
+                                        Name: {{ proc['Name'] }} |
+                                        Memory: {{ proc['MemoryUsed'] }} 'MB'
+                                    </span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p>No GPU exist.</p>
+        {% endif %}
     </div>
-    {% else %}
-    <p>No GPU exist.</p>
-    {% endif %}
 </div>
 <!-- manage GPUs -->
 {% endblock panel_content %}

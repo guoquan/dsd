@@ -1,6 +1,46 @@
 {% extends "manage_base.html" %}
-{% block manage_content %}
-<div class='row'>
+
+{% block panel_content %}
+{{ super() }}
+<!-- manage images -->
+<div>
+    <h1 class="page-header">Images</h1>
+    <div class="panel panel-info">
+        <div class="panel-heading">Authorized Images</div>
+
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">All Images</div>
+        <div class="panel-body">
+            <p>Add authorized image from the list below.</p>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>operation</th>
+                        {% for image_key in image_lst[0].keys() %}
+                        <th>{{image_key}}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for image in image_lst %}
+                    <tr>
+                        <td>{{ loop.index0 + 1 }}</td>
+                        <td>
+                            <a href="/manage/image/del?id={{image['id']}}">del</a>
+                            <!--<a href="{{ url_for('logout') }}">edit</a>-->
+                        </td>
+                        {% for image_key in image.keys() %}
+                        <td>{{image[image_key]}}</td>
+                        {% endfor %}
+                        {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
     <div class='row'>
         <div class='col-md-4 text-left'>
             <div class='row'>
@@ -71,32 +111,6 @@
             </div>
         </div>
     </div>
-    <div class='row'>
-        <table class="table table-bordered table-hover">
-            <legend>Image List</legend>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>operation</th>
-                    {% for image_key in image_lst[0].keys() %}
-                    <th>{{image_key}}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for image in image_lst %}
-                <tr>
-                    <td>{{ loop.index0 + 1 }}</td>
-                    <td>
-                        <a href="/manage/image/del?id={{image['id']}}">del</a>
-                        <!--<a href="{{ url_for('logout') }}">edit</a>-->
-                    </td>
-                    {% for image_key in image.keys() %}
-                    <td>{{image[image_key]}}</td>
-                    {% endfor %}
-                    {% endfor %}
-            </tbody>
-        </table>
-    </div>
 </div>
-{% endblock %}
+<!-- end manage images -->
+{% endblock panel_content %}

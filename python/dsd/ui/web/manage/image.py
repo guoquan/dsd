@@ -2,8 +2,8 @@ from flask import Flask, request, session, redirect, url_for, abort, render_temp
 from dsd.ui.web import app
 from dsd.ui.web.utils import *
 
-@app.route("/image", endpoint='image', methods=['GET'])
-def image():
+@app.route("/manage/image", endpoint='manage.image', methods=['GET'])
+def manage_image():
     if is_admin():
         unauthorized_image_lst = []
         authorized_image_lst = []
@@ -22,15 +22,16 @@ def image():
             if unauthorized:
                 unauthorized_image = {'id':image['id'], 'RepoTags':image['RepoTags']}
                 unauthorized_image_lst.append(unauthorized_image)
-                    
+
         return render_template('manage_image.html', image_lst=image_lst,
                                unauthorized_image_lst=unauthorized_image_lst,
                                authorized_image_lst=authorized_image_lst)
     else:
         flash('Invalid login. Login again.')
-        return redirect(url_for('index'));
-@app.route("/image/del", endpoint='image.del', methods=['GET'])
-def image_del():
+        return redirect(url_for('index'))
+
+@app.route("/manage/image/remove", endpoint='manage.image.remove', methods=['GET'])
+def manage_image_remove():
     if is_admin():
         image = request.args.get('id')
         flag = docker().rmi(image=image)
@@ -40,10 +41,10 @@ def image_del():
             return redirect(url_for('image'))
     else:
         flash('Invalid login. Login again.')
-        return redirect(url_for('index'));
+        return redirect(url_for('index'))
 
-@app.route("/image/authorize", endpoint='image.authorize', methods=['GET', 'POST'])
-def image_authorize():
+@app.route("/manage/image/authorize", endpoint='manage.image.authorize', methods=['GET', 'POST'])
+def manage_image_authorize():
     if is_admin():
         if request.method == 'GET':
             image_id = request.args.get('id')
@@ -62,13 +63,14 @@ def image_authorize():
             return redirect(url_for('image'))
     else:
         flash('Invalid login. Login again.')
-        return redirect(url_for('index'));
-@app.route("/image/revoke", endpoint='image.revoke', methods=['GET'])
-def image_revoke():
+        return redirect(url_for('index'))
+
+@app.route("/manage/image/revoke", endpoint='manage.image.revoke', methods=['GET'])
+def manage_image_revoke():
     if is_admin():
         image_id = request.args.get('id')
         db().images.remove({'id':image_id})
         return redirect(url_for('image'))
     else:
         flash('Invalid login. Login again.')
-        return redirect(url_for('index'));
+        return redirect(url_for('index'))

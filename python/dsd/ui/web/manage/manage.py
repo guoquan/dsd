@@ -68,29 +68,6 @@ def manage_gpu():
         flash('Invalid login. Login again.')
         return redirect(url_for('index'));
 
-@app.route("/manage/image", endpoint='manage.image', methods=['GET'])
-def manage_image():
-    if is_admin():
-        image_lst = docker().images()
-        #container_lst = list(db().containers.find())
-        return render_template('manage_image.html', image_lst=image_lst)
-    else:
-        flash('Invalid login. Login again.')
-        return redirect(url_for('index'));
-
-@app.route("/manage/image/remove", endpoint='manage.image.remove', methods=['GET'])
-def manage_image_remove():
-    if is_admin():
-        image = request.args.get('id')
-        flag = docker().rmi(image=image)
-        if flag is None:
-            flash('Failed to create a image. Please check the input and try again.')
-        else:
-            return redirect(url_for('manage.image'))
-    else:
-        flash('Invalid login. Login again.')
-        return redirect(url_for('index'));
-
 @app.route("/manage/container", endpoint='manage.container', methods=['GET'])
 def manage_container():
     if is_admin():
