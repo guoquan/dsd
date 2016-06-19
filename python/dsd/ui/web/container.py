@@ -9,8 +9,7 @@ def index():
                                images=docker.images(),
                                containers=docker.ps(all=True))
     else:
-        flash('Invalid login. Login again.')
-        return redirect(url_for('index'))
+        return invalid_login()
 
 @app.route("/container/run", endpoint='container.run', methods=['POST'])
 def run():
@@ -46,5 +45,4 @@ def run():
             flash('Failed to create a container. Please check the input and try again.')
         return redirect(url_for('container.index'))
     else:
-        flash('Invalid login. Login again.')
-        return redirect(url_for('index'))
+        return invalid_login()

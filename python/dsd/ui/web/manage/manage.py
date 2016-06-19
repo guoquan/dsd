@@ -8,8 +8,7 @@ def index():
     if is_admin():
         return render_template('manage_index.html')
     else:
-        flash('Invalid login. Login again.')
-        return redirect(url_for('index'));
+        return invalid_login('Administrators only. Login again.')
 
 @app.route("/manage/user", endpoint='manage.user', methods=['GET'])
 def manage_user():
@@ -17,8 +16,7 @@ def manage_user():
         user_lst = list(db.users.find())
         return render_template('manage_user.html', user_lst=user_lst)
     else:
-        flash('Invalid login. Login again.')
-        return redirect(url_for('index'));
+        return invalid_login('Administrators only. Login again.')
 
 @app.route('/manage/user/add', endpoint='manage.user.add', methods=['GET', 'POST'])
 def manage_user_add():
@@ -41,8 +39,7 @@ def manage_user_add():
             flash('User %s created.' % username)
             return redirect(url_for('manage_user'))
     else:
-        flash('Invalid login. Login again.')
-        return redirect(url_for('index'))
+        return invalid_login('Administrators only. Login again.')
 
 @app.route('/manage/user/remove', endpoint='manage.user.remove', methods=['POST'])
 def manage_user_remove():
@@ -51,9 +48,7 @@ def manage_user_remove():
         flash('Not implemented yet.')
         return redirect(url_for('manage_user'))
     else:
-        flash('Invalid login. Login again.')
-        return redirect(url_for('index'))
-
+        return invalid_login('Administrators only. Login again.')
 
 @app.route("/manage/gpu", endpoint='manage.gpu', methods=['GET'])
 def manage_gpu():
@@ -65,8 +60,7 @@ def manage_gpu():
             pass
         return render_template('manage_gpu.html', gpu_lst=gpu_lst)
     else:
-        flash('Invalid login. Login again.')
-        return redirect(url_for('index'));
+        return invalid_login('Administrators only. Login again.')
 
 @app.route("/manage/container", endpoint='manage.container', methods=['GET'])
 def manage_container():
@@ -84,8 +78,7 @@ def manage_container():
         print container_lst
         return render_template('manage_container.html', container_lst=container_lst)
     else:
-        flash('Invalid login. Login again.')
-        return redirect(url_for('index'));
+        return invalid_login('Administrators only. Login again.')
 
 @app.route("/manage/container/add", endpoint='manage.container.add', methods=['GET'])
 def manage_container_add():
@@ -104,5 +97,4 @@ def manage_container_add():
         print container_lst
         return render_template('manage_container.html', container_lst=container_lst)
     else:
-        flash('Invalid login. Login again.')
-        return redirect(url_for('index'));
+        return invalid_login('Administrators only. Login again.')

@@ -10,7 +10,7 @@
 {{ super() }}
 <!-- common header controls !-->
 <ul class="nav navbar-nav navbar-right">
-    {{ M.sidebar_li(session['user_name'], bs_icon='user') }}
+    {{ M.sidebar_li(session['user']['username'], url_for('profile'), bs_icon='user') }}
     {{ M.sidebar_li('Logout', url_for('logout'), bs_icon='log-out') }}
 </ul>
 <!-- end common header controls !-->
@@ -29,7 +29,7 @@
             {% block panel_sidebar_user %}
             <ul class="nav nav-stacked nav-bottom">
                 {{ M.sidebar_li('Settings', bs_icon='cog') }}
-                {{ M.sidebar_li('Profile', bs_icon='user') }}
+                {{ M.sidebar_li('Profile', url_for('profile'), bs_icon='user') }}
                 {{ M.sidebar_li('Logout', url_for('logout'), bs_icon='log-out') }}
             </ul>
             {% endblock panel_sidebar_user %}

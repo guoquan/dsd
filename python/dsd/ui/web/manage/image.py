@@ -28,8 +28,7 @@ def manage_image():
                             image_dict=all_images_d,
                             authorized_image_lst=authorized_images)
     else:
-        flash('Invalid login. Login again.')
-        return redirect(url_for('index'))
+        return invalid_login('Administrators only. Login again.')
 
 @app.route("/manage/image/remove", endpoint='manage.image.remove', methods=['GET'])
 def manage_image_remove():
@@ -41,8 +40,7 @@ def manage_image_remove():
         else:
             return redirect(url_for('image'))
     else:
-        flash('Invalid login. Login again.')
-        return redirect(url_for('index'))
+        return invalid_login('Administrators only. Login again.')
 
 @app.route("/manage/image/authorize", endpoint='manage.image.authorize', methods=['GET', 'POST'])
 def manage_image_authorize():
@@ -63,8 +61,7 @@ def manage_image_authorize():
             db.images.save({'id':image_id, 'ports':ports, 'RepoTags':RepoTags, 'description':description})
             return redirect(url_for('image'))
     else:
-        flash('Invalid login. Login again.')
-        return redirect(url_for('index'))
+        return invalid_login('Administrators only. Login again.')
 
 @app.route("/manage/image/revoke", endpoint='manage.image.revoke', methods=['GET'])
 def manage_image_revoke():
@@ -73,5 +70,4 @@ def manage_image_revoke():
         db.images.remove({'id':image_id})
         return redirect(url_for('image'))
     else:
-        flash('Invalid login. Login again.')
-        return redirect(url_for('index'))
+        return invalid_login('Administrators only. Login again.')

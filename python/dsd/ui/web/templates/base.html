@@ -104,10 +104,21 @@
 
     <!-- scripts -->
     {% block scripts %}
-    <script src="{{url_for('static', filename='assets/vendor/jquery/jquery-2.2.4.min.js')}}" type="text/javascript" ></script>
-    <script src="{{url_for('static', filename='assets/vendor/bootstrap/js/bootstrap.min.js')}}" type="text/javascript" ></script>
-    <script src="{{url_for('static', filename='assets/vendor/bootstrap/hack/ie10-viewport-bug-workaround.js')}}" type="text/javascript" ></script>
-    <script src="{{url_for('static', filename='assets/js/dsd.js')}}" type="text/javascript" ></script>
+    <script src="{{url_for('static', filename='assets/vendor/jquery/jquery-2.2.4.min.js')}}" type="text/javascript"></script>
+    <script src="{{url_for('static', filename='assets/vendor/bootstrap/js/bootstrap.min.js')}}" type="text/javascript"></script>
+    <script src="{{url_for('static', filename='assets/vendor/bootstrap/hack/ie10-viewport-bug-workaround.js')}}" type="text/javascript"></script>
+    <script src="{{url_for('static', filename='assets/js/dsd.js')}}" type="text/javascript"></script>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <script type="text/javascript">
+        $(function(){
+            $("#flashes").fadeTo(2000, 500).slideUp(500, function(){
+               $("#flashes").collapse();
+            });
+        });
+    </script>
+    {% endif %}
+    {% endwith %}
     {% endblock scripts %}
 </body>
 </html>

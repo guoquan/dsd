@@ -1,4 +1,4 @@
-from flask import Flask, request, session, redirect, url_for, abort, render_template, flash
+from flask import Flask, request, session, redirect, url_for, render_template, flash
 from dsd.ui.web import app
 from dsd.ui.web.utils import *
 
@@ -11,7 +11,7 @@ def user_container():
     if is_login():
         #container_lst = docker.ps(all=True)
         container_lst = []
-        user_container_lst = list(db.containers.find({'user':session['user_name']}))
+        user_container_lst = list(db.containers.find({'user':session['user']['username']}))
         all_containers = docker.ps(all=True)
         for ps_container in all_containers:
             for user_container in user_container_lst:
@@ -27,8 +27,7 @@ def user_container():
                     container_lst.append(container)
         return render_template('user_container.html', container_lst=container_lst)
     else:
-        flash('Invalid login. Login again.')
-        return redirect(url_for('index'));
+        return invalid_login()
 
 @app.route("/user/container/add", endpoint='user.container.add', methods=['GET', 'POST'])
 def user_container_add():
@@ -42,7 +41,7 @@ def user_container_add():
             ports = img[0]['ports'].split(',')
             ports = [int(port) for port in ports]
             name = request.form['name']
-            workspace = "/home/%s/" % session['user_name']
+            workspace = "/home/%s/" % session['user']['username']
             devices = [0,1]
             # run it
             try:
@@ -55,7 +54,7 @@ def user_container_add():
                                 devices=devices,)
                 db.containers.save({
                                 'container_id':container['Id'],
-                                'user':session['user_name'],
+                                'user':session['user']['username'],
                                 'gpu':devices,
                                 'max_disk':20020,
                                 'max_memory':3000})
@@ -65,8 +64,7 @@ def user_container_add():
 
             return redirect(url_for('user.container'))
     else:
-        flash('Invalid login. Login again.')
-        return redirect(url_for('index'));
+        return invalid_login()
 
 @app.route("/user/container/remove", endpoint='user.container.remove', methods=['GET'])
 def user_container_remove():
@@ -79,8 +77,7 @@ def user_container_remove():
             db.containers.remove({'container_id':container,})
             return redirect(url_for('user.container'))
     else:
-        flash('Invalid login. Login again.')
-        return redirect(url_for('index'));
+        return invalid_login()
 
 @app.route("/user/container/stop", endpoint='user.container.stop', methods=['GET'])
 def user_container_stop():
@@ -92,8 +89,7 @@ def user_container_stop():
         else:
             return redirect(url_for('user.container'))
     else:
-        flash('Invalid login. Login again.')
-        return redirect(url_for('index'));
+        return invalid_login()
 
 @app.route("/user/container/start", endpoint='user.container.start', methods=['GET'])
 def user_container_start():
@@ -105,5 +101,4 @@ def user_container_start():
         else:
             return redirect(url_for('user.container'))
     else:
-        flash('Invalid login. Login again.')
-        return redirect(url_for('index'));
+        return invalid_login()

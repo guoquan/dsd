@@ -47,15 +47,16 @@
             <h2 class="form-signin-heading">Please login</h2>
             {% if error %}
             <div class="alert alert-warning">
-                <a href="#" class="close glyphicon glyphicon-remove" data-dismiss="alert" aria-label="close"></a>
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
                 {{ error }}
             </div>
             {% endif %}
             <form class="form-signin" action="{{ url_for('login') }}" method="post">
-                <label for="Username" class="sr-only">Username</label>
-                <input type="text" id="Username" name="Username" class="form-control" placeholder="Username" required autofocus>
-                <label for="Password" class="sr-only">Password</label>
-                <input type="password" id="Password" name="Password" class="form-control" placeholder="Password" required>
+                <input type="hidden" name="next" value="{{ next }}"></input>
+                <label for="username" class="sr-only">Username</label>
+                <input type="text" id="username" name="username" class="form-control" placeholder="Username" required autofocus>
+                <label for="password" class="sr-only">Password</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
                 <!--
                 <div class="checkbox">
                     <label>

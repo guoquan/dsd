@@ -78,9 +78,9 @@ def init(db):
         config['encrypt_iter'] = 100000
     else:
         # otherwise, fallback to simple implement multiple round digest,
-        #   but *much* less secure and slow.
-        config['encrypt_method'] = {'method': 'simple'}
-        config['encrypt_iter'] = 100
+        #   but *much* less secure and posibly slow.
+        config['encrypt_method'] = {'method': 'simple', 'param':{}}
+        config['encrypt_iter'] = 100000
 
     print 'Save config:'
     print config

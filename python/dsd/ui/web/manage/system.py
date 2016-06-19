@@ -11,5 +11,4 @@ def manage_system():
         else:
             pass
     else:
-        flash('Invalid login. Login again.')
-        return redirect(url_for('index'))
+        return invalid_login('Administrators only. Login again.')

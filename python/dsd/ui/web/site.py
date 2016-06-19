@@ -1,4 +1,4 @@
-from flask import Flask, request, session, redirect, url_for, abort, render_template, flash
+from flask import request, session, redirect, url_for, render_template, flash
 from dsd.ui.web import app
 from dsd.ui.web.utils import *
 
@@ -18,21 +18,21 @@ def index():
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
-        error = None
-        return render_template('login.html',error=error)
+        return render_template('login.html', error=None, next=get_redirect_target())
     elif request.method == 'POST':
-        username = request.form.get('Username')
-        password = request.form.get('Password')
-        user, error = check_login(username, password)
+        username = request.form.get('username')
+        password = request.form.get('password')
+        user, message = check_login(username, password)
         if user:
             session['is_login'] = True
+            del user['_id'] # session cannot hold ObjectId from MongoDB
             session['user'] = user
-            return redirect(url_for('index'))
+            flash(message)
+            return redirect_back()
         else:
             session.pop('is_login', None)
             session.pop('user', None)
-            flash('Invalid login. Login again.')
-            return render_template('login.html', error=error)
+            return render_template('login.html', error=message, next=get_redirect_target())
 
 @app.route('/logout')
 def logout():
@@ -40,3 +40,32 @@ def logout():
     session.pop('user', None)
     flash('You were logged out')
     return redirect(url_for('index'))
+
+@app.route("/profile", endpoint='profile', methods=['GET', 'POST'])
+def user_profile():
+    if is_login():
+        if is_admin():
+            base = 'manage'
+        else:
+            base = 'user'
+
+        error = None
+        if request.method == 'POST':
+            old_password = request.form.get('old-password')
+            new_password = request.form.get('new-password')
+            new_again_password = request.form.get('new-again-password')
+
+            user, message = check_login(session['user']['username'], old_password)
+            if not user:
+                error = 'Old password is incorrect!'
+            elif new_password != new_again_password:
+                error = 'The two new passwords are not match!'
+            else:
+                # okey, encrypt the new password
+                user['password'] = encrypt_password(new_password, user['username'], user['salt'])
+                db.users.save(user)
+                flash('Password has been updated!')
+                return redirect(url_for('profile'))
+        return render_template('profile.html', base=base, user=session['user'], error=error)
+    else:
+        return invalid_login()
