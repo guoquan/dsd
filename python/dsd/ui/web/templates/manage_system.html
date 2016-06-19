@@ -1,0 +1,96 @@
+{% extends "manage_base.html" %}
+
+{% block panel_content %}
+{{ super() }}
+<!-- manage system -->
+<div>
+    <h1 class="page-header">System Configuration</h1>
+    <h2>Host Information</h2>
+    {% if host_error %}
+    <div class="alert alert-warning">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+        {{ host_error }}
+    </div>
+    {% endif %}
+    <form class="form-horizontal" action="{{ url_for('manage.system.host') }}" method="post">
+        <div class="form-group">
+            <label for="docker_url" class="col-sm-4 control-label">Docker base url</label>
+            <div class="col-sm-8">
+                <input type="text" id="docker_url" name="docker_url" class="form-control" placeholder="Docker base url" value="{{ config['docker_url'] }}" required></input>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="nvd_url" class="col-sm-4 control-label">NVIDIA Docker API base url</label>
+            <div class="col-sm-8">
+                <input type="text" id="nvd_url" name="nvd_url" class="form-control" placeholder="NVIDIA Docker API base url" value="{{ config['nvd_url'] }}" required></input>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label"></label>
+            <div class="btn-group col-sm-8" role="group">
+                <button class="btn btn-primary" type="submit">Update Host Information</button>
+                <button class="btn btn-default" type="reset">Reset</button>
+            </div>
+        </div>
+    </form>
+
+    <h2>User Configuration Information</h2>
+    {% if user_error %}
+    <div class="alert alert-warning">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+        {{ user_error }}
+    </div>
+    {% endif %}
+    <form class="form-horizontal" action="{{ url_for('manage.system.user') }}" method="post">
+        <div class="form-group">
+            <label for="default_max_container" class="col-sm-4 control-label">Default Max Container</label>
+            <div class="col-sm-8">
+                <input type="text" id="default_max_container" name="default_max_container" class="form-control" placeholder="Docker base url" value="{{ config['default_max_container'] }}" required></input>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="default_max_disk" class="col-sm-4 control-label">Default Max Disk</label>
+            <div class="col-sm-8">
+                <input type="text" id="default_max_disk" name="default_max_disk" class="form-control" placeholder="NVIDIA Docker API base url" value="{{ config['default_max_disk'] }}" required></input>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label"></label>
+            <div class="btn-group col-sm-8" role="group">
+                <button class="btn btn-primary" type="submit">Update User Configuration Information</button>
+                <button class="btn btn-default" type="reset">Reset</button>
+            </div>
+        </div>
+    </form>
+
+    <h2>Security Information</h2>
+    <p>NOTE: Cannot change these security information. Login information of all users will be failed.</p>
+    <form class="form-horizontal">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Encryption Salt</label>
+            <div class="col-sm-8">
+                <p class="form-control-static">{{ config['encrypt_salt'] }}</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Encryption Algorithm</label>
+            <div class="col-sm-8">
+                <p class="form-control-static">{{ config['encrypt_algorithm'] }}</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Encryption Method</label>
+            <div class="col-sm-8">
+                <p class="form-control-static">{{ config['encrypt_method']['method'] }}</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Encryption Iteration</label>
+            <div class="col-sm-8">
+                <p class="form-control-static">{{ config['encrypt_iter'] }}</p>
+            </div>
+        </div>
+    </form>
+</div>
+<!-- end manage system -->
+{% endblock panel_content %}

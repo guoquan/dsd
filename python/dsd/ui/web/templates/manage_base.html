@@ -5,7 +5,7 @@
 {{ super() }}
 <!-- admin header controls !-->
 <ul class="nav navbar-nav navbar-right">
-    {{ M.sidebar_li('System Settings') }}
+    {{ M.sidebar_li('Settings', url_for('manage.system'), bs_icon='cog') }}
 </ul>
 <!-- end admin header controls !-->
 {% endblock header_controls %}
@@ -24,7 +24,7 @@
     {{ M.sidebar_li('Users', url_for('manage.user')) }}
 </ul>
 <ul class="nav nav-stacked">
-    {{ M.sidebar_li('System Settings') }}
+    {{ M.sidebar_li('Settings', url_for('manage.system'), bs_icon='cog') }}
 </ul>
 <!-- end admin sidebar controls !-->
 {% endblock panel_sidebar_control %}
