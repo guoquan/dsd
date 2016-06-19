@@ -17,3 +17,12 @@ body {
 ul.flashes {
     list-style-type: none;
 }
+
+.navbar-brand {
+    background-image: url(../images/logo-small.png);
+    background-repeat: no-repeat;
+}
+
+.navbar-brand span {
+    padding-left: 80px;
+}
