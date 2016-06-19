@@ -9,10 +9,10 @@ def index():
 @app.route("/user/container", endpoint='user.container', methods=['GET'])
 def user_container():
     if is_login():
-        #container_lst = docker().ps(all=True)
+        #container_lst = docker.ps(all=True)
         container_lst = []
-        user_container_lst = list(db().containers.find({'user':session['user_name']}))
-        all_containers = docker().ps(all=True)
+        user_container_lst = list(db.containers.find({'user':session['user_name']}))
+        all_containers = docker.ps(all=True)
         for ps_container in all_containers:
             for user_container in user_container_lst:
                 if ps_container['container_id'] == user_container['container_id']:
@@ -34,11 +34,11 @@ def user_container():
 def user_container_add():
     if is_login():
         if request.method == 'GET':
-            image_lst = db().images.find()
+            image_lst = db.images.find()
             return render_template('user_container_add.html', image_lst=image_lst)
         else:
             image_tag = request.form['image']
-            img = list(db().images.find({'RepoTags':image_tag}))
+            img = list(db.images.find({'RepoTags':image_tag}))
             ports = img[0]['ports'].split(',')
             ports = [int(port) for port in ports]
             name = request.form['name']
@@ -46,14 +46,14 @@ def user_container_add():
             devices = [0,1]
             # run it
             try:
-                container = docker().run(detach=True,
+                container = docker.run(detach=True,
                                 image=image_tag,
                                 name=name,
                                 ports_dict={},
                                 ports_list=ports,
                                 volumes={workspace:'/root/workspace','/home/wjyong/data':'/home/data'},
                                 devices=devices,)
-                db().containers.save({
+                db.containers.save({
                                 'container_id':container['Id'],
                                 'user':session['user_name'],
                                 'gpu':devices,
@@ -72,11 +72,11 @@ def user_container_add():
 def user_container_remove():
     if is_login():
         container = request.args.get('id')
-        flag = docker().rm(container=container)
+        flag = docker.rm(container=container)
         if flag is None:
             flash('Failed to create a container. Please check the input and try again.')
         else:
-            db().containers.remove({'container_id':container,})
+            db.containers.remove({'container_id':container,})
             return redirect(url_for('user.container'))
     else:
         flash('Invalid login. Login again.')
@@ -86,7 +86,7 @@ def user_container_remove():
 def user_container_stop():
     if is_login():
         container = request.args.get('id')
-        flag = docker().stop(container=container)
+        flag = docker.stop(container=container)
         if flag is None:
             flash('Failed to stop a container. Please check the input and try again.')
         else:
@@ -99,7 +99,7 @@ def user_container_stop():
 def user_container_start():
     if is_login():
         container = request.args.get('id')
-        flag = docker().start(container=container)
+        flag = docker.start(container=container)
         if flag is None:
             flash('Failed to start a container. Please check the input and try again.')
         else:

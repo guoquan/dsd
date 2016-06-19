@@ -5,10 +5,13 @@ from dsd.ui.web.utils import *
 @app.route("/", methods=['GET'])
 def index():
     if is_login():
-        if session['User_Type'] == 'Admin':
+        if session['user']['type'] is UserTypes.Administrator:
             return redirect(url_for('manage.index'))
-        if session['User_Type'] == 'Common':
+        elif session['user']['type'] is UserTypes.User:
             return redirect(url_for('user.index'))
+        else:
+            flash('Unrecognized user type. Login again.')
+            return render_template('index.html')
     else:
         return render_template('index.html')
 
@@ -30,9 +33,6 @@ def login():
             session.pop('user', None)
             flash('Invalid login. Login again.')
             return render_template('login.html', error=error)
-    else:
-        flash('Invalid login. Login again.')
-        return redirect(url_for('index'))
 
 @app.route('/logout')
 def logout():

@@ -20,9 +20,9 @@ def jinja2_filter_timestamp2datetime(timestamp):
 @app.route("/manage/image", endpoint='manage.image', methods=['GET'])
 def manage_image():
     if is_admin():
-        all_images = docker().images()
+        all_images = docker.images()
         all_images_d = groupby(all_images, lambda image: image['repository'] if 'repository' in image else None)
-        authorized_images = list(db().images.find())
+        authorized_images = list(db.images.find())
         return render_template('manage_image.html',
                             image_lst=all_images,
                             image_dict=all_images_d,
@@ -35,7 +35,7 @@ def manage_image():
 def manage_image_remove():
     if is_admin():
         image = request.args.get('id')
-        flag = docker().rmi(image=image)
+        flag = docker.rmi(image=image)
         if flag is None:
             flash('Failed to del a image. Please check the input and try again.')
         else:
@@ -49,7 +49,7 @@ def manage_image_authorize():
     if is_admin():
         if request.method == 'GET':
             image_id = request.args.get('id')
-            image_lst = docker().images()
+            image_lst = docker.images()
             image = {'id':image_id}
             for image_ in image_lst:
                 if image_id == image_['id']:
@@ -60,7 +60,7 @@ def manage_image_authorize():
             ports = request.form.get('ports')
             RepoTags = request.form.get('RepoTags')
             description = request.form.get('description')
-            db().images.save({'id':image_id, 'ports':ports, 'RepoTags':RepoTags, 'description':description})
+            db.images.save({'id':image_id, 'ports':ports, 'RepoTags':RepoTags, 'description':description})
             return redirect(url_for('image'))
     else:
         flash('Invalid login. Login again.')
@@ -70,7 +70,7 @@ def manage_image_authorize():
 def manage_image_revoke():
     if is_admin():
         image_id = request.args.get('id')
-        db().images.remove({'id':image_id})
+        db.images.remove({'id':image_id})
         return redirect(url_for('image'))
     else:
         flash('Invalid login. Login again.')

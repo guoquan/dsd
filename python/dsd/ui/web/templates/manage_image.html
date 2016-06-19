@@ -93,14 +93,14 @@
                         <td>{{ repo }}</td>
                         <td>
                         {% for image in images %}
-                        <button class="btn btn-default" data-toggle="collapse" data-target="#image_{{ repo }}_{{ image['tag'] }}">
+                        <button class="btn btn-default" data-toggle="collapse" data-target="#image_{{ repo|e }}_{{ image['tag']|e }}">
                             {{ image['tag'] }}
                         </button>
                         {% endfor %}
                         </td>
                     </tr>
                     {% for image in images %}
-                    <tr id="image_{{ repo }}_{{ image['tag'] }}" class="collapse">
+                    <tr id="image_{{ repo|e }}_{{ image['tag']|e }}" class="collapse">
                         <td colspan="3">
                             {{ image['tag'] }} | {{ image['created']|timestamp2datetime }} | {{ image['size'] }}
                         </td>

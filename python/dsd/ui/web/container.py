@@ -6,19 +6,19 @@ from dsd.ui.web.utils import *
 def index():
     if is_login():
         return render_template('container_index.html',
-                               images=docker().images(),
-                               containers=docker().ps(all=True))
+                               images=docker.images(),
+                               containers=docker.ps(all=True))
     else:
         flash('Invalid login. Login again.')
         return redirect(url_for('index'))
-    
+
 @app.route("/container/run", endpoint='container.run', methods=['POST'])
 def run():
     if is_login():
         # choose image
         if 'image' in request.form:
             image_id = request.form['image']
-            for i in docker().images():
+            for i in docker.images():
                 if image_id == i['id']:
                     image = i
                     break
@@ -29,15 +29,15 @@ def run():
         if not image:
             flash('Please choose an image from the list.')
             return redirect(url_for('container.index'))
-            
+
         # get name
         if 'name' in request.form:
             name = request.form['name']
         else:
             name = None
-        
+
         # run it
-        container = docker().run(detach = True,
+        container = docker.run(detach = True,
                                  image=image,
                                  name = name,
                                  ports = {},
@@ -48,4 +48,3 @@ def run():
     else:
         flash('Invalid login. Login again.')
         return redirect(url_for('index'))
-    

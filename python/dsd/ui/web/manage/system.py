@@ -6,7 +6,7 @@ from dsd.ui.web.utils import *
 def manage_system():
     if is_admin():
         if request.method == 'GET':
-            system = list(db().system.find())
+            system = list(db.system.find())
             return render_template('manage_system.html')
         else:
             pass
