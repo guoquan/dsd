@@ -75,7 +75,7 @@
             </table>
         </div>
         {% endif %}
-        {% if image_dict %}
+        {% if image_lst %}
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
@@ -88,19 +88,20 @@
                 <tbody>
                     <!-- % for repo, images in image_dict.iteritems() % !-->
                     {% for repo, images in image_lst|groupby('repository') %}
+                    {% set repoloop = loop %}
                     <tr>
                         <td>{{ loop.index }}</td>
                         <td>{{ repo }}</td>
                         <td>
                         {% for image in images %}
-                        <button class="btn btn-default" data-toggle="collapse" data-target="#image_{{ repo|e }}_{{ image['tag']|e }}">
+                        <button class="btn btn-default" data-toggle="collapse" data-target="#image_{{ repoloop.index }}_{{ loop.index }}">
                             {{ image['tag'] }}
                         </button>
                         {% endfor %}
                         </td>
                     </tr>
                     {% for image in images %}
-                    <tr id="image_{{ repo|e }}_{{ image['tag']|e }}" class="collapse">
+                    <tr id="image_{{ repoloop.index }}_{{ loop.index }}" class="collapse">
                         <td colspan="3">
                             {{ image['tag'] }} | {{ image['created']|timestamp2datetime }} | {{ image['size'] }}
                         </td>

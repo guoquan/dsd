@@ -5,8 +5,7 @@ import pymongo
 from dsd.sys.docker.pydocker import PyDocker as Docker
 from dsd.sys.docker.nvdocker import NvDocker as NVD
 import hashlib, binascii
-import socket
-import requests
+import itertools
 
 _logger = logging.getLogger()
 
@@ -38,7 +37,7 @@ def pbkdf2_hmac(digest, password, salt, iterations, **params):
     dk = binascii.hexlify(dk)
     return dk
 
-methods = {"simple": simple, 'pbkdf2_hmac': pbkdf2_hmac}
+_methods = {"simple": simple, 'pbkdf2_hmac': pbkdf2_hmac}
 
 def encrypt_password(password, username, user_salt,
                     iterations=None, digest=None):
@@ -54,7 +53,7 @@ def encrypt_password(password, username, user_salt,
 
     # generate the encrypted password
     try:
-        dk = methods[config['encrypt_method']['method']](digest, password, salt, iterations,
+        dk = _methods[config['encrypt_method']['method']](digest, password, salt, iterations,
                                                 **config['encrypt_method']['param'])
     except KeyError:
         _logger.warning('Encryption method %s is not supported, plain password is used.' % config['encrypt_method']['method'])
@@ -106,20 +105,35 @@ def is_login():
 def is_admin():
     return is_login() and session['user']['type'] is UserTypes.Administrator
 
-def get_docker():
-    config = db.config.find_one()
-    try:
-        docker = Docker(base_url=config['docker_url'])
-    except requests.ConnectionError:
-        docker = None
-    return docker
-docker = get_docker()
+_docker = None
+def get_docker(update=False, base_url=None):
+    global _docker
+    if update or not _docker:
+        if not base_url:
+            config = db.config.find_one()
+            base_url = config['docker_url']
+        _docker = Docker(base_url=base_url)
+        if not _docker.alive():
+            _docker = None
+    return _docker
 
-def get_nvd():
-    config = db.config.find_one()
-    try:
-        nvd = NVD(base_url=config['nvd_url'])
-    except requests.ConnectionError:
-        nvd = None
-    return nvd
-nvd = get_nvd()
+_nvd = None
+def get_nvd(update=False, base_url=None):
+    global _nvd
+    if update or not _nvd:
+        if not base_url:
+            config = db.config.find_one()
+            base_url=config['nvd_url']
+        _nvd = NVD(base_url=base_url)
+        if not _nvd.alive():
+            _nvd = None
+    return _nvd
+
+def groupby(data, keyfunc):
+    data = sorted(data, key=keyfunc)
+    keys = []
+    groups = []
+    for k, g in itertools.groupby(data, keyfunc):
+        keys.append(k)
+        groups.append(list(g))      # Store group iterator as a list
+    return dict(zip(keys, groups))

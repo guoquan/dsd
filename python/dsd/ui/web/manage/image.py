@@ -1,17 +1,7 @@
-from flask import Flask, request, session, redirect, url_for, abort, render_template, flash
+from flask import request, redirect, url_for, render_template, flash
 from dsd.ui.web import app
 from dsd.ui.web.utils import *
-import itertools
 import datetime
-
-def groupby(data, keyfunc):
-    data = sorted(data, key=keyfunc)
-    keys = []
-    groups = []
-    for k, g in itertools.groupby(data, keyfunc):
-        keys.append(k)
-        groups.append(list(g))      # Store group iterator as a list
-    return dict(zip(keys, groups))
 
 @app.template_filter('timestamp2datetime')
 def jinja2_filter_timestamp2datetime(timestamp):
@@ -20,12 +10,12 @@ def jinja2_filter_timestamp2datetime(timestamp):
 @app.route("/manage/image", endpoint='manage.image', methods=['GET'])
 def manage_image():
     if is_admin():
+        docker = get_docker()
+
         all_images = docker.images()
-        all_images_d = groupby(all_images, lambda image: image['repository'] if 'repository' in image else None)
         authorized_images = list(db.images.find())
         return render_template('manage_image.html',
                             image_lst=all_images,
-                            image_dict=all_images_d,
                             authorized_image_lst=authorized_images)
     else:
         return invalid_login('Administrators only. Login again.')
@@ -33,6 +23,8 @@ def manage_image():
 @app.route("/manage/image/remove", endpoint='manage.image.remove', methods=['GET'])
 def manage_image_remove():
     if is_admin():
+        docker = get_docker()
+
         image = request.args.get('id')
         flag = docker.rmi(image=image)
         if flag is None:
@@ -45,6 +37,8 @@ def manage_image_remove():
 @app.route("/manage/image/authorize", endpoint='manage.image.authorize', methods=['GET', 'POST'])
 def manage_image_authorize():
     if is_admin():
+        docker = get_docker()
+
         if request.method == 'GET':
             image_id = request.args.get('id')
             image_lst = docker.images()

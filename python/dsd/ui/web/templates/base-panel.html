@@ -17,7 +17,6 @@
 {% endblock header_controls %}
 
 {% block content %}
-{{ super() }}
 <!-- panel framework !-->
 <div class="container-fluid">
     <div class="row">
@@ -35,6 +34,7 @@
             {% endblock panel_sidebar %}
         </div>
         <div class="col-sm-9 col-md-10 main">
+            {{ super() }}
             {% block panel_content %}
             {% endblock panel_content %}
         </div>

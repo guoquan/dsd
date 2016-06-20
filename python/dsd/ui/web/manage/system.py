@@ -5,20 +5,29 @@ from dsd.ui.web.utils import *
 @app.route("/manage/system", endpoint='manage.system', methods=['GET'])
 def manage_system(errors={}):
     if is_admin():
+        docker = get_docker()
+        nvd = get_nvd()
+
         config = db.config.find_one()
-        return render_template('manage_system.html', config=config)
+        return render_template('manage_system.html', errors=errors, config=config, docker=(docker is not None), nvd=(nvd is not None))
     else:
         return invalid_login('Administrators only. Login again.')
 
 @app.route("/manage/system/host", endpoint='manage.system.host', methods=['POST'])
 def manage_system_host():
     if is_admin():
+        docker = get_docker()
+        nvd = get_nvd()
+
         docker_url = request.form.get('docker_url')
         nvd_url = request.form.get('nvd_url')
         config = db.config.find_one()
         config['docker_url'] = docker_url
         config['nvd_url'] = nvd_url
         db.config.save(config)
+
+        docker = get_docker(True)
+        nvd = get_nvd(True)
 
         flash('Host information has been updated!')
         return redirect(url_for('manage.system'))

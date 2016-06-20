@@ -9,6 +9,8 @@ def index():
 @app.route("/user/container", endpoint='user.container', methods=['GET'])
 def user_container():
     if is_login():
+        docker = get_docker()
+
         #container_lst = docker.ps(all=True)
         container_lst = []
         user_container_lst = list(db.containers.find({'user':session['user']['username']}))
@@ -36,6 +38,8 @@ def user_container_add():
             image_lst = db.images.find()
             return render_template('user_container_add.html', image_lst=image_lst)
         else:
+            docker = get_docker()
+
             image_tag = request.form['image']
             img = list(db.images.find({'RepoTags':image_tag}))
             ports = img[0]['ports'].split(',')
@@ -69,6 +73,8 @@ def user_container_add():
 @app.route("/user/container/remove", endpoint='user.container.remove', methods=['GET'])
 def user_container_remove():
     if is_login():
+        docker = get_docker()
+
         container = request.args.get('id')
         flag = docker.rm(container=container)
         if flag is None:
@@ -82,6 +88,8 @@ def user_container_remove():
 @app.route("/user/container/stop", endpoint='user.container.stop', methods=['GET'])
 def user_container_stop():
     if is_login():
+        docker = get_docker()
+
         container = request.args.get('id')
         flag = docker.stop(container=container)
         if flag is None:
@@ -94,6 +102,8 @@ def user_container_stop():
 @app.route("/user/container/start", endpoint='user.container.start', methods=['GET'])
 def user_container_start():
     if is_login():
+        docker = get_docker()
+        
         container = request.args.get('id')
         flag = docker.start(container=container)
         if flag is None:

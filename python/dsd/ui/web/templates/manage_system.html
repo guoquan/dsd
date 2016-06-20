@@ -15,16 +15,26 @@
             </div>
             {% endif %}
             <form class="form-horizontal" action="{{ url_for('manage.system.host') }}" method="post">
-                <div class="form-group">
+                <div class="form-group{% if not docker %} has-error has-feedback{% endif %}">
                     <label for="docker_url" class="col-sm-4 control-label">Docker base url</label>
                     <div class="col-sm-8">
                         <input type="text" id="docker_url" name="docker_url" class="form-control" placeholder="Docker base url" value="{{ config['docker_url'] }}" required>
+                        {% if not docker %}
+                        <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
+                        <span class="sr-only">(error)</span>
+                        <span class="help-block">Cannot connect to docker host via this base URL.</span>
+                        {% endif %}
                     </div>
                 </div>
-                <div class="form-group">
+                <div class="form-group{% if not nvd %} has-error has-feedback{% endif %}">
                     <label for="nvd_url" class="col-sm-4 control-label">NVIDIA Docker API base url</label>
                     <div class="col-sm-8">
                         <input type="text" id="nvd_url" name="nvd_url" class="form-control" placeholder="NVIDIA Docker API base url" value="{{ config['nvd_url'] }}" required>
+                        {% if not nvd %}
+                        <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
+                        <span class="sr-only">(error)</span>
+                        <span class="help-block">Cannot connect to NVIDIA-docker host via this base URL.</span>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="form-group">
