@@ -10,6 +10,8 @@ def index():
 def user_container():
     if is_login():
         docker = get_docker()
+        if not docker:
+            return no_host_redirect()
 
         #container_lst = docker.ps(all=True)
         container_lst = []
@@ -39,6 +41,8 @@ def user_container_add():
             return render_template('user_container_add.html', image_lst=image_lst)
         else:
             docker = get_docker()
+            if not docker:
+                return no_host_redirect()
 
             image_tag = request.form['image']
             img = list(db.images.find({'RepoTags':image_tag}))
@@ -62,9 +66,9 @@ def user_container_add():
                                 'gpu':devices,
                                 'max_disk':20020,
                                 'max_memory':3000})
-                flash('Container created.')
+                flash('Container created.', 'success')
             except Exception as e:
-                flash('Failed to create a container. Please check the input and try again.')
+                flash('Failed to create a container. Please check the input and try again.', 'warning')
 
             return redirect(url_for('user.container'))
     else:
@@ -74,11 +78,13 @@ def user_container_add():
 def user_container_remove():
     if is_login():
         docker = get_docker()
+        if not docker:
+            return no_host_redirect()
 
         container = request.args.get('id')
         flag = docker.rm(container=container)
         if flag is None:
-            flash('Failed to create a container. Please check the input and try again.')
+            flash('Failed to create a container. Please check the input and try again.', 'warning')
         else:
             db.containers.remove({'container_id':container,})
             return redirect(url_for('user.container'))
@@ -89,11 +95,13 @@ def user_container_remove():
 def user_container_stop():
     if is_login():
         docker = get_docker()
+        if not docker:
+            return no_host_redirect()
 
         container = request.args.get('id')
         flag = docker.stop(container=container)
         if flag is None:
-            flash('Failed to stop a container. Please check the input and try again.')
+            flash('Failed to stop a container. Please check the input and try again.', 'warning')
         else:
             return redirect(url_for('user.container'))
     else:
@@ -103,11 +111,13 @@ def user_container_stop():
 def user_container_start():
     if is_login():
         docker = get_docker()
-        
+        if not docker:
+            return no_host_redirect()
+
         container = request.args.get('id')
         flag = docker.start(container=container)
         if flag is None:
-            flash('Failed to start a container. Please check the input and try again.')
+            flash('Failed to start a container. Please check the input and try again.', 'warning')
         else:
             return redirect(url_for('user.container'))
     else:

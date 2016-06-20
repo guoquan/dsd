@@ -26,7 +26,7 @@ def run():
         else:
             image = None
         if not image:
-            flash('Please choose an image from the list.')
+            flash('Please choose an image from the list.', 'warning')
             return redirect(url_for('container.index'))
 
         # get name
@@ -42,7 +42,7 @@ def run():
                                  ports = {},
                                  volumes = {})
         if not container:
-            flash('Failed to create a container. Please check the input and try again.')
+            flash('Failed to create a container. Please check the input and try again.', 'warning')
         return redirect(url_for('container.index'))
     else:
         return invalid_login()

@@ -14,6 +14,9 @@ def index():
 def manage_gpu():
     if is_admin():
         nvd = get_nvd()
+        if not nvd:
+            return no_host_redirect()
+
         gpu_lst = nvd.gpuInfo()
         return render_template('manage_gpu.html', gpu_lst=gpu_lst)
     else:
@@ -23,6 +26,8 @@ def manage_gpu():
 def manage_container():
     if is_admin():
         docker = get_docker()
+        if not docker:
+            return no_host_redirect()
 
         container_lst = []
         user_container_lst = list(db.containers.find())

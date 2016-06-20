@@ -94,7 +94,7 @@ def redirect_back(endpoint='index', **values):
     return redirect(target)
 
 def invalid_login(message='Invalid login. Login again.', next=None):
-    flash(message)
+    flash(message, 'warning')
     if not next:
         next = request.url
     return redirect(url_for('login', next=next))
@@ -137,3 +137,12 @@ def groupby(data, keyfunc):
         keys.append(k)
         groups.append(list(g))      # Store group iterator as a list
     return dict(zip(keys, groups))
+
+def no_host_redirect(state_message=None, user_back=None):
+    if not state_message:
+        state_message = 'Unable to connect to the host.'
+    if is_admin():
+        flash(state_message + ' Please check the system configuration.', 'danger')
+        return redirect(url_for('manage.system'))
+    else:
+        return redirect(url_for('error', error=state_message+' Please contact system administrator.', next=get_redirect_target()))

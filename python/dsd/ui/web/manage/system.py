@@ -29,7 +29,7 @@ def manage_system_host():
         docker = get_docker(True)
         nvd = get_nvd(True)
 
-        flash('Host information has been updated!')
+        flash('Host information has been updated!', 'success')
         return redirect(url_for('manage.system'))
     else:
         return invalid_login('Administrators only. Login again.')
@@ -44,7 +44,7 @@ def manage_system_user():
         config['default_max_disk'] = default_max_disk
         db.config.save(config)
 
-        flash('User configuration information has been updated!')
+        flash('User configuration information has been updated!', 'success')
         return redirect(url_for('manage.system'))
     else:
         return invalid_login('Administrators only. Login again.')

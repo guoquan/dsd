@@ -11,6 +11,8 @@ def jinja2_filter_timestamp2datetime(timestamp):
 def manage_image():
     if is_admin():
         docker = get_docker()
+        if not docker:
+            return no_host_redirect()
 
         all_images = docker.images()
         authorized_images = list(db.images.find())
@@ -24,11 +26,13 @@ def manage_image():
 def manage_image_remove():
     if is_admin():
         docker = get_docker()
+        if not docker:
+            return no_host_redirect()
 
         image = request.args.get('id')
         flag = docker.rmi(image=image)
         if flag is None:
-            flash('Failed to del a image. Please check the input and try again.')
+            flash('Failed to del a image. Please check the input and try again.', 'warning')
         else:
             return redirect(url_for('image'))
     else:
@@ -38,6 +42,8 @@ def manage_image_remove():
 def manage_image_authorize():
     if is_admin():
         docker = get_docker()
+        if not docker:
+            return no_host_redirect()
 
         if request.method == 'GET':
             image_id = request.args.get('id')

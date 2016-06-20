@@ -29,7 +29,7 @@ def manage_user_add():
                  'User_Type':user_type,
                  'Max_Container_Count':max_container_count,
                  'Max_Disk_Space':max_disk_space})
-            flash('User %s created.' % username)
+            flash('User %s created.' % username, 'success')
             return redirect(url_for('manage_user'))
     else:
         return invalid_login('Administrators only. Login again.')
@@ -38,7 +38,7 @@ def manage_user_add():
 def manage_user_remove():
     if is_admin():
         # TODO implement user remove
-        flash('Not implemented yet.')
+        flash('Not implemented yet.', 'warning')
         return redirect(url_for('manage_user'))
     else:
         return invalid_login('Administrators only. Login again.')

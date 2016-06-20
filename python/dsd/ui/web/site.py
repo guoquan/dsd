@@ -10,7 +10,7 @@ def index():
         elif session['user']['type'] is UserTypes.User:
             return redirect(url_for('user.index'))
         else:
-            flash('Unrecognized user type. Login again.')
+            flash('Unrecognized user type. Login again.', 'warning')
             return render_template('index.html')
     else:
         return render_template('index.html')
@@ -42,7 +42,7 @@ def logout():
     return redirect(url_for('index'))
 
 @app.route("/profile", endpoint='profile', methods=['GET', 'POST'])
-def user_profile():
+def profile():
     if is_login():
         if is_admin():
             base = 'manage'
@@ -64,8 +64,16 @@ def user_profile():
                 # okey, encrypt the new password
                 user['password'] = encrypt_password(new_password, user['username'], user['salt'])
                 db.users.save(user)
-                flash('Password has been updated!')
+                flash('Password has been updated!', 'success')
                 return redirect(url_for('profile'))
         return render_template('profile.html', base=base, user=session['user'], error=error)
     else:
         return invalid_login()
+
+@app.route('/error', endpoint='error')
+def error():
+    error_message = request.values.get('error')
+    next = request.values.get('next')
+    if not next or not is_safe_url(next):
+        next = '#'
+    return render_template('error.html', error=error_message, next=next)
