@@ -6,6 +6,7 @@ from dsd.sys.docker.pydocker import PyDocker as Docker
 from dsd.sys.docker.nvdocker import NvDocker as NVD
 import hashlib, binascii
 import socket
+import requests
 
 _logger = logging.getLogger()
 
@@ -106,21 +107,19 @@ def is_admin():
     return is_login() and session['user']['type'] is UserTypes.Administrator
 
 def get_docker():
+    config = db.config.find_one()
     try:
-        socket.gethostbyname('dockerhost')
-        base_url = 'http://dockerhost:4243'
-    except socket.error:
-        base_url = 'unix:///var/run/docker.sock'
-
-    return Docker(base_url=base_url)
+        docker = Docker(base_url=config['docker_url'])
+    except requests.ConnectionError:
+        docker = None
+    return docker
 docker = get_docker()
 
 def get_nvd():
+    config = db.config.find_one()
     try:
-        socket.gethostbyname('dockerhost')
-        base_url = 'http://dockerhost:3476'
-    except socket.error:
-        base_url = 'http://localhost:3476'
-
-    return NVD(base_url=base_url)
+        nvd = NVD(base_url=config['nvd_url'])
+    except requests.ConnectionError:
+        nvd = None
+    return nvd
 nvd = get_nvd()

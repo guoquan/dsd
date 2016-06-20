@@ -4,63 +4,72 @@
 <!-- profile -->
 <div>
     <h1 class="page-header">Profile</h1>
-    <h2>Basic Information</h2>
-    <form class="form-horizontal">
-        <div class="form-group">
-            <label class="col-sm-4 control-label">Name</label>
-            <div class="col-sm-8">
-                <p class="form-control-static">{{ user['username'] }}</p>
-            </div>
+    <div class="panel panel-info">
+        <h2 class="panel-heading">Basic Information</h2>
+        <div class="panel-body">
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">Name</label>
+                    <div class="col-sm-8">
+                        <p class="form-control-static">{{ user['username'] }}</p>
+                    </div>
+                </div>
+                {% if session['user']['type'] %}
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">Max containers</label>
+                    <div class="col-sm-8">
+                        <p class="form-control-static">{{ user['max_container'] }}</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">Max disk</label>
+                    <div class="col-sm-8">
+                        <p class="form-control-static">{{ user['max_disk'] }}</p>
+                    </div>
+                </div>
+                {% endif %}
+            </form>
         </div>
-        <div class="form-group">
-            <label class="col-sm-4 control-label">Max containers</label>
-            <div class="col-sm-8">
-                <p class="form-control-static">{{ user['max_container'] }}</p>
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="col-sm-4 control-label">Max disk</label>
-            <div class="col-sm-8">
-                <p class="form-control-static">{{ user['max_disk'] }}</p>
-            </div>
-        </div>
-    </form>
-
-    <h2>Security Information</h2>
-    {% if error %}
-    <div class="alert alert-warning">
-        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-        {{ error }}
     </div>
-    {% endif %}
-    <form class="form-horizontal" action="{{ url_for('profile') }}" method="post">
-        <div class="form-group">
-            <label for="old-password" class="col-sm-4 control-label">Old password</label>
-            <div class="col-sm-8">
-                <input type="password" id="old-password" name="old-password" class="form-control" placeholder="Old password" required></input>
-            </div>
-        </div>
-        <div class="form-group">
-            <label for="new-password" class="col-sm-4 control-label">New password</label>
-            <div class="col-sm-8">
-                <input type="password" id="new-password" name="new-password" class="form-control" placeholder="New password" required></input>
-            </div>
-        </div>
-        <div class="form-group">
-            <label for="new-again-password" class="col-sm-4 control-label">New password again</label>
-            <div class="col-sm-8">
-                <input type="password" id="new-again-password" name="new-again-password" class="form-control" placeholder="New password again" required></input>
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="col-sm-4 control-label"></label>
-            <div class="btn-group col-sm-8" role="group">
-                <button class="btn btn-primary" type="submit">Update Security Information</button>
-                <button class="btn btn-default" type="reset">Reset</button>
-            </div>
-        </div>
 
-    </form>
+    <div class="panel panel-warning">
+        <h2 class="panel-heading">Security Information</h2>
+        <div class="panel-body">
+            {% if error %}
+            <div class="alert alert-warning">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                {{ error }}
+            </div>
+            {% endif %}
+            <form class="form-horizontal" action="{{ url_for('profile') }}" method="post">
+                <div class="form-group">
+                    <label for="old-password" class="col-sm-4 control-label">Old password</label>
+                    <div class="col-sm-8">
+                        <input type="password" id="old-password" name="old-password" class="form-control" placeholder="Old password" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="new-password" class="col-sm-4 control-label">New password</label>
+                    <div class="col-sm-8">
+                        <input type="password" id="new-password" name="new-password" class="form-control" placeholder="New password" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="new-again-password" class="col-sm-4 control-label">New password again</label>
+                    <div class="col-sm-8">
+                        <input type="password" id="new-again-password" name="new-again-password" class="form-control" placeholder="New password again" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label"></label>
+                    <div class="btn-group col-sm-8" role="group">
+                        <button class="btn btn-primary" type="submit">Update Security Information</button>
+                        <button class="btn btn-default" type="reset">Reset</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 <!-- end profile -->
 {% endblock panel_content %}
