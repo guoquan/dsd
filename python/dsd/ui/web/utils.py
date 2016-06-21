@@ -112,7 +112,14 @@ def get_docker(update=False, base_url=None):
         if not base_url:
             config = db.config.find_one()
             base_url = config['docker_url']
-        _docker = Docker(base_url=base_url)
+        if config['docker_tls']['use_tls']:
+            tls = {'client_cert': (config['docker_tls']['path_client_cert'],
+                                   config['docker_tls']['path_client_key']),
+                   'verify': config['docker_tls']['path_ca'],
+                   'assert_hostname': False}
+        else:
+            tls={}
+        _docker = Docker(base_url, **tls)
         if not _docker.alive():
             _docker = None
     return _docker
@@ -124,7 +131,7 @@ def get_nvd(update=False, base_url=None):
         if not base_url:
             config = db.config.find_one()
             base_url=config['nvd_url']
-        _nvd = NVD(base_url=base_url)
+        _nvd = NVD(base_url)
         if not _nvd.alive():
             _nvd = None
     return _nvd

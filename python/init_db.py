@@ -58,12 +58,23 @@ def init(db):
     try:
         # try resolve dockerhost and init using it
         socket.gethostbyname('dockerhost')
-        config['docker_url'] = 'http://dockerhost:4243'
+        config['docker_url'] = 'tcp://dockerhost:4243'
         config['nvd_url'] = 'http://dockerhost:3476'
     except socket.error:
         # if failed, fallback to local connect
         config['docker_url'] = 'unix:///var/run/docker.sock'
         config['nvd_url'] = 'http://localhost:3476'
+    config['docker_tls'] = {'use_tls':False,
+                            'path_client_cert':None,
+                            'path_client_key':None,
+                            'path_ca':None}
+    ''' for boot2docker using virtalbox
+    config['docker_url'] = tcp://192.168.99.100:2376
+    config['docker_tls'] = {'use_tls':True,
+                            'path_client_cert':'~/.docker/machine/machines/default/certs/cert.pem'(!on the host!),
+                            'path_client_key':'~/.docker/machine/machines/default/certs/key.pem',
+                            'path_ca':'~/.docker/machine/machines/default/certs/ca.pem'}
+    '''
 
     # user config
     config['default_max_container'] = 3

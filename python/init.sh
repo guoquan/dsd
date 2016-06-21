@@ -12,5 +12,5 @@ mongod --fork --syslog --dbpath $DB_PATH
 echo "Sleep 1 second for mongodb to get prepared"
 sleep 1s
 
-echo "Initial database (if it is empty)"
-python init_db.py
+echo "Initial database"
+python init_db.py $1

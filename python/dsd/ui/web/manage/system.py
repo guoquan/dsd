@@ -9,7 +9,7 @@ def manage_system(errors={}):
         nvd = get_nvd()
 
         config = db.config.find_one()
-        return render_template('manage_system.html', errors=errors, config=config, docker=(docker is not None), nvd=(nvd is not None))
+        return render_template('manage_system.html', errors=errors, config=config, docker=bool(docker), nvd=bool(nvd))
     else:
         return invalid_login('Administrators only. Login again.')
 
@@ -20,9 +20,18 @@ def manage_system_host():
         nvd = get_nvd()
 
         docker_url = request.form.get('docker_url')
+        use_tls = bool(request.form.get('use_tls'))
+        path_client_cert = request.form.get('path_client_cert')
+        path_client_key = request.form.get('path_client_key')
+        path_ca = request.form.get('path_ca')
         nvd_url = request.form.get('nvd_url')
+
         config = db.config.find_one()
         config['docker_url'] = docker_url
+        config['docker_tls'] = {'use_tls':use_tls,
+                                'path_client_cert':path_client_cert,
+                                'path_client_key':path_client_key,
+                                'path_ca':path_ca}
         config['nvd_url'] = nvd_url
         db.config.save(config)
 

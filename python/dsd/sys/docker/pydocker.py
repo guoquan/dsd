@@ -1,4 +1,4 @@
-from docker import Client
+from docker import Client, tls, errors
 from io import BytesIO
 import os
 import collections
@@ -24,8 +24,11 @@ def _trimJoin(strings, deli=':'):
 
 class PyDocker():
     # initialize cli
-    def __init__(self, base_url='unix://var/run/docker.sock'):
-        self.cli = Client(base_url)
+    def __init__(self, base_url='unix://var/run/docker.sock', **tls_params):
+        try:
+            self.cli = Client(base_url, tls=tls.TLSConfig(**tls_params), version='auto')
+        except errors.DockerException:
+            pass
 
     def alive(self):
         try:
