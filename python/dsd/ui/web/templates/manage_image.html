@@ -25,13 +25,17 @@
                     {% for image in authorized_image_lst %}
                     <tr>
                         <td>{{ loop.index }}</td>
-                        {% for image_key in image.keys() %}
-                        {% if image_key != '_id' %}
-                        <td>{{image[image_key]}}</td>
-                        {% endif %}
-                        {% endfor %}
+                        <td>{{ image['name'] }}</td>
                         <td>
-                            <a  href="{{ url_for('manage.image.revoke', id=image['id']) }}">revoke</a>
+                            {% for port in image['ports'] %}
+                            <span class="label label-primary">
+                                <span class="glyphicon glyphicon-eye-open"></span> {{ port }}
+                            </span>
+                            {% endfor %}
+                        </td>
+                        <td>{{ image['description'] }}</td>
+                        <td>
+                            <a class="btn btn-danger" href="{{ url_for('manage.image.revoke', id=image['_id']) }}" role="button"><span class="glyphicon glyphicon-trash"></span> Revoke</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -45,7 +49,8 @@
             <h2 class="panel-title">All Images</h2>
         </div>
         <div class="panel-body">
-            <p>Add authorized image from the list below.</p>
+            <p>Add authorized image from the list below.
+              Click the tags to choose image.</p>
         </div>
         {% if image_lst %}
         <div id="all_images" class="panel-group">
@@ -84,7 +89,7 @@
                                     <div class="form-group">
                                         <label for="id" class="col-sm-3 control-label">id</label>
                                         <div class="col-sm-9">
-                                            <input class="form-control" name="id" value="{{image['id']}}" readonly />
+                                            <input class="form-control" name="id" value="{{ image['id'] }}" readonly />
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -154,6 +159,7 @@
 <script src="{{url_for('static', filename='assets/vendor/selectize.js/js/standalone/selectize.min.js')}}" type="text/javascript"></script>
 <script type="text/javascript">
     $(function(){
+        $('[data-toggle="popover"]').popover()
         Selectize.define('ports_only', function(options) {
             // options: plugin-specific options
             // this: selectize instance

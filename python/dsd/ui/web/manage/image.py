@@ -2,6 +2,7 @@ from flask import request, redirect, url_for, render_template, flash
 from dsd.ui.web import app
 from dsd.ui.web.utils import *
 import datetime
+from bson.objectid import ObjectId
 
 @app.template_filter('timestamp2datetime')
 def jinja2_filter_timestamp2datetime(timestamp):
@@ -29,13 +30,14 @@ def manage_image_remove():
         if not docker:
             return no_host_redirect()
 
-        image = request.args.get('id')
+        image_id = request.args.get('id')
         try:
-            flag = docker.rmi(image=image)
+            image = docker.image(image_id)
+            flag = docker.rmi(image=image_id)
         except Exception as e:
             flash(str(e), 'warning')
         else:
-            flash('Image removed: %s' % image, 'success')
+            flash('Image removed: %s' % image['RepoTags'], 'success')
 
         return redirect(url_for('manage.image'))
     else:
@@ -72,11 +74,13 @@ def manage_image_revoke():
     if is_admin():
         authorized_id = request.values.get('id')
         try:
-            image = db.images.pop({'_id':authorized_id})
+            image = db.images.find_one({'_id':ObjectId(authorized_id)})
+            image_name = image['name']
+            db.images.delete_one({'_id':ObjectId(authorized_id)})
         except Exception as e:
             flash(str(e), 'warning')
         else:
-            flash('Authorized image revoked: %s' % image['name'], 'success')
+            flash('Authorized image revoked: %s' % image_name, 'success')
         return redirect(url_for('manage.image'))
     else:
         return invalid_login('Administrators only. Login again.')

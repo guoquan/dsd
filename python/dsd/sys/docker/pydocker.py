@@ -59,6 +59,18 @@ class PyDocker():
             images_info_all.append(img_info_single)
         return images_info_all
 
+    '''  docker images
+    '''
+    def image(self, id):
+        image = self.cli.inspect_image(id)
+        img_info = {}
+        img_info['RepoTags'] = image['RepoTags'][0]
+        [img_info['repository'], img_info['tag']] = img_info['RepoTags'].split(':')
+
+        img_info['id'] = image['Id']
+        img_info['size'] = image['Size']/1e9
+        img_info['created'] = image['Created']
+        return img_info
 
     '''  docker ps
          docker ps -a

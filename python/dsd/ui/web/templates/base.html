@@ -74,7 +74,7 @@
             <ul id="flashes" class="flashes list-group collapse in">
                 {% for category, message in messages %}
                 {% if category == 'message' %}
-                <li class="list-group-item list-group-item-info">
+                <li class="list-group-item list-group-item-default">
                 {% else %}
                 <li class="list-group-item list-group-item-{{ category }}">
                 {% endif %}
@@ -115,8 +115,30 @@
     {% if messages %}
     <script type="text/javascript">
         $(function(){
-            $("#flashes").fadeTo(2000, 500).slideUp(500, function(){
-               $("#flashes").collapse();
+            {% set delay = [] %}
+            {% for category, message in messages %}
+            {% if category == 'message' %}
+            {% do delay.append(1) %}
+            {% endif %}
+            {% if category == 'primary' %}
+            {% do delay.append(1) %}
+            {% endif %}
+            {% if category == 'success' %}
+            {% do delay.append(2) %}
+            {% endif %}
+            {% if category == 'info' %}
+            {% do delay.append(3) %}
+            {% endif %}
+            {% if category == 'warning' %}
+            {% do delay.append(5) %}
+            {% endif %}
+            {% if category == 'danger' %}
+            {% do delay.append(8) %}
+            {% endif %}
+            {% endfor %}
+            var delay = {{ delay|sum }} * 1000;
+            $("#flashes").fadeTo(delay, 500).slideUp(500, function(){
+                $("#flashes").collapse();
             });
         });
     </script>
