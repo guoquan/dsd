@@ -30,11 +30,14 @@ def manage_image_remove():
             return no_host_redirect()
 
         image = request.args.get('id')
-        flag = docker.rmi(image=image)
-        if flag is None:
-            flash('Failed to del a image. Please check the input and try again.', 'warning')
+        try:
+            flag = docker.rmi(image=image)
+        except Exception as e:
+            flash(str(e), 'warning')
         else:
-            return redirect(url_for('image'))
+            flash('Image removed: %s' % image, 'success')
+
+        return redirect(url_for('manage.image'))
     else:
         return invalid_login('Administrators only. Login again.')
 
@@ -55,19 +58,25 @@ def manage_image_authorize():
             return render_template('manage_image_authorize.html', image=image)
         else:
             image_id = request.form.get('id')
-            ports = request.form.get('ports')
-            RepoTags = request.form.get('RepoTags')
+            name = request.form.get('name')
+            ports = [int(p) for p in request.form.get('ports').split(' ') if p]
             description = request.form.get('description')
-            db.images.save({'id':image_id, 'ports':ports, 'RepoTags':RepoTags, 'description':description})
-            return redirect(url_for('image'))
+
+            db.images.save({'id':image_id, 'name':name, 'ports':ports, 'description':description})
+            return redirect(url_for('manage.image'))
     else:
         return invalid_login('Administrators only. Login again.')
 
-@app.route("/manage/image/revoke", endpoint='manage.image.revoke', methods=['GET'])
+@app.route("/manage/image/revoke", endpoint='manage.image.revoke', methods=['GET', 'POST'])
 def manage_image_revoke():
     if is_admin():
-        image_id = request.args.get('id')
-        db.images.remove({'id':image_id})
-        return redirect(url_for('image'))
+        authorized_id = request.values.get('id')
+        try:
+            image = db.images.pop({'_id':authorized_id})
+        except Exception as e:
+            flash(str(e), 'warning')
+        else:
+            flash('Authorized image revoked: %s' % image['name'], 'success')
+        return redirect(url_for('manage.image'))
     else:
         return invalid_login('Administrators only. Login again.')

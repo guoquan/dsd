@@ -26,7 +26,10 @@ class PyDocker():
     # initialize cli
     def __init__(self, base_url='unix://var/run/docker.sock', **tls_params):
         try:
-            self.cli = Client(base_url, tls=tls.TLSConfig(**tls_params), version='auto')
+            if tls_params:
+                self.cli = Client(base_url, tls=tls.TLSConfig(**tls_params), version='auto')
+            else:
+                self.cli = Client(base_url, version='auto')
         except errors.DockerException:
             pass
 
