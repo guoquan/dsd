@@ -19,12 +19,12 @@ def manage_system_host():
         docker = get_docker()
         nvd = get_nvd()
 
-        docker_url = request.form.get('docker_url')
-        use_tls = bool(request.form.get('use_tls'))
-        path_client_cert = request.form.get('path_client_cert')
-        path_client_key = request.form.get('path_client_key')
-        path_ca = request.form.get('path_ca')
-        nvd_url = request.form.get('nvd_url')
+        docker_url = request.form['docker_url']
+        use_tls = bool(request.form['use_tls'])
+        path_client_cert = request.form['path_client_cert']
+        path_client_key = request.form['path_client_key']
+        path_ca = request.form['path_ca']
+        nvd_url = request.form['nvd_url']
 
         config = db.config.find_one()
         config['docker_url'] = docker_url
@@ -46,8 +46,8 @@ def manage_system_host():
 @app.route("/manage/system/user", endpoint='manage.system.user', methods=['POST'])
 def manage_system_user():
     if is_admin():
-        default_max_container = request.form.get('default_max_container')
-        default_max_disk = request.form.get('default_max_disk')
+        default_max_container = request.form['default_max_container']
+        default_max_disk = request.form['default_max_disk']
         config = db.config.find_one()
         config['default_max_container'] = default_max_container
         config['default_max_disk'] = default_max_disk

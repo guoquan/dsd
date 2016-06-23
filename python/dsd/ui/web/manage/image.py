@@ -23,14 +23,14 @@ def manage_image():
     else:
         return invalid_login('Administrators only. Login again.')
 
-@app.route("/manage/image/remove", endpoint='manage.image.remove', methods=['GET'])
+@app.route("/manage/image/remove", endpoint='manage.image.remove', methods=['GET', 'POST'])
 def manage_image_remove():
     if is_admin():
         docker = get_docker()
         if not docker:
             return no_host_redirect()
 
-        image_id = request.args.get('id')
+        image_id = request.values['id']
         try:
             image = docker.image(image_id)
             flag = docker.rmi(image=image_id)
@@ -51,18 +51,18 @@ def manage_image_authorize():
             return no_host_redirect()
 
         if request.method == 'GET':
-            image_id = request.args.get('id')
+            image_id = request.args['id']
             image_lst = docker.images()
             image = {'id':image_id}
             for image_ in image_lst:
                 if image_id == image_['id']:
                     image['RepoTags'] = image_['RepoTags']
             return render_template('manage_image_authorize.html', image=image)
-        else:
-            image_id = request.form.get('id')
-            name = request.form.get('name')
-            ports = [int(p) for p in request.form.get('ports').split(' ') if p]
-            description = request.form.get('description')
+        elif request.method == 'POST':
+            image_id = request.form['id']
+            name = request.form['name']
+            ports = [int(p) for p in request.form['ports'].split(' ') if p]
+            description = request.form['description']
 
             db.images.save({'id':image_id, 'name':name, 'ports':ports, 'description':description})
             return redirect(url_for('manage.image'))
@@ -72,7 +72,7 @@ def manage_image_authorize():
 @app.route("/manage/image/revoke", endpoint='manage.image.revoke', methods=['GET', 'POST'])
 def manage_image_revoke():
     if is_admin():
-        authorized_id = request.values.get('id')
+        authorized_id = request.values['id']
         try:
             image = db.images.find_one({'_id':ObjectId(authorized_id)})
             image_name = image['name']

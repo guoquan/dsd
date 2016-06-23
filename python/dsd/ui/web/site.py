@@ -20,12 +20,14 @@ def login():
     if request.method == 'GET':
         return render_template('login.html', error=None, next=get_redirect_target())
     elif request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+        username = request.form['username']
+        password = request.form['password']
         user, message = check_login(username, password)
         if user:
             session['is_login'] = True
+            user_id = str(user['_id'])
             del user['_id'] # session cannot hold ObjectId from MongoDB
+            user['id'] = user_id
             session['user'] = user
             flash(message)
             return redirect_back()
@@ -51,9 +53,9 @@ def profile():
 
         error = None
         if request.method == 'POST':
-            old_password = request.form.get('old-password')
-            new_password = request.form.get('new-password')
-            new_again_password = request.form.get('new-again-password')
+            old_password = request.form['old-password']
+            new_password = request.form['new-password']
+            new_again_password = request.form['new-again-password']
 
             user, message = check_login(session['user']['username'], old_password)
             if not user:
@@ -72,8 +74,8 @@ def profile():
 
 @app.route('/error', endpoint='error')
 def error():
-    error_message = request.values.get('error')
-    next = request.values.get('next')
+    error_message = request.values['error']
+    next = request.values['next']
     if not next or not is_safe_url(next):
         next = '#'
     return render_template('error.html', error=error_message, next=next)

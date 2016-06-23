@@ -3,31 +3,75 @@
 {% block panel_content %}
 <!-- user-container-add -->
 <div>
-    <h1 class="page-header">Add Container</h1>
-    <form class="form-horizontal" action="{{ url_for('user.container.add') }}" method="post">
-        <div class="form-group">
-            <label for="name" class="col-sm-2 control-label">Name</label>
-            <div class="col-sm-10">
-                <input class="form-control" id="name" name="name" placeholder="Container's Name">
-            </div>
+    <h1 class="page-header">Container</h1>
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h2 class="panel-title">Add Container</h2>
         </div>
-        <div class="form-group">
-            <label for="image" class="col-sm-2 control-label">Image</label>
-            <div class="col-sm-10">
-                <select class="form-control" id="image" name="image">
-                    <option disabled>Choose an Image</option>
-                    {% for image in image_lst%}
-                    <option>{{image['RepoTags']}}</option>
-                    {% endfor %}
-                </select>
-            </div>
+        <div class="panel-body">
+            <form class="form-horizontal" action="{{ url_for('user.container.add') }}" method="post">
+                <div class="form-group">
+                    <label for="name" class="col-sm-2 control-label">Name</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" id="name" name="name" placeholder="Container's Name">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="image" class="col-sm-2 control-label">Image</label>
+                    <div class="col-sm-10">
+                        <select id="image" name="image" placeholder="Select an image">
+                            <option value="">Select an image</option>
+                            {% for image_id, images in image_lst|groupby('id') %}
+                            <optgroup label="{{ image_id|docker_image }}">
+                                {% for image in images %}
+                                <option value="{{image['_id']}}">{{ image['name'] }}</option>
+                                {% endfor %}
+                            </optgroup>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <button type="submit" class="btn btn-primary">Add</button>
+                        <button type="reset" class="btn btn-default">Reset</button>
+                    </div>
+                </div>
+            </form>
         </div>
-        <div class="form-group">
-            <div class="col-sm-offset-2 col-sm-10">
-                <button type="submit" class="btn btn-primary">Add</button>
-            </div>
-        </div>
-    </form>
+    </div>
 </div>
 <!-- end user-container-add -->
 {% endblock panel_content %}
+
+{% block head_css %}
+{{ super() }}
+<link href="{{url_for('static', filename='assets/vendor/selectize.js/css/selectize.css')}}" type="text/css" rel="stylesheet">
+<link href="{{url_for('static', filename='assets/vendor/selectize.js/css/selectize.bootstrap3.css')}}" data-theme="bootstrap3" disabled="disabled" type="text/css" rel="stylesheet">
+<style>
+/* to match bootstrap style */
+.selectize-dropdown [data-selectable] .highlight {
+    padding: .2em;
+    background-color: #fcf8e3;
+    color: #000;
+    /* and emphasize a little bit more */
+    font-weight: bold;
+    font-size: 1.2em;
+}
+</style>
+{% endblock head_css %}
+
+{% block scripts %}
+{{ super() }}
+<!--[if lt IE 9]>
+<script src="{{url_for('static', filename='assets/vendor/es5-shim/es5-shim.min.js')}}" type="text/javascript"></script>
+<![endif]-->
+<script src="{{url_for('static', filename='assets/vendor/selectize.js/js/standalone/selectize.min.js')}}" type="text/javascript"></script>
+<script type="text/javascript">
+    $(function(){
+        $('#image').selectize({
+            sortField: 'text'
+        });
+    });
+</script>
+{% endblock scripts %}

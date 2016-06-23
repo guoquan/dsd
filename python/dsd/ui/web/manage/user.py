@@ -18,11 +18,11 @@ def manage_user_add():
         if request.method == 'GET':
             return render_template('manage_user_add.html')
         else:
-            username = request.form.get('Username')
-            password = request.form.get('Password')
-            max_container_count = request.form.get('Max_Container_Count')
-            max_disk_space = request.form.get('Max_Disk_Space')
-            user_type = request.form.get('User_Type')
+            username = request.form['Username']
+            password = request.form['Password']
+            max_container_count = request.form['Max_Container_Count']
+            max_disk_space = request.form['Max_Disk_Space']
+            user_type = request.form['User_Type']
             db.users.save(
                 {'Username':username,
                  'Password':encrypt_password(password),
