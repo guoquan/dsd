@@ -53,9 +53,9 @@ def profile():
 
         error = None
         if request.method == 'POST':
-            old_password = request.form['old-password']
-            new_password = request.form['new-password']
-            new_again_password = request.form['new-again-password']
+            old_password = request.form['old_password']
+            new_password = request.form['new_password']
+            new_again_password = request.form['new_again_password']
 
             user, message = check_login(session['user']['username'], old_password)
             if not user:

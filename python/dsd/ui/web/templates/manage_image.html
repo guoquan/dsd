@@ -52,12 +52,12 @@
         </div>
         {% if image_lst %}
         <div id="all_images" class="panel-group">
-            <div class="panel">
+            <div class="panel th">
                 <div class="panel-heading">
                     <div class="row">
-                        <div class="col-xs-1"><strong>#</strong></div>
-                        <div class="col-xs-5"><strong>repository</strong></div>
-                        <div class="col-xs-6"><strong>tags</strong></div>
+                        <div class="col-xs-1">#</div>
+                        <div class="col-xs-5">repository</div>
+                        <div class="col-xs-6">tags</div>
                     </div>
                 </div>
             </div>
@@ -87,7 +87,7 @@
                                     <div class="form-group">
                                         <label for="id" class="col-sm-3 control-label">id</label>
                                         <div class="col-sm-9">
-                                            <input class="form-control" name="id" value="{{ image['id'] }}" readonly />
+                                            <input type="text" class="form-control" name="id" value="{{ image['id'] }}" readonly />
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -152,6 +152,9 @@
 <style>
 .label.label-inline-block {
     display: inline-block;
+}
+.panel.th .panel-heading {
+    font-weight: bold;
 }
 </style>
 {% endblock head_css %}

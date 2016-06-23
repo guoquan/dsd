@@ -1,9 +1,10 @@
 from flask import Flask, request, session, redirect, url_for, render_template, flash
 from dsd.ui.web import app
 from dsd.ui.web.utils import *
+from bson.objectid import ObjectId
 
 @app.template_filter('docker_image')
-def jinja2_filter_docker_image(id):
+def jinja2_filter_docker_image(id, fields=None, delimiter=' | '):
     docker = get_docker()
     if not docker:
         return '<no docker connection>'
@@ -13,12 +14,34 @@ def jinja2_filter_docker_image(id):
     except Exception as e:
         return '<%s>' % str(e)
     else:
-        return 'Image: %s | Size: %s GB' % (image['RepoTags'], image['size'])
+        if not fields:
+            fields = [('Image: %s', 'RepoTags'), ('Size: %s GB', 'size')]
+
+    return delimiter.join([format % image[field] for format, field in fields if field in image])
+
+@app.template_filter('db')
+def jinja2_filter_db(id, collection, fields=None, delimiter=' | '):
+    try:
+        document = db[collection].find_one({'_id':ObjectId(id)})
+    except Exception as e:
+        return '<%s>' % str(e)
+    else:
+        if not fields:
+            fields = [('ObjectId: %s', '_id')]
+    return delimiter.join([format % document[field] for format, field in fields if field in document])
 
 @app.route("/user/container", endpoint='user.container', methods=['GET'])
 def user_container():
     if is_login():
-        container_lst = db.containers.find({'user_id':session['user']['id']})
+        docker = get_docker()
+        if not docker:
+            return no_host_redirect()
+
+        container_lst = list(db.containers.find({'user_id':session['user']['id']}))
+        for container in container_lst:
+            container['image'] = db.images.find_one({'_id':ObjectId(container['image_id'])})
+            if container['image']:
+                container['image']['image'] = docker.image(container['image']['id'])
         return render_template('user_container.html', container_lst=container_lst)
     else:
         return invalid_login()
@@ -47,8 +70,12 @@ def user_container_add():
     else:
         return invalid_login()
 
+@app.route("/user/container/save", endpoint='user.container.save', methods=['POST'])
+def user_container_save():
+    pass
+
 @app.route("/user/container/run", endpoint='user.container.run', methods=['POST'])
-def user_container_add():
+def user_container_run():
     if is_login():
         docker = get_docker()
         if not docker:
