@@ -37,7 +37,7 @@ def manage_image_remove():
         except Exception as e:
             flash(str(e), 'warning')
         else:
-            flash('Image removed: %s' % image['RepoTags'], 'success')
+            flash('Image removed: %s' % image['name'], 'success')
 
         return redirect(url_for('manage.image'))
     else:
@@ -56,7 +56,7 @@ def manage_image_authorize():
             image = {'id':image_id}
             for image_ in image_lst:
                 if image_id == image_['id']:
-                    image['RepoTags'] = image_['RepoTags']
+                    image['name'] = image_['name']
             return render_template('manage_image_authorize.html', image=image)
         elif request.method == 'POST':
             image_id = request.form['id']

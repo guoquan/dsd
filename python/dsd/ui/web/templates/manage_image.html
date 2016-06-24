@@ -40,15 +40,16 @@
                 </tbody>
             </table>
         </div>
+        {% else %}
+        <div class="panel-body">
+            <p>Add authorized image from the list below.
+              Click the tags to choose image.</p>
+        </div>
         {% endif %}
     </div>
     <div class="panel panel-default">
         <div class="panel-heading">
             <h2 class="panel-title">All Images</h2>
-        </div>
-        <div class="panel-body">
-            <p>Add authorized image from the list below.
-              Click the tags to choose image.</p>
         </div>
         {% if image_lst %}
         <div id="all_images" class="panel-group">
@@ -93,7 +94,7 @@
                                     <div class="form-group">
                                         <label class="col-sm-3 control-label">Created time</label>
                                         <div class="col-sm-9">
-                                            <p class="form-control-static">{{ image['created']|timestamp2datetime }}</p>
+                                            <p class="form-control-static">{{ image['created'] }}</p>
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -112,7 +113,7 @@
                                     <div class="form-group">
                                         <label for="ports" class="col-sm-3 control-label">Ports</label>
                                         <div class="col-sm-9">
-                                            <input type="text" class="input-tags" name="ports" placeholder="Ports to be expose to user">
+                                            <input type="text" class="input-tags" name="ports" placeholder="Ports to be expose to user" value="{{ image['ports']|join(' ') }}">
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -138,6 +139,10 @@
                 {% endfor %}
             </div>
             {% endfor %}
+        </div>
+        {% else %}
+        <div class="panel-body">
+            <p>No docker image avaliable on this host.</p>
         </div>
         {% endif %}
     </div>

@@ -2,6 +2,8 @@ from docker import Client, tls, errors
 from io import BytesIO
 import os
 import collections
+import datetime
+import itertools
 
 def namedtuple_with_defaults(typename, field_names, default_values=()):
     T = collections.namedtuple(typename, field_names)
@@ -21,6 +23,19 @@ def _defaultJoin(strings, deli=':', default=''):
 
 def _trimJoin(strings, deli=':'):
     return deli.join([string for string in strings if string])
+
+def _docker_time(time):
+    if isinstance(time, datetime.datetime):
+        return datetime
+    elif isinstance(time, int):
+        return datetime.datetime.fromtimestamp(time)
+    elif isinstance(time, basestring):
+        try:
+            return datetime.datetime.strptime(time[:26], '%Y-%m-%dT%H:%M:%S.%f')
+        except ValueError:
+            return '<cannot parse: %s>' % time
+    else:
+        return '<cannot resolve: %s>' % time
 
 class PyDocker():
     # initialize cli
@@ -42,35 +57,62 @@ class PyDocker():
 
     '''  docker images
     '''
-    def images(self):
+    def images(self, inspect=True):
         images_api = self.cli.images()
-        images_info_all = list()
-        for imgage in images_api:
-            img_info_single = dict()
-            img_info_single['RepoTags'] = imgage['RepoTags'][0]
-            repoTag = imgage['RepoTags'][0].split(':')
-            img_info_single['repository'] = repoTag[0]
-            img_info_single['tag'] = repoTag[1]
 
-            img_info_single['id'] = imgage['Id']
-            img_info_single['size'] = imgage['Size']/1e9
-            img_info_single['created'] = imgage['Created']
+        if inspect:
+            images_info_all = [self.image(id=image['Id']) for image in images_api]
+            images_info_all = list(itertools.chain(*images_info_all))
+        else:
+            images_info_all = []
+            for image in images_api:
+                img_info_single = {}
+                img_info_single['id'] = image['Id']
+                img_info_single['size'] = image['Size']/1e9
+                img_info_single['created'] = _docker_time(image['Created'])
+                img_info_single['repo_tags'] = image['RepoTags']
 
-            images_info_all.append(img_info_single)
+                # each image may have multiple RepoTags
+                # for each one we add an instance to the list
+                for repo_tag in img_info_single['repo_tags']:
+                    img_info_single['name'] = repo_tag
+                    images_info_all.append(img_info_single.copy())
+
         return images_info_all
 
-    '''  docker images
+    '''  docker image
     '''
-    def image(self, id):
-        image = self.cli.inspect_image(id)
-        img_info = {}
-        img_info['RepoTags'] = image['RepoTags'][0]
-        [img_info['repository'], img_info['tag']] = img_info['RepoTags'].split(':')
+    def image(self, id=None, name=None):
+        if not id and not name:
+            return None
 
+        image = self.cli.inspect_image(id or name)
+        img_info = {}
         img_info['id'] = image['Id']
         img_info['size'] = image['Size']/1e9
-        img_info['created'] = image['Created']
-        return img_info
+        img_info['created'] = _docker_time(image['Created'])
+        img_info['repo_tags'] = image['RepoTags']
+        try:
+            img_info['ports'] = [int(port.split('/')[0]) for port in image['Config']['ExposedPorts']]
+        except (ValueError, KeyError):
+            img_info['ports'] = []
+
+        # each image may have multiple RepoTags
+        # for each one we add an instance to the list
+        if name:
+            if name in img_info['repo_tags']:
+                img_info['name'] = name
+                [img_info['repository'], img_info['tag']] = name.split(':')
+                return img_info
+            else:
+                return None
+        else:
+            img_infos = []
+            for repo_tag in img_info['repo_tags']:
+                img_info['name'] = repo_tag
+                [img_info['repository'], img_info['tag']] = repo_tag.split(':')
+                img_infos.append(img_info.copy())
+            return img_infos
 
     '''  docker ps
          docker ps -a
