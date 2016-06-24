@@ -64,6 +64,10 @@ def manage_image_authorize():
             ports = [int(p) for p in request.form['ports'].split(' ') if p]
             description = request.form['description']
 
+            if db.images.find_one({'name':name}):
+                flash('There is an authorized image with the same name! Choose a discriminative name for the new image.', 'warning')
+                return redirect(url_for('manage.image.authorize', id=image_id))
+
             db.images.save({'id':image_id, 'name':name, 'ports':ports, 'description':description})
             return redirect(url_for('manage.image'))
     else:

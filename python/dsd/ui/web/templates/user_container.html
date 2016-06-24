@@ -8,9 +8,6 @@
         <div class="panel-heading">
             <h2 class="panel-title">Containers</h2>
         </div>
-        <div class="panel-body">
-
-        </div>
         {% if container_lst %}
         <div id="containers" class="panel-group">
             <div class="panel th">
@@ -66,10 +63,12 @@
                 </div>
             </div>
             {% endfor %}
+            {% else %}
+            <div class="panel-body">
+                <p>No container exist. You can create one <a href="{{ url_for('user.container.add') }}">here</a>!</p>
+            </div>
+            {% endif %}
         </div>
-        {% else %}
-        <p>No container exist. You can create one <a href="{{ url_for('user.container.add') }}">here</a>!</p>
-        {% endif %}
     </div>
 </div>
 <!-- end user-container -->
