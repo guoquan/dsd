@@ -39,7 +39,7 @@ def manage_container():
                     container_lst.append(user_container)
                     break
         #container_lst = list(db.containers.find())
-        print container_lst
+        #print container_lst
         return render_template('manage_container.html', container_lst=container_lst)
     else:
         return invalid_login('Administrators only. Login again.')

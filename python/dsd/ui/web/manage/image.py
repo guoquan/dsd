@@ -51,24 +51,24 @@ def manage_image_authorize():
             return no_host_redirect()
 
         if request.method == 'GET':
-            image_id = request.args['id']
-            image_lst = docker.images()
-            image = {'id':image_id}
-            for image_ in image_lst:
-                if image_id == image_['id']:
-                    image['name'] = image_['name']
-            return render_template('manage_image_authorize.html', image=image)
+            image = docker.image(id=request.args['image_id'],
+                                 name=request.args['image_name'])
+            return render_template('manage_image_authorize.html', image=image,
+                                    name=request.args['name'],
+                                    ports=request.args['ports'],
+                                    description=request.args['description'],)
         elif request.method == 'POST':
-            image_id = request.form['id']
+            image_id = request.form['image_id']
+            image_name = request.form['image_name']
             name = request.form['name']
             ports = [int(p) for p in request.form['ports'].split(' ') if p]
             description = request.form['description']
 
             if db.images.find_one({'name':name}):
                 flash('There is an authorized image with the same name! Choose a discriminative name for the new image.', 'warning')
-                return redirect(url_for('manage.image.authorize', id=image_id))
+                return redirect(url_for('manage.image.authorize', **request.form))
 
-            db.images.save({'id':image_id, 'name':name, 'ports':ports, 'description':description})
+            db.images.save({'image_id':image_id, 'name':name, 'ports':ports, 'description':description})
             return redirect(url_for('manage.image'))
     else:
         return invalid_login('Administrators only. Login again.')

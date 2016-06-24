@@ -41,7 +41,7 @@ def user_container():
         for container in container_lst:
             container['image'] = db.images.find_one({'_id':ObjectId(container['image_id'])})
             if container['image']:
-                container['image']['image'] = docker.image(container['image']['id'])
+                container['image']['image'] = docker.image(container['image']['image_id'])
         return render_template('user_container.html', container_lst=container_lst)
     else:
         return invalid_login()

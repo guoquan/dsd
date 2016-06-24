@@ -50,25 +50,25 @@ class PyDocker():
 
     def alive(self):
         try:
-            self.images()
+            self.images(inspect=False)
         except Exception as e:
             return False
         return True
 
     '''  docker images
     '''
-    def images(self, inspect=True):
-        images_api = self.cli.images()
-
+    def images(self, inspect=True, all=False):
         if inspect:
-            images_info_all = [self.image(id=image['Id']) for image in images_api]
+            images_api = self.cli.images(quiet=True, all=all)
+            images_info_all = [self.image(id=id) for id in images_api]
             images_info_all = list(itertools.chain(*images_info_all))
         else:
+            images_api = self.cli.images(all=all)
             images_info_all = []
             for image in images_api:
                 img_info_single = {}
                 img_info_single['id'] = image['Id']
-                img_info_single['size'] = image['Size']/1e9
+                img_info_single['size'] = image['Size'] / 1e9 # turn in GB
                 img_info_single['created'] = _docker_time(image['Created'])
                 img_info_single['repo_tags'] = image['RepoTags']
 
@@ -89,13 +89,14 @@ class PyDocker():
         image = self.cli.inspect_image(id or name)
         img_info = {}
         img_info['id'] = image['Id']
-        img_info['size'] = image['Size']/1e9
+        img_info['size'] = image['Size'] / 1e9 # turn in GB
         img_info['created'] = _docker_time(image['Created'])
         img_info['repo_tags'] = image['RepoTags']
-        try:
-            img_info['ports'] = [int(port.split('/')[0]) for port in image['Config']['ExposedPorts']]
-        except (ValueError, KeyError):
-            img_info['ports'] = []
+        if 'Config' in image and image['Config'] and 'ExposedPorts' in image['Config']:
+            try:
+                img_info['ports'] = [int(port.split('/')[0]) for port in image['Config']['ExposedPorts']]
+            except (ValueError):
+                img_info['ports'] = []
 
         # each image may have multiple RepoTags
         # for each one we add an instance to the list
@@ -117,25 +118,39 @@ class PyDocker():
     '''  docker ps
          docker ps -a
     '''
-    def ps(self, **kwargs):
-        ps_api = None
-        if 'all' in kwargs:
-            ps_api = self.cli.containers(all=True)
-        else:
-            ps_api = self.cli.containers()
+    def ps(self, all=False):
+        ps_api = self.cli.containers(all=all)
 
-        ps_all = list()
+        ps_all = []
         for ps in ps_api:
-            ps_single = dict()
+            ps_single = {}
+            # container naming problem:
+            # 1. they have a forward slash in the front!
+            # according to some discussions:
+            #   https://github.com/docker/docker/issues/7519
+            #   https://github.com/docker/docker/issues/6705
+            # this slash imply a parent relationship
+            # names are prefixed with their parent
+            # where only one '/' means local to docker daemon
+            # let's just use the part after last slash
+            # 2. a name list?
+            # according to some discussions again:
+            #   https://github.com/docker/libnetwork/issues/737
+            # a container could have multiple name for the convenience of network linking
+            # let's just use the first name in list as main name and keep the whole list for reference
+            ps_single['container_name'] = ps['Names'][0].split('/')[-1]
             ps_single['container_id'] = ps['Id']
-            ps_single['image'] = ps['Image']
-            ps_single['imageid'] = ps['ImageID']
+            ps_single['image_name'] = ps['Image']
+            ps_single['image_id'] = ps['ImageID']
+
             ps_single['command'] = ps['Command']
-            ps_single['created'] = ps['Created']
             ps_single['status'] = ps['Status']
-            ps_single['state'] = ps['State']
-            ps_single['port'] = ps['Ports']
-            ps_single['name'] = ps['Names'][0]
+            ps_single['created'] = _docker_time(ps['Created'])
+            # remote api before version 1.23, for example on my Mac,
+            #   does not have this field 'State
+            ps_single['state'] = ps.get('State', None)
+            ps_single['ports'] = ps['Ports']
+            ps_single['names'] = [name.split('/')[-1] for name in ps['Names']]
 
             ps_all.append(ps_single)
 
@@ -189,80 +204,43 @@ class PyDocker():
                                                   binds=volumeMapList,
                                                   devices=deviceMapList)
 
-        # tr create container
-        try:
-            container = self.cli.create_container(image=image,
-                                                  detach=detach, stdin_open=stdin_open, tty=tty,
-                                                  command=command, name=name, user=user,
-                                                  ports=portList,
-                                                  volumes=volumeList,
-                                                  volume_driver=volume_driver,
-                                                  host_config=host_config)
-            return container
-        except Exception, e:
-            print e
-            raise e
-            return None
+        # create container
+        container = self.cli.create_container(image=image,
+                                              detach=detach, stdin_open=stdin_open, tty=tty,
+                                              command=command, name=name, user=user,
+                                              ports=portList,
+                                              volumes=volumeList,
+                                              volume_driver=volume_driver,
+                                              host_config=host_config)
+        return container
 
 
     '''  docker start
     '''
     def start(self, container):
-        try:
-            response = self.cli.start(container=container)
-            return True
-        except Exception, e:
-            print e
-            raise e
-            return None
+        response = self.cli.start(container=container)
 
 
     '''  docker stop
     '''
-    def stop(self, **kwargs):
-        container = kwargs.get('container', None)
-        timeout = kwargs.get('timeout', 0)
-        try:
-            response = self.cli.stop(container=container, timeout=timeout)
-            return True
-        except Exception, e:
-            print e
-            raise e
-            return None
+    def stop(self, container=None, timeout=0):
+        response = self.cli.stop(container=container, timeout=timeout)
 
 
     '''  docker attach
     '''
-    def attach(self, **kwargs):
-        container = kwargs.get('container', None)
-        stdout = kwargs.get('stdout', False)
-        stderr = kwargs.get('stderr', False)
-        stream = kwargs.get('stream', False)
-        logs = kwargs.get('logs', None)
-        try:
-            response = self.cli.attach(container=containerId,
-                                       stdout=stdout,
-                                       stderr=stderr,
-                                       stream=stream,
-                                       logs=logs)
-            return response
-        except Exception, e:
-            print e
-            raise e
-            return None
+    def attach(self, container=None, stdout=False, stderr=False, stream=False, logs=None):
+        response = self.cli.attach(container=containerId,
+                                   stdout=stdout,
+                                   stderr=stderr,
+                                   stream=stream,
+                                   logs=logs)
+        return response
 
     '''  docker rm
     '''
-    def rm(self, **kwargs):
-        container = kwargs.get('container', None)
-        # assert(container!=None)
-        try:
-            self.cli.remove_container(container=container)
-            return True
-        except Exception, e:
-            print e
-            raise e
-            return None
+    def rm(self, container):
+        self.cli.remove_container(container=container)
 
 
     '''  docker build
@@ -317,34 +295,20 @@ class PyDocker():
             dockerfile_default = 'Dockerfile'
             with open(os.path.join(dockerfilePath, dockerfile_default), 'r') as f:
                 dockerfileStr = f.read()
-            print dockerfileStr
+                
             dockerfileObj = BytesIO(dockerfileStr.encode('utf-8'))
             fileobj = dockerfileObj
 
-        try:
-            response = [line for line in self.cli.build(fileobj=fileobj, tag=tag)]
-            return response
-        except Exception, e:
-            print e
-            raise e
-            return None
+        response = [line for line in self.cli.build(fileobj=fileobj, tag=tag)]
+        return response
 
 
     '''  docker rmi
     '''
-    def rmi(self, **kwargs):
-        image = kwargs.get('image', None)
-        force  = kwargs.get('force', False)
-        noprune  = kwargs.get('noprune', False)
-        try:
-            self.cli.remove_image(image=image,
-                                  force=force,
-                                  noprune=noprune)
-            return True
-        except Exception, e:
-            print e
-            raise e
-            return None
+    def rmi(self, image=None, force=False, noprune=False):
+        self.cli.remove_image(image=image,
+                              force=force,
+                              noprune=noprune)
 
     ''' docker volume inspect
     '''

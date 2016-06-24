@@ -34,7 +34,6 @@
                 </div>
                 <div id="container_{{ loop.index }}" class="panel-collapse collapse">
                     <div class="panel-body">
-                        <p><!--{{ container }}!--></p>
                         <form class="form-horizontal" action="{{ url_for('user.container.save') }}" method="post">
                             <input type="hidden" class="form-control" name="id" value="{{ container['_id'] }}" />
                             <div class="form-group">

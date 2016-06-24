@@ -21,7 +21,7 @@
                     <div class="col-sm-10">
                         <select id="image" name="image" placeholder="Select an image">
                             <option value="">Select an image</option>
-                            {% for image_id, images in image_lst|groupby('id') %}
+                            {% for image_id, images in image_lst|groupby('image_id') %}
                             <optgroup label="{{ image_id|docker_image }}">
                                 {% for image in images %}
                                 <option value="{{image['_id']}}">{{ image['name'] }}</option>
