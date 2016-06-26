@@ -15,7 +15,7 @@ def manage_image():
         if not docker:
             return no_host_redirect()
 
-        all_images = docker.images()
+        all_images = docker.images(inspect=True)
         authorized_images = list(db.images.find())
         return render_template('manage_image.html',
                             image_lst=all_images,

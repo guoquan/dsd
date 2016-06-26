@@ -57,7 +57,7 @@ class PyDocker():
 
     '''  docker images
     '''
-    def images(self, inspect=True, all=False):
+    def images(self, inspect=False, all=False):
         if inspect:
             images_api = self.cli.images(quiet=True, all=all)
             images_info_all = [self.image(id=id) for id in images_api]
@@ -76,6 +76,7 @@ class PyDocker():
                 # for each one we add an instance to the list
                 for repo_tag in img_info_single['repo_tags']:
                     img_info_single['name'] = repo_tag
+                    [img_info_single['repository'], img_info_single['tag']] = repo_tag.split(':')
                     images_info_all.append(img_info_single.copy())
 
         return images_info_all
@@ -295,7 +296,7 @@ class PyDocker():
             dockerfile_default = 'Dockerfile'
             with open(os.path.join(dockerfilePath, dockerfile_default), 'r') as f:
                 dockerfileStr = f.read()
-                
+
             dockerfileObj = BytesIO(dockerfileStr.encode('utf-8'))
             fileobj = dockerfileObj
 
