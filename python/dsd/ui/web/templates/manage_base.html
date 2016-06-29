@@ -14,14 +14,14 @@
 {{ super() }}
 <!-- admin sidebar controls !-->
 <ul class="nav nav-stacked">
-    {{ M.sidebar_li('Dashboard', url_for('manage.index')) }}
-    {{ M.sidebar_li('GPUs', url_for('manage.gpu')) }}
-    {{ M.sidebar_li('Images', url_for('manage.image')) }}
-    {{ M.sidebar_li('Containers', url_for('manage.container')) }}
-    {{ M.sidebar_li('dockerfiles') }}
+    {{ M.sidebar_li('Dashboard', url_for('manage.index'), bs_icon='th-list') }}
+    {{ M.sidebar_li('GPUs', url_for('manage.gpu'), bs_icon='th') }}
+    {{ M.sidebar_li('Images', url_for('manage.image'), bs_icon='briefcase') }}
+    {{ M.sidebar_li('Containers', url_for('manage.container'), bs_icon='tasks') }}
+    {{ M.sidebar_li('dockerfiles', bs_icon='duplicate') }}
 </ul>
 <ul class="nav nav-stacked">
-    {{ M.sidebar_li('Users', url_for('manage.user')) }}
+    {{ M.sidebar_li('Users', url_for('manage.user'), bs_icon='user') }}
 </ul>
 <ul class="nav nav-stacked">
     {{ M.sidebar_li('Settings', url_for('manage.system'), bs_icon='cog') }}

@@ -5,21 +5,33 @@
     border-right: 1px solid #eee;
 }
 
-.sidebar > .nav {
+.sidebar .nav {
     margin-right: -16px; /* 15px padding + 1px border */
     margin-left: -15px;
     border-bottom: 1px solid #eee;
     padding: 8px 0;
 }
 
-.sidebar > .nav > li > a {
-    padding-right: 20px;
+.sidebar > .nav .nav {
+    margin: 0;
+    padding: 0;
+    border: 0 none;
+    background-color: #fcfcfc;
+    font-size: 0.9em;
+}
+
+.sidebar .nav > li > a {
+    /* padding-right: 20px; */
     padding-left: 20px;
 }
 
-.sidebar > .nav > .active > a,
-.sidebar > .nav > .active > a:hover,
-.sidebar > .nav > .active > a:focus {
+.sidebar > .nav .nav > li > a {
+    padding-left: 42px;
+}
+
+.sidebar .nav > .active > a,
+.sidebar .nav > .active > a:hover,
+.sidebar .nav > .active > a:focus {
     color: #fff;
     background-color: #428bca;
 }
