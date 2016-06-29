@@ -39,9 +39,9 @@ def user_container():
 
         container_lst = list(db.containers.find({'user_id':session['user']['id']}))
         for container in container_lst:
-            container['image'] = db.images.find_one({'_id':ObjectId(container['image_id'])})
-            if container['image']:
-                container['image']['image'] = docker.image(container['image']['image_id'])
+            container['auth_image'] = db.auth_images.find_one({'_id':ObjectId(container['auth_image_id'])})
+            if container['auth_image']:
+                container['auth_image']['image'] = docker.image(id=container['auth_image']['image_id'], name=container['auth_image']['name'])
         return render_template('user_container.html', container_lst=container_lst)
     else:
         return invalid_login()
@@ -50,8 +50,8 @@ def user_container():
 def user_container_add():
     if is_login():
         if request.method == 'GET':
-            image_lst = db.images.find()
-            return render_template('user_container_add.html', image_lst=image_lst)
+            auth_image_lst = db.auth_images.find()
+            return render_template('user_container_add.html', auth_image_lst=auth_image_lst)
         else:
             docker = get_docker()
             if not docker:
@@ -59,12 +59,13 @@ def user_container_add():
 
             user_id = session['user']['id']
             name = request.form['name']
-            image_id = request.form['image']
+            auth_image_id = request.form['auth_image']
+            db.containers.delete_many({'user_id':user_id, 'name':name})
             if db.containers.find_one({'user_id':user_id, 'name':name}):
                 flash('You already have a container with the same name! Choose another name for your new container.', 'warning')
                 return redirect(url_for('user.container.add'))
 
-            db.containers.save({'user_id':user_id, 'name':name, 'image_id':image_id})
+            db.containers.save({'user_id':user_id, 'name':name, 'auth_image_id':auth_image_id})
             flash('New container created: %s' % name, 'success')
             return redirect(url_for('user.container'))
     else:

@@ -5,6 +5,7 @@ import getopt, sys
 import pymongo
 import socket
 import hashlib, binascii, os
+import pprint
 from dsd.ui.web.utils import db
 from dsd.ui.web.utils import get_db, encrypt_password, UserTypes
 
@@ -77,8 +78,13 @@ def init(db):
     '''
 
     # user config
-    config['default_max_container'] = 3
-    config['default_max_disk'] = 1024
+    config['default_user_max_container'] = 3
+    config['default_user_max_live_container'] = 3
+    config['default_user_max_gpu'] = 1
+    config['default_user_max_disk'] = 1024
+
+    # resource config
+    config['default_resource_max_gpu_usage'] = 2
 
     # password encryption config
     config['encrypt_salt'] = os.urandom(16).encode('hex')
@@ -93,9 +99,10 @@ def init(db):
         config['encrypt_method'] = {'method': 'simple', 'param':{}}
         config['encrypt_iter'] = 100000
 
+    print '-' * 20
     print 'Save config:'
-    print config
     db.config.save(config)
+    pprint.pprint(config)
 
     # add some init users
     user1={}
@@ -104,9 +111,10 @@ def init(db):
     user1['salt'] = os.urandom(16).encode('hex')
     password = '123'
     user1['password'] = encrypt_password(password, user1['username'], user1['salt'])
-    print 'Save user:'
-    print user1
+    print '-' * 20
+    print 'Save user (administrator):'
     db.users.save(user1)
+    pprint.pprint(user1)
 
     user2={}
     user2['username'] = 'user2'
@@ -114,11 +122,14 @@ def init(db):
     user2['salt'] = os.urandom(16).encode('hex')
     password = '123'
     user2['password'] = encrypt_password(password, user2['username'], user2['salt'])
-    user2['max_container'] = 3
-    user2['max_disk'] = 1024
+    user2['max_container'] = config['default_user_max_container']
+    user2['max_live_container'] = config['default_user_max_live_container']
+    user2['max_gpu'] = config['default_user_max_gpu']
+    user2['max_disk'] = config['default_user_max_disk']
+    print '-' * 20
     print 'Save user:'
-    print user2
     db.users.save(user2)
+    pprint.pprint(user2)
 
 if __name__ == "__main__":
     main()

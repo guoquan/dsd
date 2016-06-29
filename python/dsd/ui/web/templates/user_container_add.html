@@ -9,6 +9,7 @@
             <h2 class="panel-title">Add Container</h2>
         </div>
         <div class="panel-body">
+            {% if auth_image_lst %}
             <form class="form-horizontal" action="{{ url_for('user.container.add') }}" method="post">
                 <div class="form-group">
                     <label for="name" class="col-sm-2 control-label">Name</label>
@@ -19,12 +20,16 @@
                 <div class="form-group">
                     <label for="image" class="col-sm-2 control-label">Image</label>
                     <div class="col-sm-10">
-                        <select id="image" name="image" placeholder="Select an image">
+                        <select id="auth_image" name="auth_image" placeholder="Select an image">
                             <option value="">Select an image</option>
-                            {% for image_id, images in image_lst|groupby('image_id') %}
+                            {% for image_id, auth_images in auth_image_lst|groupby('image_id') %}
                             <optgroup label="{{ image_id|docker_image }}">
-                                {% for image in images %}
-                                <option value="{{image['_id']}}">{{ image['name'] }}</option>
+                                {% for auth_image in auth_images %}
+                                <option value="{{auth_image['_id']}}">
+                                    {{ auth_image['name'] }}
+                                    {{ auth_image['ports'] }}
+                                    {{ auth_image['description'] }}
+                                </option>
                                 {% endfor %}
                             </optgroup>
                             {% endfor %}
@@ -38,6 +43,9 @@
                     </div>
                 </div>
             </form>
+            {% else %}
+            <p>No authorized image yet. Contact the administrator to add some.</p>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -69,7 +77,7 @@
 <script src="{{url_for('static', filename='assets/vendor/selectize.js/js/standalone/selectize.min.js')}}" type="text/javascript"></script>
 <script type="text/javascript">
     $(function(){
-        $('#image').selectize({
+        $('#auth_image').selectize({
             sortField: 'text'
         });
     });

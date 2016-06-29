@@ -16,7 +16,7 @@ def manage_image():
             return no_host_redirect()
 
         all_images = docker.images(inspect=True)
-        authorized_images = list(db.images.find())
+        authorized_images = list(db.auth_images.find())
         return render_template('manage_image.html',
                             image_lst=all_images,
                             authorized_image_lst=authorized_images)
@@ -58,18 +58,29 @@ def manage_image_authorize():
                                     ports=request.args['ports'],
                                     description=request.args['description'],)
         elif request.method == 'POST':
-            image_id = request.form['image_id']
-            image_name = request.form['image_name']
-            name = request.form['name']
-            ports = [int(p) for p in request.form['ports'].split(' ') if p]
-            description = request.form['description']
+            try:
+                image_id = request.form['image_id']
+                image_name = request.form['image_name']
+                name = request.form['name']
+                description = request.form['description']
+                try:
+                    ports = [int(p) for p in request.form['ports'].split(' ') if p]
+                except ValueError:
+                    raise ValueError('Something is wrong in the port list! Try again.')
 
-            if db.images.find_one({'name':name}):
-                flash('There is an authorized image with the same name! Choose a discriminative name for the new image.', 'warning')
+                if db.auth_images.find_one({'name':name}):
+                    raise ValueError('There is an authorized image with the same name! Choose a discriminative name for the new image.')
+
+                if not docker.image(id=image_id, name=image_name):
+                    raise ValueError('Could not found specific image! Try again.')
+
+                db.auth_images.save({'image_id':image_id, 'image_name':image_name, 'name':name, 'ports':ports, 'description':description})
+                return redirect(url_for('manage.image'))
+            except ValueError as e:
+                flash(str(e), 'warning')
                 return redirect(url_for('manage.image.authorize', **request.form))
-
-            db.images.save({'image_id':image_id, 'name':name, 'ports':ports, 'description':description})
-            return redirect(url_for('manage.image'))
+            except Exception as e:
+                print '-'*10, type(e), ':', str(e), e.args
     else:
         return invalid_login('Administrators only. Login again.')
 
@@ -78,9 +89,9 @@ def manage_image_revoke():
     if is_admin():
         authorized_id = request.values['id']
         try:
-            image = db.images.find_one({'_id':ObjectId(authorized_id)})
+            image = db.auth_images.find_one({'_id':ObjectId(authorized_id)})
             image_name = image['name']
-            db.images.delete_one({'_id':ObjectId(authorized_id)})
+            db.auth_images.delete_one({'_id':ObjectId(authorized_id)})
         except Exception as e:
             flash(str(e), 'warning')
         else:

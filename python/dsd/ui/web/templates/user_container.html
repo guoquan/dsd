@@ -27,13 +27,14 @@
                     <div class="row">
                         <div class="col-sm-1">{{ loop.index }}</div>
                         <div class="col-sm-3">{{ container['name'] }}</div>
-                        <div class="col-sm-3">{{ container['image']['name'] }}</div>
+                        <div class="col-sm-3">{{ container['auth_image']['name'] }}</div>
                         <div class="col-sm-3"></div>
                         <div class="col-sm-2"><button class="btn btn-default" data-toggle="collapse" data-parent="#containers" data-target="#container_{{ loop.index }}"><span class="glyphicon glyphicon-list-alt"></span></button></div>
                     </div>
                 </div>
                 <div id="container_{{ loop.index }}" class="panel-collapse collapse">
                     <div class="panel-body">
+                        <!--<p>{{ container }}</p>!-->
                         <form class="form-horizontal" action="{{ url_for('user.container.save') }}" method="post">
                             <input type="hidden" class="form-control" name="id" value="{{ container['_id'] }}" />
                             <div class="form-group">
@@ -43,9 +44,58 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Image created time</label>
+                                <label class="col-sm-3 control-label">Image</label>
                                 <div class="col-sm-9">
-                                    <p class="form-control-static">{{ container['image']['image']['created'] }}</p>
+                                    <div class="well">
+                                        <div class="row">
+                                            <label class="col-md-3 control-label">Authorization name</label>
+                                            <div class="col-md-9 form-control-static">{{ container['auth_image']['name'] }}</div>
+                                        </div>
+                                        <div class="row">
+                                            <label class="col-md-3 control-label">Image name</label>
+                                            <div class="col-md-9 form-control-static">{{ container['auth_image']['image_name'] }}</div>
+                                        </div>
+                                        <div class="row">
+                                            <label class="col-md-3 control-label">Ports</label>
+                                            <div class="col-md-9 form-control-static">
+                                                {% for port in container['auth_image']['ports'] %}
+                                                <span class="label label-primary label-inline-block"><span class="glyphicon glyphicon-eye-open"></span> {{ port }} </span>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <label class="col-md-3 control-label">Description</label>
+                                            <div class="col-md-9 form-control-static">{{ container['auth_image']['description'] }}</div>
+                                        </div>
+                                        <div class="row">
+                                            <label class="col-md-3 control-label">Image created time</label>
+                                            <div class="col-md-9 form-control-static">{{ container['auth_image']['image']['created'] }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="name" class="col-sm-3 control-label">Workspace</label>
+                                <div class="col-sm-9">
+                                    <input class="form-control" name="name" value="" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="name" class="col-sm-3 control-label">Data</label>
+                                <div class="col-sm-9">
+                                    <input class="form-control" name="name" value="" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="name" class="col-sm-3 control-label">GPU</label>
+                                <div class="col-sm-9">
+                                    <input class="form-control" name="name" value="" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="name" class="col-sm-3 control-label">Notes</label>
+                                <div class="col-sm-9">
+                                    <input class="form-control" name="name" value="" />
                                 </div>
                             </div>
                             <div class="form-group">
