@@ -60,7 +60,6 @@ def user_container_add():
             user_id = session['user']['id']
             name = request.form['name']
             auth_image_id = request.form['auth_image']
-            db.containers.delete_many({'user_id':user_id, 'name':name})
             if db.containers.find_one({'user_id':user_id, 'name':name}):
                 flash('You already have a container with the same name! Choose another name for your new container.', 'warning')
                 return redirect(url_for('user.container.add'))
