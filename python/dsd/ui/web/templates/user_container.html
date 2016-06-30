@@ -99,22 +99,48 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <div class="col-sm-6 col-sm-offset-3" role="group">
-                                    <div class="btn-group">
-                                        <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-play"></span> Run </button>
-                                        <a href="{{ url_for('user.container.stop', id=container['_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-stop"></span> Stop </a>
-                                        <a href="{{ url_for('user.container.restart', id=container['_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-repeat"></span> Restart </a>
-                                    </div>
+                                <div class="col-sm-6 col-md-4 col-md-offset-3" role="group">
                                     <div class="btn-group" role="group">
-                                        <button class="btn btn-default" type="button"><span class="glyphicon glyphicon-console"></span> Execute </button>
-                                        <a href="{{ url_for('user.container.stop', id=container['_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-cd"></span> Reinstall </a>
+                                        <a href="{{ url_for('user.container.run', id=container['_id']) }}" class="btn btn-success" role="button"><span class="glyphicon glyphicon-play"></span> Run </a>
+                                        <a href="{{ url_for('user.container.stop', id=container['_id']) }}" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-stop"></span> Stop </a>
+                                        <a href="{{ url_for('user.container.restart', id=container['_id']) }}" class="btn btn-warning" role="button"><span class="glyphicon glyphicon-repeat"></span> Restart </a>
                                     </div>
                                 </div>
-                                <div class="btn-group col-sm-3" role="group">
-                                    <span class="pull-right">
+                                <div class="col-sm-6 col-md-5" role="group">
+                                    <div class="input-group" role="group">
+                                        <span class="input-group-addon"><span class="glyphicon glyphicon-console"></span></span>
+                                        <input type="text" class="form-control" placeholder="Command to be executed in the container">
+                                        <span class="input-group-btn"><button class="btn btn-default" type="button"> Execute </button></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-12 col-md-9 col-md-offset-3" role="group">
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-default" type="submit">Save</button>
                                         <button class="btn btn-default" type="reset">Reset</button>
-                                        <a class="btn btn-danger" href="{{ url_for('user.container.remove', id=container['_id']) }}" role="button"><span class="glyphicon glyphicon-remove"></span> Remove </a>
-                                    </span>
+                                    </div>
+                                    <div class="btn-group pull-right-sm" role="group">
+                                        <a href="{{ url_for('user.container.stop', id=container['_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-cd"></span> Reinstall </a>
+                                        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#remove_dialog"><span class="glyphicon glyphicon-remove"></span> Remove </button>
+                                    </div>
+                                    <div class="modal fade" id="remove_dialog" tabindex="-1" role="dialog" aria-labelledby="remove_dialog_label">
+                                        <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                                    <h4 class="modal-title" id="remove_dialog_label">Remove a container</h4>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Removing the container, you will lost all the configurations and any files outside of your workspace and data directory.</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <a class="btn btn-danger" href="{{ url_for('user.container.remove', id=container['_id']) }}" role="button"><span class="glyphicon glyphicon-remove"></span> Remove </a>
+                                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </form>
@@ -135,6 +161,7 @@
 
 {% block head_css %}
 {{ super() }}
+<link href="{{url_for('static', filename='assets/vendor/bootstrap-pull/bootstrap-pull.css')}}" type="text/css" rel="stylesheet">
 <style>
 .panel.th .panel-heading {
     font-weight: bold;
