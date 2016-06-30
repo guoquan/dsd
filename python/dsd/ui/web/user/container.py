@@ -72,7 +72,12 @@ def user_container_add():
 
 @app.route("/user/container/save", endpoint='user.container.save', methods=['POST'])
 def user_container_save():
-    pass
+    if is_login():
+        flash('Save not implemented yet.', 'warning')
+        return redirect(url_for('user.container'))
+    else:
+        return invalid_login()
+
 
 @app.route("/user/container/run", endpoint='user.container.run', methods=['POST'])
 def user_container_run():
@@ -173,5 +178,14 @@ def user_container_start():
             flash('Failed to start a container. Please check the input and try again.', 'warning')
         else:
             return redirect(url_for('user.container'))
+    else:
+        return invalid_login()
+
+
+@app.route("/user/container/execute", endpoint='user.container.execute', methods=['POST'])
+def user_container_execute():
+    if is_login():
+        flash('Execute not implemented yet.', 'warning')
+        return redirect(url_for('user.container'))
     else:
         return invalid_login()

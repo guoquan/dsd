@@ -38,7 +38,7 @@
                         <form class="form-horizontal" action="{{ url_for('user.container.save') }}" method="post">
                             <input type="hidden" class="form-control" name="id" value="{{ container['_id'] }}" />
                             <div class="form-group">
-                                <label for="name" class="col-sm-3 control-label">name</label>
+                                <label for="name" class="col-sm-3 control-label">Name</label>
                                 <div class="col-sm-9">
                                     <input class="form-control" name="name" value="{{ container['name'] }}" readonly />
                                 </div>
@@ -99,25 +99,9 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <div class="col-sm-6 col-md-4 col-md-offset-3" role="group">
-                                    <div class="btn-group" role="group">
-                                        <a href="{{ url_for('user.container.run', id=container['_id']) }}" class="btn btn-success" role="button"><span class="glyphicon glyphicon-play"></span> Run </a>
-                                        <a href="{{ url_for('user.container.stop', id=container['_id']) }}" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-stop"></span> Stop </a>
-                                        <a href="{{ url_for('user.container.restart', id=container['_id']) }}" class="btn btn-warning" role="button"><span class="glyphicon glyphicon-repeat"></span> Restart </a>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6 col-md-5" role="group">
-                                    <div class="input-group" role="group">
-                                        <span class="input-group-addon"><span class="glyphicon glyphicon-console"></span></span>
-                                        <input type="text" class="form-control" placeholder="Command to be executed in the container">
-                                        <span class="input-group-btn"><button class="btn btn-default" type="button"> Execute </button></span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <div class="col-sm-12 col-md-9 col-md-offset-3" role="group">
                                     <div class="btn-group" role="group">
-                                        <button class="btn btn-default" type="submit">Save</button>
+                                        <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-save"></span> Save </button>
                                         <button class="btn btn-default" type="reset">Reset</button>
                                     </div>
                                     <div class="btn-group pull-right-sm" role="group">
@@ -140,6 +124,25 @@
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <hr>
+                        <form class="form-horizontal" action="{{ url_for('user.container.execute') }}" method="post">
+                            <div class="form-group">
+                                <div class="col-sm-6 col-md-4 col-md-offset-3" role="group">
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('user.container.run', id=container['_id']) }}" class="btn btn-success" role="button"><span class="glyphicon glyphicon-play"></span> Run </a>
+                                        <a href="{{ url_for('user.container.stop', id=container['_id']) }}" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-stop"></span> Stop </a>
+                                        <a href="{{ url_for('user.container.restart', id=container['_id']) }}" class="btn btn-warning" role="button"><span class="glyphicon glyphicon-repeat"></span> Restart </a>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-md-5" role="group">
+                                    <div class="input-group" role="group">
+                                        <span class="input-group-addon"><span class="glyphicon glyphicon-console"></span></span>
+                                        <input type="text" class="form-control" placeholder="Command to be executed in the container">
+                                        <span class="input-group-btn"><button class="btn btn-default" type="button"> Execute </button></span>
                                     </div>
                                 </div>
                             </div>
