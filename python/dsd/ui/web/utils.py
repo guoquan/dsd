@@ -14,8 +14,8 @@ class UserTypes:
     Administrator, User = range(2)
 
 class ContainerStatus:
-    STR = ['Initial', 'Ready', 'Starting', 'Started', 'Stopping', 'Stopped']
-    Initial, Ready, Starting, Started, Stopping, Stopped = range(6)
+    STR = ['Initial', 'Ready', 'Starting', 'Started', 'Stopping', 'Stopped', 'Error']
+    Initial, Ready, Starting, Started, Stopping, Stopped, Error = range(7)
 
 def get_db():
     client = pymongo.MongoClient()

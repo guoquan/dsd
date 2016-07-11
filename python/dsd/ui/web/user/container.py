@@ -2,6 +2,7 @@ from flask import Flask, request, session, redirect, url_for, render_template, f
 from dsd.ui.web import app
 from dsd.ui.web.utils import *
 from bson.objectid import ObjectId
+import threading
 
 @app.template_filter('docker_image')
 def jinja2_filter_docker_image(id, fields=None, delimiter=' | '):
@@ -128,9 +129,9 @@ def examine_user(container):
 def reinstall_container(container):
     examine_user(container)
     # TODO
-    # stop the container
-    # remove the container
-    # create a new container
+    # stop the docker container
+    # remove the docker container
+    # create a new docker container
     # set status
     flash('Reinstall not implemented yet.', 'warning')
 
@@ -142,7 +143,8 @@ def user_container_save():
         try:
             critical = save_container(request.form, container)
             if critical:
-                flash('Critical change(s) detected in %s. Reinstall is applied automatically.' % critical, 'warning')
+                #flash('Critical change(s) detected in %s. Reinstall is applied automatically.' % critical, 'warning')
+                flash('Critical change(s) detected. Reinstall is applied automatically.', 'warning')
                 reinstall_container(container)
             db.containers.save(container)
         except Exception as e:
@@ -154,38 +156,66 @@ def user_container_save():
     else:
         return invalid_login()
 
-@app.route("/user/container/run", endpoint='user.container.run', methods=['POST'])
+def create_ps(conitainer):
+    # TODO create ps
+    if container['gpu'] > 0:
+        pass
+    else:
+        pass
+    pass
+
+def run_ps(ps):
+    # TODO run ps
+    pass
+
+def check_ps(ps, state, done=None, done_args=None,
+             timeout=100, fail=None, fail_args=None):
+    # TODO check started in new thread
+    # invoke callback after change to specific state
+    pass
+
+@app.route("/user/container/run", endpoint='user.container.run', methods=['GET', 'POST'])
 def user_container_run():
     if is_login():
         docker = get_docker()
         if not docker:
             return no_host_redirect()
 
-        image_tag = request.form['image']
-        img = list(db.images.find({'RepoTags':image_tag}))
-        ports = img[0]['ports'].split(',')
-        ports = [int(port) for port in ports]
-        name = request.form['name']
-        workspace = "/home/%s/" % session['user']['username']
-        devices = [0,1]
-        # run it
+        oid = ObjectId(request.values['id'])
+        container = db.containers.find_one({'_id':oid})
+
         try:
-            container = docker.run(detach=True,
-                            image=image_tag,
-                            name=name,
-                            ports_dict={},
-                            ports_list=ports,
-                            volumes={workspace:'/root/workspace','/home/wjyong/data':'/home/data'},
-                            devices=devices,)
-            db.containers.save({
-                            'container_id':container['Id'],
-                            'user':session['user']['username'],
-                            'gpu':devices,
-                            'max_disk':20020,
-                            'max_memory':3000})
-            flash('Container created.', 'success')
+            if container['status'] == ContainerStatus.Initial or 'ps_id' not in container:
+                ps_id = create_ps(conitainer)
+                conitainer['ps_id'] = ps_id
+                conitainer['status'] = ContainerStatus.Ready
+                db.containers.save(container)
+            elif container['status'] == ContainerStatus.Ready:
+                pass
+            elif container['status'] == ContainerStatus.Starting:
+                raise SystemError('Container %s is already starting.' % container['name'])
+            elif container['status'] == ContainerStatus.Started:
+                raise SystemError('Container %s is already started.' % container['name'])
+            elif container['status'] == ContainerStatus.Stopping:
+                raise SystemError('Container %s is stopping. Wait after it is stopped.' % container['name'])
+            elif container['status'] == ContainerStatus.Stopped:
+                pass
+
+            # status in [Ready, Stopped]
+            run_ps(container['ps_id'])
+            container['status'] = ContainerStatus.Starting
+            db.containers.save(container)
+
+            def update():
+                # refresh container from db
+                container = db.containers.find_one({'_id':container['_id']})
+                container['status'] = ContainerStatus.Started
+                db.containers.save(container)
+            check_ps(ps=container['ps_id'], state='start', done=update, done_args=None)
         except Exception as e:
-            flash('Failed to create a container. Please check the input and try again.', 'warning')
+            flash('Something\'s wrong: ' + str(e), 'warning')
+        else:
+            flash('Container %s is running.' % container['name'], 'success')
 
         return redirect(url_for('user.container'))
     else:
