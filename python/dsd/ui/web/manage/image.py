@@ -87,11 +87,11 @@ def manage_image_authorize():
 @app.route("/manage/image/revoke", endpoint='manage.image.revoke', methods=['GET', 'POST'])
 def manage_image_revoke():
     if is_admin():
-        authorized_id = request.values['id']
+        auth_oid = ObjectId(request.values['id'])
         try:
-            image = db.auth_images.find_one({'_id':ObjectId(authorized_id)})
+            image = db.auth_images.find_one({'_id':auth_oid})
             image_name = image['name']
-            db.auth_images.delete_one({'_id':ObjectId(authorized_id)})
+            db.auth_images.delete_one({'_id':auth_oid})
         except Exception as e:
             flash(str(e), 'warning')
         else:

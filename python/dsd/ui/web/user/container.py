@@ -37,14 +37,54 @@ def user_container():
         if not docker:
             return no_host_redirect()
 
-        container_lst = list(db.containers.find({'user_id':session['user']['id']}))
+        container_lst = list(db.containers.find({'user_oid':ObjectId(session['user']['id'])}))
         for container in container_lst:
-            container['auth_image'] = db.auth_images.find_one({'_id':ObjectId(container['auth_image_id'])})
+            container['auth_image'] = db.auth_images.find_one({'_id':container['auth_image_oid']})
             if container['auth_image']:
                 container['auth_image']['image'] = docker.image(id=container['auth_image']['image_id'], name=container['auth_image']['name'])
+            container['status_str'] = ContainerStatus.STR[container['status']]
         return render_template('user_container.html', container_lst=container_lst)
     else:
         return invalid_login()
+
+critical_fields = ['volumn_h', 'volumn_c',
+                   'data_volumn_h', 'data_volumn_c',
+                   'gpu', #'cpu', 'memory',
+                   ]
+def critical_change(source, target):
+    for field in critical_fields:
+        if field in source and \
+            (field not in target or source[field] != str(target[field])):
+            return field
+    return None
+
+def save_container(source, target):
+    critical = critical_change(source, target)
+    examine_user(target)
+
+    target['name'] = source['name']
+
+    if source['volumn_h'] not in ['0', '']:
+        raise ValueError('Wrong workspace setting. Try again.')
+    target['volumn_h'] = source['volumn_h']
+    target['volumn_c'] = source['volumn_c']
+
+    if source['data_volumn_h'] not in ['0', '']:
+        raise ValueError('Wrong data storage setting. Try again.')
+    target['data_volumn_h'] = source['data_volumn_h']
+    target['data_volumn_c'] = source['data_volumn_c']
+
+    try:
+        target['gpu'] = int(source['gpu'])
+    except ValueError:
+        raise ValueError('Wrong GPU number. Try again.')
+
+    #target['cpu'] = source['cpu']
+    #target['memory'] = source['memory']
+
+    target['notes'] = source['notes']
+
+    return critical
 
 @app.route("/user/container/add", endpoint='user.container.add', methods=['GET', 'POST'])
 def user_container_add():
@@ -57,27 +97,62 @@ def user_container_add():
             if not docker:
                 return no_host_redirect()
 
-            user_id = session['user']['id']
+            user_oid = ObjectId(session['user']['id'])
             name = request.form['name']
-            auth_image_id = request.form['auth_image']
-            if db.containers.find_one({'user_id':user_id, 'name':name}):
-                flash('You already have a container with the same name! Choose another name for your new container.', 'warning')
-                return redirect(url_for('user.container.add'))
+            auth_image_oid = ObjectId(request.form['auth_image'])
+            try:
+                #if db.containers.find_one({'user_oid':user_oid, 'name':name}):
+                #    raise SystemError('You already have a container with the same name! Choose another name for your new container.', 'warning')
+                # but I do not check in save page... just also do not check here
 
-            db.containers.save({'user_id':user_id, 'name':name, 'auth_image_id':auth_image_id})
-            flash('New container created: %s' % name, 'success')
+                container = {'user_oid':user_oid,
+                             'auth_image_oid':auth_image_oid,
+                             'status':ContainerStatus.Initial}
+                save_container(request.form, container)
+
+                db.containers.save(container)
+            except Exception as e:
+                flash('Something\'s wrong: ' + str(e), 'warning')
+                return redirect(url_for('user.container.add'))
+            else:
+                flash('New container created: %s' % name, 'success')
             return redirect(url_for('user.container'))
     else:
         return invalid_login()
 
+def examine_user(container):
+    user = session['user']
+    if container['user_oid'] != ObjectId(user['id']):
+        raise SystemError('You can only operate your own container.')
+
+def reinstall_container(container):
+    examine_user(container)
+    # TODO
+    # stop the container
+    # remove the container
+    # create a new container
+    # set status
+    flash('Reinstall not implemented yet.', 'warning')
+
 @app.route("/user/container/save", endpoint='user.container.save', methods=['POST'])
 def user_container_save():
     if is_login():
-        flash('Save not implemented yet.', 'warning')
+        oid = ObjectId(request.form['id'])
+        container = db.containers.find_one({'_id':oid})
+        try:
+            critical = save_container(request.form, container)
+            if critical:
+                flash('Critical change(s) detected in %s. Reinstall is applied automatically.' % critical, 'warning')
+                reinstall_container(container)
+            db.containers.save(container)
+        except Exception as e:
+            flash('Something\'s wrong: ' + str(e), 'warning')
+        else:
+            flash('Container information saved.', 'success')
+
         return redirect(url_for('user.container'))
     else:
         return invalid_login()
-
 
 @app.route("/user/container/run", endpoint='user.container.run', methods=['POST'])
 def user_container_run():

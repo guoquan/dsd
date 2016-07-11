@@ -10,7 +10,12 @@ import itertools
 _logger = logging.getLogger()
 
 class UserTypes:
+    STR = ['Administrator', 'User']
     Administrator, User = range(2)
+
+class ContainerStatus:
+    STR = ['Initial', 'Ready', 'Starting', 'Started', 'Stopping', 'Stopped']
+    Initial, Ready, Starting, Started, Stopping, Stopped = range(6)
 
 def get_db():
     client = pymongo.MongoClient()

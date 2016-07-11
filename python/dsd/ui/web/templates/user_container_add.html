@@ -8,32 +8,86 @@
         <div class="panel-heading">
             <h2 class="panel-title">Add Container</h2>
         </div>
-        <div class="panel-body">
+        <div id="new_container" class="panel-body">
             {% if auth_image_lst %}
             <form class="form-horizontal" action="{{ url_for('user.container.add') }}" method="post">
                 <div class="form-group">
-                    <label for="name" class="col-sm-2 control-label">Name</label>
-                    <div class="col-sm-10">
+                    <label for="name" class="col-sm-3 control-label">Name</label>
+                    <div class="col-sm-9">
                         <input class="form-control" name="name" placeholder="Container's Name">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="image" class="col-sm-2 control-label">Image</label>
-                    <div class="col-sm-10">
+                    <label for="image" class="col-sm-3 control-label">Image</label>
+                    <div class="col-sm-9">
                         <select id="auth_image" name="auth_image" placeholder="Select an image">
-                            <option value="">Select an image</option>
+                            <option>Select an image</option>
                             {% for image_id, auth_images in auth_image_lst|groupby('image_id') %}
                             <optgroup label="{{ image_id|docker_image }}">
                                 {% for auth_image in auth_images %}
                                 <option value="{{auth_image['_id']}}">
-                                    {{ auth_image['name'] }}
-                                    {{ auth_image['ports'] }}
+                                    {{ auth_image['name'] }} |
+                                    {{ auth_image['ports'] }} |
                                     {{ auth_image['description'] }}
                                 </option>
                                 {% endfor %}
                             </optgroup>
                             {% endfor %}
                         </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="volumn_h" class="col-sm-3 control-label">Workspace</label>
+                    <div class="col-sm-4">
+                        <select name="volumn_h" placeholder="Select a workspace">
+                            <option>Select a workspace</option>
+                            <option value="0">My workspace</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-1" style="text-align:center;">
+                        <span class="glyphicon glyphicon-transfer" style="vertical-align:middle;"></span>
+                    </div>
+                    <div class="col-sm-4">
+                        <input class="form-control" name="volumn_c" value="/root/workspace" readonly />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="data_volumn_h" class="col-sm-3 control-label">Data</label>
+                    <div class="col-sm-4">
+                        <select name="data_volumn_h" placeholder="Select a date storage">
+                            <option>Select a date storage</option>
+                            <option value="0">Public data storage</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-1" style="text-align:center;">
+                        <span class="glyphicon glyphicon-transfer" style="vertical-align:middle;"></span>
+                    </div>
+                    <div class="col-sm-4">
+                        <input class="form-control" name="data_volumn_c" value="/mnt/data" readonly />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="gpu" class="col-sm-3 control-label">GPU(s)</label>
+                    <div class="col-sm-9 gpu-col">
+                        <input type="text" name="gpu" class="gpu" data-provide="slider" data-slider-handle="square" data-slider-ticks="[0, 1, 2, 3, 4]" value="0" data-slider-value="0" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="cpu" class="col-sm-3 control-label">CPU(s)</label>
+                    <div class="col-sm-9 gpu-col">
+                        <p name="cpu" class="form-control-static">Standard/Shared</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="memory" class="col-sm-3 control-label">Memory</label>
+                    <div class="col-sm-9 gpu-col">
+                        <p name="memory" class="form-control-static">Standard/Shared</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="notes" class="col-sm-3 control-label">Notes</label>
+                    <div class="col-sm-9">
+                        <textarea class="form-control" name="notes" rows="3"></textarea>
                     </div>
                 </div>
                 <div class="form-group">
@@ -55,10 +109,10 @@
 {% block head_css %}
 {{ super() }}
 <link href="{{url_for('static', filename='assets/vendor/selectize.js/css/selectize.css')}}" type="text/css" rel="stylesheet">
-<link href="{{url_for('static', filename='assets/vendor/selectize.js/css/selectize.bootstrap3.css')}}" data-theme="bootstrap3" disabled="disabled" type="text/css" rel="stylesheet">
+<link href="{{url_for('static', filename='assets/vendor/selectize.js/css/selectize.bootstrap3.css')}}" data-theme="bootstrap3" type="text/css" rel="stylesheet">
 <style>
 /* to match bootstrap style */
-.selectize-dropdown [data-selectable] .highlight {
+#new_container .selectize-dropdown [data-selectable] .highlight {
     padding: .2em;
     background-color: #fcf8e3;
     color: #000;
@@ -66,7 +120,14 @@
     font-weight: bold;
     font-size: 1.2em;
 }
+#new_container .slider.slider-horizontal {
+    width: 100%;
+}
+div.gpu-col {
+    padding: 0 25px;
+}
 </style>
+<link href="{{url_for('static', filename='assets/vendor/bootstrap-slider/css/bootstrap-slider.min.css')}}" type="text/css" rel="stylesheet">
 {% endblock head_css %}
 
 {% block scripts %}
@@ -75,9 +136,11 @@
 <script src="{{url_for('static', filename='assets/vendor/es5-shim/es5-shim.min.js')}}" type="text/javascript"></script>
 <![endif]-->
 <script src="{{url_for('static', filename='assets/vendor/selectize.js/js/standalone/selectize.min.js')}}" type="text/javascript"></script>
+<script src="{{url_for('static', filename='assets/vendor/bootstrap-slider/bootstrap-slider.min.js')}}" type="text/javascript"></script>
 <script type="text/javascript">
     $(function(){
-        $('#auth_image').selectize({
+        $('select').selectize();
+        $('select#auth_image').selectize({
             sortField: 'text'
         });
     });
