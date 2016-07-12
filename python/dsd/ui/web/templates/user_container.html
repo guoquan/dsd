@@ -83,33 +83,33 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="volumn_h" class="col-sm-3 control-label">Workspace</label>
+                                <label for="volume_h" class="col-sm-3 control-label">Workspace</label>
                                 <div class="col-sm-4">
-                                    <select name="volumn_h" placeholder="Select a workspace">
+                                    <select name="volume_h" placeholder="Select a workspace">
                                         <option>Select a workspace</option>
-                                        <option value="0"{% if container['volumn_h']=='0' %} selected{% endif %}>My workspace</option>
+                                        <option value="0"{% if container['volume_h']=='0' %} selected{% endif %}>My workspace</option>
                                     </select>
                                 </div>
                                 <div class="col-sm-1" style="text-align:center;">
                                     <span class="glyphicon glyphicon-transfer" style="vertical-align:middle;"></span>
                                 </div>
                                 <div class="col-sm-4">
-                                    <input class="form-control" name="volumn_c" value="{{ container['volumn_c'] }}" readonly />
+                                    <input class="form-control" name="volume_c" value="{{ container['volume_c'] }}" readonly />
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="data_volumn_h" class="col-sm-3 control-label">Data</label>
+                                <label for="data_volume_h" class="col-sm-3 control-label">Data</label>
                                 <div class="col-sm-4">
-                                    <select name="data_volumn_h" placeholder="Select a date storage" value="{{ container['data_volumn_h'] }}">
+                                    <select name="data_volume_h" placeholder="Select a date storage" value="{{ container['data_volume_h'] }}">
                                         <option>Select a date storage</option>
-                                        <option value="0"{% if container['data_volumn_h']=='0' %} selected{% endif %}>Public data storage</option>
+                                        <option value="0"{% if container['data_volume_h']=='0' %} selected{% endif %}>Public data storage</option>
                                     </select>
                                 </div>
                                 <div class="col-sm-1" style="text-align:center;">
                                     <span class="glyphicon glyphicon-transfer" style="vertical-align:middle;"></span>
                                 </div>
                                 <div class="col-sm-4">
-                                    <input class="form-control" name="data_volumn_c" value="{{ container['data_volumn_c'] }}" readonly />
+                                    <input class="form-control" name="data_volume_c" value="{{ container['data_volume_c'] }}" readonly />
                                 </div>
                             </div>
                             <div class="form-group">

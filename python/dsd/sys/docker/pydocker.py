@@ -145,17 +145,40 @@ class PyDocker():
             ps_single['image_id'] = ps['ImageID']
 
             ps_single['command'] = ps['Command']
-            ps_single['status'] = ps['Status']
+            ps_single['status_str'] = ps['Status'] # TODO process this string to guess more accurate state
             ps_single['created'] = _docker_time(ps['Created'])
             # remote api before version 1.23, for example on my Mac,
-            #   does not have this field 'State
+            #   does not have this field 'State'
+            # but it is avaliable in inspect
             ps_single['state'] = ps.get('State', None)
-            ps_single['ports'] = ps['Ports']
+            ps_single['ports'] = ps['Ports'] # need process
             ps_single['names'] = [name.split('/')[-1] for name in ps['Names']]
 
             ps_all.append(ps_single)
 
         return ps_all
+
+    '''  docker inspect (container)
+    '''
+    def container(self, container_id):
+        # created|restarting|running|paused|exited
+        # container_id could be id or name
+        api = self.cli.inspect_container(container_id)
+
+        container = {}
+        container['container_name'] = api['Names'][0].split('/')[-1]
+        container['container_id'] = api['Id']
+        container['image_name'] = api['Config']['Image']
+        container['image_id'] = api['Image']
+
+        ps_single['command'] = ' '.join(api['Config']['Cmd'])
+        container['status_str'] = '' # TODO generate a string like docker do
+        container['created'] = _docker_time(api['Created'])
+        container['state'] = api['State']
+        container['ports'] = api['NetworkSettings']['Ports'] # need process
+        container['names'] = [name.split('/')[-1] for name in api['Names']]
+
+        return ps_single
 
 
     '''  docker run

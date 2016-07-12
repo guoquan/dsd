@@ -3,6 +3,7 @@ from flask import session, redirect, url_for, flash, request
 from urlparse import urlparse, urljoin
 import pymongo
 from dsd.sys.docker.pydocker import PyDocker as Docker
+from dsd.sys.docker.pydocker import HC, HCP
 from dsd.sys.docker.nvdocker import NvDocker as NVD
 import hashlib, binascii
 import itertools

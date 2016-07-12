@@ -48,8 +48,8 @@ def user_container():
     else:
         return invalid_login()
 
-critical_fields = ['volumn_h', 'volumn_c',
-                   'data_volumn_h', 'data_volumn_c',
+critical_fields = ['volume_h', 'volume_c',
+                   'data_volume_h', 'data_volume_c',
                    'gpu', #'cpu', 'memory',
                    ]
 def critical_change(source, target):
@@ -65,15 +65,15 @@ def save_container(source, target):
 
     target['name'] = source['name']
 
-    if source['volumn_h'] not in ['0', '']:
+    if source['volume_h'] not in ['0', '']:
         raise ValueError('Wrong workspace setting. Try again.')
-    target['volumn_h'] = source['volumn_h']
-    target['volumn_c'] = source['volumn_c']
+    target['volume_h'] = source['volume_h']
+    target['volume_c'] = source['volume_c']
 
-    if source['data_volumn_h'] not in ['0', '']:
+    if source['data_volume_h'] not in ['0', '']:
         raise ValueError('Wrong data storage setting. Try again.')
-    target['data_volumn_h'] = source['data_volumn_h']
-    target['data_volumn_c'] = source['data_volumn_c']
+    target['data_volume_h'] = source['data_volume_h']
+    target['data_volume_c'] = source['data_volume_c']
 
     try:
         target['gpu'] = int(source['gpu'])
@@ -156,8 +156,9 @@ def user_container_save():
     else:
         return invalid_login()
 
-def create_ps(conitainer):
+def create_ps(container):
     examine_user(container)
+    docker = get_docker()
     # TODO create ps
     if container['gpu']:
         # TODO run with nvdocker
@@ -168,23 +169,18 @@ def create_ps(conitainer):
         volumes = []
         if container['volume_h'] and container['volume_c']:
             volumes.append(HCP(container['volume_h'], container['volume_c']))
-        if container['data_volumn_h'] and container['data_volumn_c']:
-            volumes.append(HCP(container['data_volumn_h'], container['data_volumn_c']))
+        if container['data_volume_h'] and container['data_volume_c']:
+            volumes.append(HCP(container['data_volume_h'], container['data_volume_c']))
         params = {'image': auth_image['image_name'],
                   'detach': True,
-                  'stdin_open': False,
-                  'tty': False,
-                  'command': None,
                   'name': user['username']+'_'+container['name']+'_'+str(container['_id']),
-                  'user': None,
                   'ports': [HC(c=port) for port in auth_image['ports']],
-                  'devices': None,
-                  'volumes': volumes,
-                  'volume_driver': None}
+                  'volumes': volumes}
         ps_id = docker.create(**params)
         return ps_id
 
 def run_ps(ps_id):
+    docker = get_docker()
     docker.start(container=ps_id)
 
 def check_ps(ps, state, done=None, done_args=None,
@@ -205,9 +201,9 @@ def user_container_start():
 
         try:
             if container['status'] == ContainerStatus.Initial or 'ps_id' not in container:
-                ps_id = create_ps(conitainer)
-                conitainer['ps_id'] = ps_id
-                conitainer['status'] = ContainerStatus.Ready
+                ps_id = create_ps(container)
+                container['ps_id'] = ps_id
+                container['status'] = ContainerStatus.Ready
                 db.containers.save(container)
             elif container['status'] == ContainerStatus.Ready:
                 pass
@@ -233,6 +229,7 @@ def user_container_start():
             check_ps(ps=container['ps_id'], state='start', done=update, done_args=None)
         except Exception as e:
             flash('Something\'s wrong: ' + str(e), 'warning')
+            raise
         else:
             flash('Container %s is running.' % container['name'], 'success')
 
