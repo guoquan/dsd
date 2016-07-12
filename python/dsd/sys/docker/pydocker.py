@@ -213,19 +213,24 @@ class PyDocker():
                                               volumes=volumeList,
                                               volume_driver=volume_driver,
                                               host_config=host_config)
-        return container
+        if container:
+            return container.get('Id')
+        else:
+            return 0 # return 0(falsy) on error
 
 
     '''  docker start
     '''
     def start(self, container):
         response = self.cli.start(container=container)
+        return response
 
 
     '''  docker stop
     '''
     def stop(self, container=None, timeout=0):
         response = self.cli.stop(container=container, timeout=timeout)
+        return response
 
 
     '''  docker attach

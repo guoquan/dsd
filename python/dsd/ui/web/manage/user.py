@@ -18,19 +18,9 @@ def manage_user_add():
         if request.method == 'GET':
             return render_template('manage_user_add.html')
         else:
-            username = request.form['Username']
-            password = request.form['Password']
-            max_container_count = request.form['Max_Container_Count']
-            max_disk_space = request.form['Max_Disk_Space']
-            user_type = request.form['User_Type']
-            db.users.save(
-                {'Username':username,
-                 'Password':encrypt_password(password),
-                 'User_Type':user_type,
-                 'Max_Container_Count':max_container_count,
-                 'Max_Disk_Space':max_disk_space})
-            flash('User %s created.' % username, 'success')
-            return redirect(url_for('manage_user'))
+            # TODO implement user addition
+            flash('Not implemented yet.', 'warning')
+            return redirect(url_for('manage.user.add'))
     else:
         return invalid_login('Administrators only. Login again.')
 
@@ -39,6 +29,6 @@ def manage_user_remove():
     if is_admin():
         # TODO implement user remove
         flash('Not implemented yet.', 'warning')
-        return redirect(url_for('manage_user'))
+        return redirect(url_for('manage.user'))
     else:
         return invalid_login('Administrators only. Login again.')

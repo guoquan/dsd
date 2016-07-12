@@ -157,16 +157,35 @@ def user_container_save():
         return invalid_login()
 
 def create_ps(conitainer):
+    examine_user(container)
     # TODO create ps
-    if container['gpu'] > 0:
-        pass
+    if container['gpu']:
+        # TODO run with nvdocker
+        raise SystemError('Starting with GPU is not implemented yet. Come back later.')
     else:
-        pass
-    pass
+        user = session['user']
+        auth_image = db.auth_images.find_one({'_id':container['auth_image_oid']})
+        volumes = []
+        if container['volume_h'] and container['volume_c']:
+            volumes.append(HCP(container['volume_h'], container['volume_c']))
+        if container['data_volumn_h'] and container['data_volumn_c']:
+            volumes.append(HCP(container['data_volumn_h'], container['data_volumn_c']))
+        params = {'image': auth_image['image_name'],
+                  'detach': True,
+                  'stdin_open': False,
+                  'tty': False,
+                  'command': None,
+                  'name': user['username']+'_'+container['name']+'_'+str(container['_id']),
+                  'user': None,
+                  'ports': [HC(c=port) for port in auth_image['ports']],
+                  'devices': None,
+                  'volumes': volumes,
+                  'volume_driver': None}
+        ps_id = docker.create(**params)
+        return ps_id
 
-def run_ps(ps):
-    # TODO run ps
-    pass
+def run_ps(ps_id):
+    docker.start(container=ps_id)
 
 def check_ps(ps, state, done=None, done_args=None,
              timeout=100, fail=None, fail_args=None):
@@ -174,8 +193,8 @@ def check_ps(ps, state, done=None, done_args=None,
     # invoke callback after change to specific state
     pass
 
-@app.route("/user/container/run", endpoint='user.container.run', methods=['GET', 'POST'])
-def user_container_run():
+@app.route("/user/container/start", endpoint='user.container.start', methods=['GET', 'POST'])
+def user_container_start():
     if is_login():
         docker = get_docker()
         if not docker:
@@ -221,22 +240,9 @@ def user_container_run():
     else:
         return invalid_login()
 
-@app.route("/user/container/remove", endpoint='user.container.remove', methods=['GET', 'POST'])
-def user_container_remove():
-    if is_login():
-        docker = get_docker()
-        if not docker:
-            return no_host_redirect()
-
-        container = request.values['id']
-        flag = docker.rm(container=container)
-        if flag is None:
-            flash('Failed to create a container. Please check the input and try again.', 'warning')
-        else:
-            db.containers.remove({'container_id':container,})
-            return redirect(url_for('user.container'))
-    else:
-        return invalid_login()
+def stop_ps(ps):
+    # TODO run ps
+    pass
 
 @app.route("/user/container/stop", endpoint='user.container.stop', methods=['GET', 'POST'])
 def user_container_stop():
@@ -270,27 +276,31 @@ def user_container_restart():
     else:
         return invalid_login()
 
-@app.route("/user/container/start", endpoint='user.container.start', methods=['GET', 'POST'])
-def user_container_start():
-    if is_login():
-        docker = get_docker()
-        if not docker:
-            return no_host_redirect()
-
-        container = request.values['id']
-        flag = docker.start(container=container)
-        if flag is None:
-            flash('Failed to start a container. Please check the input and try again.', 'warning')
-        else:
-            return redirect(url_for('user.container'))
-    else:
-        return invalid_login()
-
+def execute_ps(ps, commond):
+    # TODO run ps
+    pass
 
 @app.route("/user/container/execute", endpoint='user.container.execute', methods=['POST'])
 def user_container_execute():
     if is_login():
         flash('Execute not implemented yet.', 'warning')
         return redirect(url_for('user.container'))
+    else:
+        return invalid_login()
+
+@app.route("/user/container/remove", endpoint='user.container.remove', methods=['GET', 'POST'])
+def user_container_remove():
+    if is_login():
+        docker = get_docker()
+        if not docker:
+            return no_host_redirect()
+
+        container = request.values['id']
+        flag = docker.rm(container=container)
+        if flag is None:
+            flash('Failed to create a container. Please check the input and try again.', 'warning')
+        else:
+            db.containers.remove({'container_id':container,})
+            return redirect(url_for('user.container'))
     else:
         return invalid_login()
