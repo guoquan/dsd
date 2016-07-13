@@ -15,13 +15,13 @@ def namedtuple_with_defaults(typename, field_names, default_values=()):
     T.__new__.__defaults__ = tuple(prototype)
     return T
 
-HC = namedtuple_with_defaults('HC', ['h', 'c']) # host, container
-HCP = namedtuple_with_defaults('HCP', ['h', 'c', 'p']) # host, container, privilege
+HC = namedtuple_with_defaults(u'HC', [u'h', u'c']) # host, container
+HCP = namedtuple_with_defaults(u'HCP', [u'h', u'c', u'p']) # host, container, privilege
 
-def _defaultJoin(strings, deli=':', default=''):
+def _defaultJoin(strings, deli=u':', default=u''):
     return deli.join([string if string is not None else default for string in strings])
 
-def _trimJoin(strings, deli=':'):
+def _trimJoin(strings, deli=u':'):
     return deli.join([string for string in strings if string])
 
 def _docker_time(time):
@@ -32,128 +32,69 @@ def _docker_time(time):
     elif isinstance(time, basestring):
         try:
             # example u'2016-07-12T14:03:17.995524517Z'
-            return datetime.datetime.strptime(time[:26], '%Y-%m-%dT%H:%M:%S.%f')
+            return datetime.datetime.strptime(time[:26], u'%Y-%m-%dT%H:%M:%S.%f')
         except ValueError:
             pass # then try plan B
         try:
             # example u'0001-01-01T00:00:00Z'
-            return datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ')
+            return datetime.datetime.strptime(time, u'%Y-%m-%dT%H:%M:%SZ')
         except ValueError:
-            return '<cannot parse: %s>' % time
+            return u'<cannot parse: %s>' % time
     else:
-        return '<cannot resolve: %s>' % time
+        return u'<cannot resolve: %s>' % time
 
 def _human_time_abs_delta(delta):
-    #days - ['years', 'months', 'weeks', 'days',]
-    #seconds - ['hours', 'minutes', 'seconds',]
-    #microseconds - ['microseconds']
-    days = delta.days
-    seconds = delta.seconds
-    microseconds = delta.microseconds
-    # when negative, timedelta has negative days and positive seconds and microseconds
-    if days < 0:
-        days += 1
-        seconds -= 86400
-    if seconds < 0:
-        seconds += 1
-        microseconds -= 1000000
-    if days:
-        if abs(days) > 365:
-            time = days / 365
-            unit = 'year' if abs(time) < 2 else 'years'
-        elif abs(days) > 30:
-            time = days / 30
-            unit = 'month' if abs(time) < 2 else 'months'
-        elif abs(days) > 7:
-            time = days / 7
-            unit = 'week' if abs(time) < 2 else 'weeks'
-        else:
-            time = days
-            unit = 'day' if abs(time) < 2 else 'days'
-    elif seconds:
-        if abs(seconds) > 3600:
-            time = seconds / 3600
-            unit = 'hour' if abs(time) < 2 else 'hours'
-        elif abs(seconds) > 60:
-            time = seconds / 60
-            unit = 'minute' if abs(time) < 2 else 'minutes'
-        else:
-            time = seconds
-            unit = 'second' if abs(time) < 2 else 'seconds'
-    else:
-        time = microseconds
-        unit = 'microsecond' if abs(time) < 2 else 'microseconds'
-    return '%d %s' %(abs(time), unit)
-
-def _human_time_delta(delta):
-    #days - ['years', 'months', 'weeks', 'days',]
-    #seconds - ['hours', 'minutes', 'seconds',]
-    #microseconds - ['microseconds']
-    days = delta.days
-    seconds = delta.seconds
-    microseconds = delta.microseconds
-    # when negative, timedelta has negative days and positive seconds and microseconds
-    if days < 0:
-        days += 1
-        seconds -= 86400
-    if seconds < 0:
-        seconds += 1
-        microseconds -= 1000000
-    if days:
-        if abs(days) > 365:
-            time = days / 365
-            unit = 'year' if abs(time) < 2 else 'years'
-        elif abs(days) > 30:
-            time = days / 30
-            unit = 'month' if abs(time) < 2 else 'months'
-        elif abs(days) > 7:
-            time = days / 7
-            unit = 'week' if abs(time) < 2 else 'weeks'
-        else:
-            time = days
-            unit = 'day' if abs(time) < 2 else 'days'
-    elif seconds:
-        if abs(seconds) > 3600:
-            time = seconds / 3600
-            unit = 'hour' if abs(time) < 2 else 'hours'
-        elif abs(seconds) > 60:
-            time = seconds / 60
-            unit = 'minute' if abs(time) < 2 else 'minutes'
-        else:
-            time = seconds
-            unit = 'second' if abs(time) < 2 else 'seconds'
-    else:
-        time = microseconds
-        unit = 'microsecond' if abs(time) < 2 else 'microseconds'
-    return '%d %s %s' %(abs(time), unit, 'ago' if time > 0 else 'later')
+    # this follows https://github.com/docker/docker/blob/master/vendor/src/github.com/docker/go-units/duration.go
+    seconds = int(delta.total_seconds())
+    if seconds < 1:
+        return u'Less than a second'
+    elif seconds < 60:
+        return u'%d seconds' % seconds
+    minutes = int(seconds / 60)
+    if minutes == 1:
+        return u'About a minute'
+    elif minutes < 60:
+        return u'%d minutes' % minutes
+    hours = int(minutes / 60)
+    if hours == 1:
+        return u'About a hour'
+    elif hours < 48:
+        return u'%d hours' % hours
+    elif hours < 24*7*2:
+        return u'%d days' % (hours/24)
+    elif hours < 24*30*3:
+        return u'%d weeks' % (hours/24/7)
+    elif hours < 24*365*2:
+        return u'%d months' % (hours/24/30)
+    return u'%d years' % (hours/24/365)
 
 def _docker_status_str(state):
     # this follows https://github.com/docker/docker/blob/master/container/state.go
     if state['Running']:
         if state['Paused']:
-            return 'Up %s (Paused)' % _human_time_abs_delta(datetime.datetime.now() - _docker_time(state['StartedAt']))
+            return u'Up %s (Paused)' % _human_time_abs_delta(datetime.datetime.now() - _docker_time(state['StartedAt']))
 
         if state['Restarting'] :
-            return 'Restarting (%d) %s ago' % (state['ExitCode'], _human_time_abs_delta(datetime.datetime.now() - _docker_time(state['FinishedAt'])))
+            return u'Restarting (%d) %s ago' % (state['ExitCode'], _human_time_abs_delta(datetime.datetime.now() - _docker_time(state['FinishedAt'])))
 
         if 'Health' in state and state['Health']:
-            return 'Up %s (%s)' % (_human_time_abs_delta(datetime.datetime.now() - _docker_time(state['StartedAt'])), str(state['Health']))
+            return u'Up %s (%s)' % (_human_time_abs_delta(datetime.datetime.now() - _docker_time(state['StartedAt'])), str(state['Health']))
 
-        return 'Up %s' % _human_time_abs_delta(datetime.datetime.now() - _docker_time(state['StartedAt']))
+        return u'Up %s' % _human_time_abs_delta(datetime.datetime.now() - _docker_time(state['StartedAt']))
 
     if 'RemovalInProgress' in state and state['RemovalInProgress']:
-        return 'Removal In Progress'
+        return u'Removal In Progress'
 
     if state['Dead']:
-        return 'Dead'
+        return u'Dead'
 
     if not _docker_time(state['StartedAt']):
-        return 'Created'
+        return u'Created'
 
     if not _docker_time(state['FinishedAt']):
-        return ''
+        return u''
 
-    return 'Exited (%d) %s ago' % (state['ExitCode'], _human_time_abs_delta(datetime.datetime.now() - _docker_time(state['FinishedAt'])))
+    return u'Exited (%d) %s ago' % (state['ExitCode'], _human_time_abs_delta(datetime.datetime.now() - _docker_time(state['FinishedAt'])))
 
 class PyDocker():
     # initialize cli
@@ -327,7 +268,7 @@ class PyDocker():
             ports=[], devices=[],
             volumes=[], volume_driver=None):
         if image is None:
-            raise ValueError('Must specify an image to create a container!')
+            raise ValueError(u'Must specify an image to create a container!')
 
         # ports
         # ports is a list of HC tuple
