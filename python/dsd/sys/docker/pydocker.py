@@ -31,11 +31,129 @@ def _docker_time(time):
         return datetime.datetime.fromtimestamp(time)
     elif isinstance(time, basestring):
         try:
+            # example u'2016-07-12T14:03:17.995524517Z'
             return datetime.datetime.strptime(time[:26], '%Y-%m-%dT%H:%M:%S.%f')
+        except ValueError:
+            pass # then try plan B
+        try:
+            # example u'0001-01-01T00:00:00Z'
+            return datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ')
         except ValueError:
             return '<cannot parse: %s>' % time
     else:
         return '<cannot resolve: %s>' % time
+
+def _human_time_abs_delta(delta):
+    #days - ['years', 'months', 'weeks', 'days',]
+    #seconds - ['hours', 'minutes', 'seconds',]
+    #microseconds - ['microseconds']
+    days = delta.days
+    seconds = delta.seconds
+    microseconds = delta.microseconds
+    # when negative, timedelta has negative days and positive seconds and microseconds
+    if days < 0:
+        days += 1
+        seconds -= 86400
+    if seconds < 0:
+        seconds += 1
+        microseconds -= 1000000
+    if days:
+        if abs(days) > 365:
+            time = days / 365
+            unit = 'year' if abs(time) < 2 else 'years'
+        elif abs(days) > 30:
+            time = days / 30
+            unit = 'month' if abs(time) < 2 else 'months'
+        elif abs(days) > 7:
+            time = days / 7
+            unit = 'week' if abs(time) < 2 else 'weeks'
+        else:
+            time = days
+            unit = 'day' if abs(time) < 2 else 'days'
+    elif seconds:
+        if abs(seconds) > 3600:
+            time = seconds / 3600
+            unit = 'hour' if abs(time) < 2 else 'hours'
+        elif abs(seconds) > 60:
+            time = seconds / 60
+            unit = 'minute' if abs(time) < 2 else 'minutes'
+        else:
+            time = seconds
+            unit = 'second' if abs(time) < 2 else 'seconds'
+    else:
+        time = microseconds
+        unit = 'microsecond' if abs(time) < 2 else 'microseconds'
+    return '%d %s' %(abs(time), unit)
+
+def _human_time_delta(delta):
+    #days - ['years', 'months', 'weeks', 'days',]
+    #seconds - ['hours', 'minutes', 'seconds',]
+    #microseconds - ['microseconds']
+    days = delta.days
+    seconds = delta.seconds
+    microseconds = delta.microseconds
+    # when negative, timedelta has negative days and positive seconds and microseconds
+    if days < 0:
+        days += 1
+        seconds -= 86400
+    if seconds < 0:
+        seconds += 1
+        microseconds -= 1000000
+    if days:
+        if abs(days) > 365:
+            time = days / 365
+            unit = 'year' if abs(time) < 2 else 'years'
+        elif abs(days) > 30:
+            time = days / 30
+            unit = 'month' if abs(time) < 2 else 'months'
+        elif abs(days) > 7:
+            time = days / 7
+            unit = 'week' if abs(time) < 2 else 'weeks'
+        else:
+            time = days
+            unit = 'day' if abs(time) < 2 else 'days'
+    elif seconds:
+        if abs(seconds) > 3600:
+            time = seconds / 3600
+            unit = 'hour' if abs(time) < 2 else 'hours'
+        elif abs(seconds) > 60:
+            time = seconds / 60
+            unit = 'minute' if abs(time) < 2 else 'minutes'
+        else:
+            time = seconds
+            unit = 'second' if abs(time) < 2 else 'seconds'
+    else:
+        time = microseconds
+        unit = 'microsecond' if abs(time) < 2 else 'microseconds'
+    return '%d %s %s' %(abs(time), unit, 'ago' if time > 0 else 'later')
+
+def _docker_status_str(state):
+    # this follows https://github.com/docker/docker/blob/master/container/state.go
+    if state['Running']:
+        if state['Paused']:
+            return 'Up %s (Paused)' % _human_time_abs_delta(datetime.datetime.now() - _docker_time(state['StartedAt']))
+
+        if state['Restarting'] :
+            return 'Restarting (%d) %s ago' % (state['ExitCode'], _human_time_abs_delta(datetime.datetime.now() - _docker_time(state['FinishedAt'])))
+
+        if 'Health' in state and state['Health']:
+            return 'Up %s (%s)' % (_human_time_abs_delta(datetime.datetime.now() - _docker_time(state['StartedAt'])), str(state['Health']))
+
+        return 'Up %s' % _human_time_abs_delta(datetime.datetime.now() - _docker_time(state['StartedAt']))
+
+    if 'RemovalInProgress' in state and state['RemovalInProgress']:
+        return 'Removal In Progress'
+
+    if state['Dead']:
+        return 'Dead'
+
+    if not _docker_time(state['StartedAt']):
+        return 'Created'
+
+    if not _docker_time(state['FinishedAt']):
+        return ''
+
+    return 'Exited (%d) %s ago' % (state['ExitCode'], _human_time_abs_delta(datetime.datetime.now() - _docker_time(state['FinishedAt'])))
 
 class PyDocker():
     # initialize cli
@@ -151,7 +269,13 @@ class PyDocker():
             #   does not have this field 'State'
             # but it is avaliable in inspect
             ps_single['state'] = ps.get('State', None)
-            ps_single['ports'] = ps['Ports'] # need process
+            ports = []
+            for port in ps['Ports']:
+                if port['Type'] == u'tcp': # u'tcp' == 'tcp' is True
+                    ports.append(HCP(h=port['PublicPort'],
+                                     c=port['PrivatePort'],
+                                     p=port['IP']))
+            ps_single['ports'] = ports # need process
             ps_single['names'] = [name.split('/')[-1] for name in ps['Names']]
 
             ps_all.append(ps_single)
@@ -166,19 +290,27 @@ class PyDocker():
         api = self.cli.inspect_container(container_id)
 
         container = {}
-        container['container_name'] = api['Names'][0].split('/')[-1]
+        container['container_name'] = api['Name'].split('/')[-1]
         container['container_id'] = api['Id']
         container['image_name'] = api['Config']['Image']
         container['image_id'] = api['Image']
 
-        ps_single['command'] = ' '.join(api['Config']['Cmd'])
-        container['status_str'] = '' # TODO generate a string like docker do
+        container['command'] = ' '.join(api['Config']['Cmd'])
+        container['status_str'] = _docker_status_str(api['State'])
         container['created'] = _docker_time(api['Created'])
-        container['state'] = api['State']
-        container['ports'] = api['NetworkSettings']['Ports'] # need process
-        container['names'] = [name.split('/')[-1] for name in api['Names']]
+        container['state'] = api['State'] # https://github.com/docker/docker/blob/master/container/state.go
+        ports = []
+        for k, v in api['NetworkSettings']['Ports'].iteritems():
+            client_port, port_type = k.split('/')
+            if port_type == u'tcp': # u'tcp' == 'tcp' is True
+                for vv in v:
+                    ports.append(HCP(h=vv['HostPort'],
+                                     c=client_port,
+                                     p=vv['HostIp']))
+        container['ports'] = ports
+        container['names'] = [api['Name'].split('/')[-1]]
 
-        return ps_single
+        return container
 
 
     '''  docker run
