@@ -41,9 +41,14 @@ def user_container():
         container_lst = list(db.containers.find({'user_oid':ObjectId(session['user']['id'])}))
         for container in container_lst:
             container['auth_image'] = db.auth_images.find_one({'_id':container['auth_image_oid']})
+            if 'ps_id' in container and container['ps_id']:
+                container['ps'] = docker.container(container['ps_id'])
             if container['auth_image']:
                 container['auth_image']['image'] = docker.image(id=container['auth_image']['image_id'], name=container['auth_image']['name'])
-            container['status_str'] = ContainerStatus.STR[container['status']]
+            if 'ps' in container:
+                container['status_str'] = container['ps']['status_str']
+            else:
+                container['status_str'] = ContainerStatus.STR[container['status']]
         return render_template('user_container.html', container_lst=container_lst)
     else:
         return invalid_login()
