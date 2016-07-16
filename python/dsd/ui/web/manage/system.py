@@ -46,11 +46,11 @@ def manage_system_host():
 @app.route("/manage/system/user", endpoint='manage.system.user', methods=['POST'])
 def manage_system_user():
     if is_admin():
-        default_max_container = request.form['default_max_container']
-        default_max_disk = request.form['default_max_disk']
         config = db.config.find_one()
-        config['default_max_container'] = default_max_container
-        config['default_max_disk'] = default_max_disk
+        config['default_user_max_container'] = request.form['default_user_max_container']
+        config['default_user_max_live_container'] = request.form['default_user_max_live_container']
+        config['default_user_max_gpu'] = request.form['default_user_max_gpu']
+        config['default_user_max_disk'] = request.form['default_user_max_disk']
         db.config.save(config)
 
         flash('User configuration information has been updated!', 'success')

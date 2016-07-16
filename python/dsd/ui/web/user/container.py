@@ -38,18 +38,28 @@ def user_container():
         if not docker:
             return no_host_redirect()
 
+        alive = 0
         container_lst = list(db.containers.find({'user_oid':ObjectId(session['user']['id'])}))
         for container in container_lst:
             container['auth_image'] = db.auth_images.find_one({'_id':container['auth_image_oid']})
             if 'ps_id' in container and container['ps_id']:
                 container['ps'] = docker.container(container['ps_id'])
+                if container['ps']['state']['Running']:
+                    alive += 1
             if container['auth_image']:
                 container['auth_image']['image'] = docker.image(id=container['auth_image']['image_id'], name=container['auth_image']['name'])
             if 'ps' in container:
                 container['status_str'] = container['ps']['status_str']
             else:
                 container['status_str'] = 'Initial'
-        return render_template('user_container.html', container_lst=container_lst, default_host=request.url_root.rsplit(':')[1])
+
+        return render_template('user_container.html',
+                               count_container=len(container_lst),
+                               count_live_container=alive,
+                               max_container=session['user']['max_container'],
+                               max_live_container=session['user']['max_live_container'],
+                               container_lst=container_lst,
+                               default_host=request.url_root.rsplit(':')[1])
     else:
         return invalid_login()
 
@@ -95,6 +105,10 @@ def save_container(source, target):
 @app.route("/user/container/add", endpoint='user.container.add', methods=['GET', 'POST'])
 def user_container_add():
     if is_login():
+        if session['user']['max_container'] <= db.containers.find({'user_oid':ObjectId(session['user']['id'])}).count():
+            flash('You can have at most %d containers.' % session['user']['max_container'], 'warning')
+            return redirect(url_for('user.container'))
+
         if request.method == 'GET':
             auth_image_lst = db.auth_images.find()
             return render_template('user_container_add.html', auth_image_lst=auth_image_lst)
@@ -240,6 +254,18 @@ def user_container_start():
         docker = get_docker()
         if not docker:
             return no_host_redirect()
+
+        containers = list(db.containers.find({'user_oid':ObjectId(session['user']['id'])}))
+        alive = 0
+        for container in containers:
+            if 'ps_id' in container and container['ps_id']:
+                container['ps'] = docker.container(container['ps_id'])
+                # raw interface is used
+                if container['ps']['state']['Running']:
+                    alive += 1
+        if session['user']['max_live_container'] <= alive:
+            flash('You can have at most %d container(s) running.' % session['user']['max_live_container'], 'warning')
+            return redirect(url_for('user.container'))
 
         oid = ObjectId(request.values['id'])
         container = db.containers.find_one({'_id':oid})

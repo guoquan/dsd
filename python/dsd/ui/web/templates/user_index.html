@@ -27,25 +27,39 @@
                 </div>
                 <div class="panel-body">
                     <p>Usage of your contaners.</p>
+                    <p>
+                        <span>Total: {{ count_container }} / {{ max_container }}</span>
+                        <span>Running: {{ count_live_container }} / {{ max_live_container }} </span>
+                    </p>
                 </div>
+                {% if container_lst %}
                 <table class="table table-striped table-hover">
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>type</th>
-                            <th>Memory-Usage</th>
-                            <th>Volatile</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Ports</th>
                         </tr>
                     </thead>
                     <tbody>
+                        {% for container in container_lst %}
                         <tr>
-                            <td>1</td>
-                            <td>K20</td>
-                            <td>300/2000</td>
-                            <td>80%</td>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ container['name'] }}</td>
+                            <td>{{ container['status_str'] }}</td>
+                            <td>
+                                {% if 'ps' in container %}
+                                {% for port in container['ps']['ports'] %}
+                                <a class="btn btn-primary btn-xs" href="{% if port.p == '0.0.0.0' %}{{ default_host }}{% else %}//{{ port.p }}{% endif %}:{{ port.h }}" role="button" target="_blank"> {{ port.c }} </a>
+                                {% endfor%}
+                                {% endif %}
+                            </td>
                         </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
+                {% endif %}
                 <div class="panel-footer"><a href="{{ url_for('user.container') }}">Details &raquo;</a></div>
             </div>
         </div>

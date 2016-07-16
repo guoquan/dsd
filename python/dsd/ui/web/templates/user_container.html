@@ -6,7 +6,13 @@
     <h1 class="page-header">Containers</h1>
     <div class="panel panel-info">
         <div class="panel-heading">
-            <h2 class="panel-title">Containers</h2>
+            <h2 class="panel-title">Containers </h2>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <span class="col-sm-4 col-md-3">Total: {{ count_container }} / {{ max_container }}</span>
+                <span class="col-sm-4 col-md-3">Running: {{ count_live_container }} / {{ max_live_container }} </span>
+            </div>
         </div>
         {% if container_lst %}
         <div id="containers" class="panel-group">
