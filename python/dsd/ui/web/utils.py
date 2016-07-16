@@ -3,10 +3,12 @@ from flask import session, redirect, url_for, flash, request
 from urlparse import urlparse, urljoin
 import pymongo
 from dsd.sys.docker.pydocker import PyDocker as Docker
-from dsd.sys.docker.pydocker import HC, HCP
+from dsd.sys.docker.pydocker import HC, HCP, ContainerState
 from dsd.sys.docker.nvdocker import NvDocker as NVD
 import hashlib, binascii
 import itertools
+import re
+import os
 
 _logger = logging.getLogger()
 
@@ -14,9 +16,8 @@ class UserTypes:
     STR = ['Administrator', 'User']
     Administrator, User = range(2)
 
-class ContainerStatus:
-    STR = ['Initial', 'Ready', 'Starting', 'Started', 'Stopping', 'Stopped', 'Error']
-    Initial, Ready, Starting, Started, Stopping, Stopped, Error = range(7)
+VOLUME_BASE_WORKSPACES = '/root/workspaces'
+VOLUME_BASE_DATA = '/root/data'
 
 def get_db():
     client = pymongo.MongoClient()
@@ -159,3 +160,10 @@ def no_host_redirect(state_message=None, user_back=None):
         return redirect(url_for('manage.system'))
     else:
         return redirect(url_for('error', error=state_message+' Please contact system administrator.', next=get_redirect_target()))
+
+def save_name(name, accpet=r'a-zA-Z0-9_\.\-'):
+    return re.sub(r'[^' + accpet + r']', '_', name)
+
+def ensure_path(path):
+    if not os.path.exists(path):
+        os.makedirs(path)

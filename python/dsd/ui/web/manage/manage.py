@@ -29,17 +29,19 @@ def manage_container():
         if not docker:
             return no_host_redirect()
 
-        container_lst = []
-        user_container_lst = list(db.containers.find())
-        all_containers = docker.ps(all=True)
-        for ps_container in all_containers:
-            for user_container in user_container_lst:
-                if ps_container['container_id'] == user_container['container_id']:
-                    user_container = dict(user_container, **ps_container)
-                    container_lst.append(user_container)
-                    break
-        #container_lst = list(db.containers.find())
-        #print container_lst
+        container_lst = list(db.containers.find())
+        for container in container_lst:
+            container['user'] = db.users.find_one({'_id':container['user_oid']})
+            container['auth_image'] = db.auth_images.find_one({'_id':container['auth_image_oid']})
+            if 'ps_id' in container and container['ps_id']:
+                container['ps'] = docker.container(container['ps_id'])
+            if container['auth_image']:
+                container['auth_image']['image'] = docker.image(id=container['auth_image']['image_id'], name=container['auth_image']['name'])
+            if 'ps' in container:
+                container['status_str'] = container['ps']['status_str']
+            else:
+                container['status_str'] = 'Initial'
+
         return render_template('manage_container.html', container_lst=container_lst)
     else:
         return invalid_login('Administrators only. Login again.')

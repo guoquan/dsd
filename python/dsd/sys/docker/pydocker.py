@@ -96,6 +96,14 @@ def _docker_status_str(state):
 
     return u'Exited (%d) %s ago' % (state['ExitCode'], _human_time_abs_delta(datetime.datetime.now() - _docker_time(state['FinishedAt'])))
 
+class ContainerState:
+    STR = ['Paused', 'Restarting', 'Running with Health Information',
+           'Running', 'Removal in Progress', 'Dead',
+           'Created', 'Unfinished', 'Exited']
+    Paused, Restarting, RunningHealth, \
+        Running, RemovalInProgress, Dead, \
+        Created, UnFinished, Exited = range(9)
+
 class PyDocker():
     # initialize cli
     def __init__(self, base_url='unix://var/run/docker.sock', **tls_params):
@@ -206,16 +214,13 @@ class PyDocker():
             ps_single['command'] = ps['Command']
             ps_single['status_str'] = ps['Status'] # TODO process this string to guess more accurate state
             ps_single['created'] = _docker_time(ps['Created'])
-            # remote api before version 1.23, for example on my Mac,
-            #   does not have this field 'State'
-            # but it is avaliable in inspect
-            ps_single['state'] = ps.get('State', None)
             ports = []
-            for port in ps['Ports']:
-                if port['Type'] == u'tcp': # u'tcp' == 'tcp' is True
-                    ports.append(HCP(h=port['PublicPort'],
-                                     c=port['PrivatePort'],
-                                     p=port['IP']))
+            if 'Ports' in ps and ps['Ports']:
+                for port in ps['Ports']:
+                    if port['Type'] == u'tcp': # u'tcp' == 'tcp' is True
+                        ports.append(HCP(h=port['PublicPort'],
+                                         c=port['PrivatePort'],
+                                         p=port['IP']))
             ps_single['ports'] = ports # need process
             ps_single['names'] = [name.split('/')[-1] for name in ps['Names']]
 
@@ -239,15 +244,39 @@ class PyDocker():
         container['command'] = ' '.join(api['Config']['Cmd'])
         container['status_str'] = _docker_status_str(api['State'])
         container['created'] = _docker_time(api['Created'])
+
         container['state'] = api['State'] # https://github.com/docker/docker/blob/master/container/state.go
+        state = container['state']
+        if state['Running']:
+            if state['Paused']:
+                state_code = ContainerState.Paused
+            elif state['Restarting']:
+                state_code = ContainerState.Restarting
+            elif 'Health' in state and state['Health']:
+                state_code = ContainerState.RunningHealth
+            else:
+                state_code = ContainerState.Running
+        elif 'RemovalInProgress' in state and state['RemovalInProgress']:
+            state_code = ContainerState.RemovalInProgress
+        elif state['Dead']:
+            state_code = ContainerState.Dead
+        elif not _docker_time(state['StartedAt']):
+            state_code = ContainerState.Created
+        elif not _docker_time(state['FinishedAt']):
+            state_code = ContainerState.UnFinished
+        else:
+            state_code = ContainerState.Exited
+        container['state_code'] = state_code
+
         ports = []
-        for k, v in api['NetworkSettings']['Ports'].iteritems():
-            client_port, port_type = k.split('/')
-            if port_type == u'tcp': # u'tcp' == 'tcp' is True
-                for vv in v:
-                    ports.append(HCP(h=vv['HostPort'],
-                                     c=client_port,
-                                     p=vv['HostIp']))
+        if 'Ports' in api['NetworkSettings'] and api['NetworkSettings']['Ports']:
+            for k, v in api['NetworkSettings']['Ports'].iteritems():
+                client_port, port_type = k.split('/')
+                if port_type == u'tcp' and v: # u'tcp' == 'tcp' is True
+                    for vv in v:
+                        ports.append(HCP(h=vv['HostPort'],
+                                         c=client_port,
+                                         p=vv['HostIp']))
         container['ports'] = ports
         container['names'] = [api['Name'].split('/')[-1]]
 

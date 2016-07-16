@@ -31,6 +31,15 @@
                         <div class="col-sm-3">{{ container['status_str'] }}</div>
                         <div class="col-sm-2"><button class="btn btn-default" data-toggle="collapse" data-parent="#containers" data-target="#container_{{ loop.index }}"><span class="glyphicon glyphicon-list-alt"></span></button></div>
                     </div>
+                    <div class="row">
+                        <div class="col-sm-11 col-sm-offset-1">
+                            {% if 'ps' in container %}
+                            {% for port in container['ps']['ports'] %}
+                            <a class="btn btn-primary" href="{% if port.p == '0.0.0.0' %}{{ default_host }}{% else %}//{{ port.p }}{% endif %}:{{ port.h }}" role="button" target="_blank"><span class="glyphicon glyphicon-eye-open"></span> {{ port.c }} </a>
+                            {% endfor%}
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
                 <div id="container_{{ loop.index }}" class="panel-collapse collapse">
                     <div class="panel-body">
