@@ -78,7 +78,12 @@ def manage_image_authorize():
                 return redirect(url_for('manage.image'))
             except ValueError as e:
                 flash(str(e), 'warning')
-                return redirect(url_for('manage.image.authorize', **request.form))
+                error = str(e)
+                #return redirect(url_for('manage.image.authorize', **request.form))
+                image = docker.image(id=request.form['image_id'],
+                                     name=request.form['image_name'])
+                return render_template('manage_image_authorize.html', image=image,
+                                       error=error, **request.form)
             except Exception as e:
                 print '-'*10, type(e), ':', str(e), e.args
     else:

@@ -79,7 +79,7 @@ def init(db):
 
     # user config
     config['default_user_max_container'] = 3
-    config['default_user_max_live_container'] = 3
+    config['default_user_max_live_container'] = 2
     config['default_user_max_gpu'] = 1
     config['default_user_max_disk'] = 1024
 

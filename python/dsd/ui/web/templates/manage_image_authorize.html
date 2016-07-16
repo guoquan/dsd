@@ -11,6 +11,12 @@
         </div>
         <div class="panel-body">
             <form class="form-horizontal" action="{{ url_for('manage.image.authorize') }}" method="post">
+                {% if error %}
+                <div class="alert alert-warning">
+                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                    {{ error }}
+                </div>
+                {% endif %}
                 <input type="hidden" name="image_name" value="{{ image['name'] }}">
                 <div class="form-group">
                     <label for="id" class="col-sm-3 control-label">id</label>
@@ -34,19 +40,19 @@
                 <div class="form-group">
                     <label for="name" class="col-sm-3 control-label">Name</label>
                     <div class="col-sm-9">
-                        <input type="text" class="form-control" name="name" placeholder="Name" value="{{ name }}">
+                        <input type="text" class="form-control" name="name" placeholder="Name"{% if name %} value="{{ name[0] }}"{% endif %}>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="ports" class="col-sm-3 control-label">Ports</label>
                     <div class="col-sm-9">
-                        <input type="text" class="input-tags" name="ports" placeholder="Ports to be expose to user" value="{{ ports }}">
+                        <input type="text" class="input-tags" name="ports" placeholder="Ports to be expose to user"{% if ports %} value="{{ ports[0] }}"{% endif %}>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="description" class="col-sm-3 control-label">Description</label>
                     <div class="col-sm-9">
-                        <input type="text" class="form-control" name="description" placeholder="Description of the image" value="{{ description }}">
+                        <input type="text" class="form-control" name="description" placeholder="Description of the image"{% if description %}  value="{{ description[0] }}"{% endif %}>
                     </div>
                 </div>
                 <div class="form-group">

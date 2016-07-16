@@ -85,11 +85,12 @@ def is_safe_url(target):
            ref_url.netloc == test_url.netloc
 
 def get_redirect_target():
-    for target in request.values['next'], request.referrer:
+    for target in request.values.get('next', None), request.referrer:
         if not target:
             continue
         if is_safe_url(target):
             return target
+    return None
 
 def redirect_back(endpoint='index', **values):
     if 'next' in request.form:
