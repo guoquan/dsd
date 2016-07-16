@@ -129,31 +129,71 @@ def examine_user(container):
     if container['user_oid'] != ObjectId(user['id']):
         raise SystemError('You can only operate your own container.')
 
-def reinstall_container(container):
-    examine_user(container)
-    # TODO
-    # stop the docker container
-    # remove the docker container
-    # create a new docker container
-    # set status
-    flash('Reinstall not implemented yet.', 'warning')
-
 @app.route("/user/container/save", endpoint='user.container.save', methods=['POST'])
 def user_container_save():
     if is_login():
+        docker = get_docker()
         oid = ObjectId(request.form['id'])
         container = db.containers.find_one({'_id':oid})
         try:
+            examine_user(container)
             critical = save_container(request.form, container)
-            if critical:
+            if critical and 'ps_id' in container and container['ps_id']:
                 #flash('Critical change(s) detected in %s. Reinstall is applied automatically.' % critical, 'warning')
                 flash('Critical change(s) detected. Reinstall is applied automatically.', 'warning')
-                reinstall_container(container)
+                container['ps'] = docker.container(container['ps_id'])
+                state = container['ps']['state']
+                running = state['Running']
+                # using the raw interface 'state - Running'; a wrapper should be better here
+                if running or ('RemovalInProgress' in state and state['RemovalInProgress']):
+                    stop_ps(container)
+                # TODO maybe wait some time? and wait for stop
+                remove_ps(container)
+                del container['ps']
+                del container['ps_id']
+
+                if running:
+                    ps_id = create_ps(container)
+                    container['ps_id'] = ps_id
+                    run_ps(container)
+
             db.containers.save(container)
         except Exception as e:
             flash('Something\'s wrong: ' + str(e), 'warning')
         else:
             flash('Container information saved.', 'success')
+
+        return redirect(url_for('user.container'))
+    else:
+        return invalid_login()
+
+@app.route("/user/container/reinstall", endpoint='user.container.reinstall', methods=['GET', 'POST'])
+def user_container_reinstall():
+    if is_login():
+        docker = get_docker()
+        oid = ObjectId(request.values['id'])
+        container = db.containers.find_one({'_id':oid})
+        try:
+            examine_user(container)
+            if 'ps_id' in container and container['ps_id']:
+                container['ps'] = docker.container(container['ps_id'])
+                state = container['ps']['state']
+                # using the raw interface 'state - Running'; a wrapper should be better here
+                if state['Running'] or ('RemovalInProgress' in state and state['RemovalInProgress']):
+                    stop_ps(container)
+                # TODO maybe wait some time? and wait for stop
+                remove_ps(container)
+            else:
+                raise SystemError('Container %s has never been run. No need to reinstall.' % container['name'])
+
+            # refresh container and update
+            container = db.containers.find_one({'_id':container['_id']})
+            del container['ps_id']
+            db.containers.save(container)
+        except Exception as e:
+            flash('Something\'s wrong: ' + str(e), 'warning')
+        else:
+            flash('Container is reinstalled.', 'success')
 
         return redirect(url_for('user.container'))
     else:
@@ -371,38 +411,22 @@ def user_container_remove():
             examine_user(container)
             if 'ps_id' in container and container['ps_id']:
                 container['ps'] = docker.container(container['ps_id'])
-                state_code = container['ps']['state_code']
-                # TODO do with differnt situation
-                if state_code == ContainerState.Paused:
-                    pass
-                elif state_code == ContainerState.Restarting:
-                    pass
-                elif state_code == ContainerState.RunningHealth:
-                    pass
-                elif state_code == ContainerState.Running:
-                    pass
-                elif state_code == ContainerState.RemovalInProgress:
-                    pass
-                elif state_code == ContainerState.Dead:
-                    pass
-                elif state_code == ContainerState.Created:
-                    pass
-                elif state_code == ContainerState.UnFinished:
-                    pass
-                elif state_code == ContainerState.Exited:
-                    pass
-                stop_ps(container)
+                state = container['ps']['state']
+                # using the raw interface 'state - Running'; a wrapper should be better here
+                if state['Running'] or ('RemovalInProgress' in state and state['RemovalInProgress']):
+                    stop_ps(container)
                 # TODO maybe wait some time? and wait for stop
                 remove_ps(container)
             else:
                 # never run, no docker ps
                 pass
+
             db.containers.delete_one({'_id':container['_id']})
 
         except Exception as e:
             flash('Something\'s wrong: ' + str(e), 'warning')
         else:
-            flash('Container %s is restarted.' % container['name'], 'success')
+            flash('Container %s is removed.' % container['name'], 'success')
 
         return redirect(url_for('user.container'))
     else:
