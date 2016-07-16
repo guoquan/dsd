@@ -1,50 +1,260 @@
 {% extends "user_base.html" %}
-{% block user_content %}
-<div class='row'>
-    <div class='row'>
-        <h4>container List</h4>
+
+{% block panel_content %}
+<!-- user-container -->
+<div>
+    <h1 class="page-header">Containers</h1>
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h2 class="panel-title">Containers </h2>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <span class="col-sm-4 col-md-3">Total: {{ count_container }} / {{ max_container }}</span>
+                <span class="col-sm-4 col-md-3">Running: {{ count_live_container }} / {{ max_live_container }} </span>
+            </div>
+        </div>
+        {% if container_lst %}
+        <div id="containers" class="panel-group">
+            <div class="panel th">
+                <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-sm-1">#</div>
+                        <div class="col-sm-3">Name</div>
+                        <div class="col-sm-3">Image</div>
+                        <div class="col-sm-3">Status</div>
+                        <div class="col-sm-2"></div>
+                    </div>
+                </div>
+            </div>
+            {% for container in container_lst %}
+            <div class="panel">
+                <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-sm-1">{{ loop.index }}</div>
+                        <div class="col-sm-3">{{ container['name'] }}</div>
+                        <div class="col-sm-3">{{ container['auth_image']['name'] }}</div>
+                        <div class="col-sm-3">{{ container['status_str'] }}</div>
+                        <div class="col-sm-2"><button class="btn btn-default" data-toggle="collapse" data-parent="#containers" data-target="#container-{{ loop.index }}"><span class="glyphicon glyphicon-list-alt"></span></button></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-11 col-sm-offset-1">
+                            {% if 'ps' in container %}
+                            {% for port in container['ps']['ports'] %}
+                            <a class="btn btn-primary" href="{% if port.p == '0.0.0.0' %}{{ default_host }}{% else %}//{{ port.p }}{% endif %}:{{ port.h }}" role="button" target="_blank"><span class="glyphicon glyphicon-eye-open"></span> {{ port.c }} </a>
+                            {% endfor%}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div id="container-{{ loop.index }}" class="panel-collapse collapse">
+                    <div class="panel-body">
+                        <!--<p>{{ container }}</p>!-->
+                        <form class="form-horizontal" action="{{ url_for('user.container.save') }}" method="post">
+                            <input type="hidden" class="form-control" name="id" value="{{ container['_id'] }}" />
+                            <div class="form-group">
+                                <label for="name" class="col-sm-3 control-label">Name</label>
+                                <div class="col-sm-9">
+                                    <input class="form-control" name="name" value="{{ container['name'] }}" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image</label>
+                                <div class="col-sm-9">
+                                    <p class="form-control-static">
+                                        {{ container['auth_image']['name'] }}
+                                        <button type="button" class="btn btn-default" data-toggle="collapse" data-target="#container-{{ loop.index }}-image"><span class="glyphicon glyphicon-cd"></span></button>
+                                    </p>
+                                    <div class="panel">
+                                        <div id="container-{{ loop.index }}-image" class="panel-collapse collapse">
+                                            <div class="well">
+                                                <div class="row">
+                                                    <label class="col-md-3 control-label">Authorization name</label>
+                                                    <div class="col-md-9 form-control-static">{{ container['auth_image']['name'] }}</div>
+                                                </div>
+                                                <div class="row">
+                                                    <label class="col-md-3 control-label">Image name</label>
+                                                    <div class="col-md-9 form-control-static">{{ container['auth_image']['image_name'] }}</div>
+                                                </div>
+                                                <div class="row">
+                                                    <label class="col-md-3 control-label">Ports</label>
+                                                    <div class="col-md-9 form-control-static">
+                                                        {% for port in container['auth_image']['ports'] %}
+                                                        <span class="label label-primary label-inline-block"><span class="glyphicon glyphicon-eye-open"></span> {{ port }} </span>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <label class="col-md-3 control-label">Description</label>
+                                                    <div class="col-md-9 form-control-static">{{ container['auth_image']['description'] }}</div>
+                                                </div>
+                                                <div class="row">
+                                                    <label class="col-md-3 control-label">Image created time</label>
+                                                    <div class="col-md-9 form-control-static">{{ container['auth_image']['image']['created'] }}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="volume_h" class="col-sm-3 control-label">Workspace</label>
+                                <div class="col-sm-4">
+                                    <select name="volume_h" placeholder="Select a workspace">
+                                        <option>Select a workspace</option>
+                                        <option value="0"{% if container['volume_h']=='0' %} selected{% endif %}>My workspace</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-1" style="text-align:center;">
+                                    <span class="glyphicon glyphicon-transfer" style="vertical-align:middle;"></span>
+                                </div>
+                                <div class="col-sm-4">
+                                    <input class="form-control" name="volume_c" value="{{ container['volume_c'] }}" readonly />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="data_volume_h" class="col-sm-3 control-label">Data</label>
+                                <div class="col-sm-4">
+                                    <select name="data_volume_h" placeholder="Select a date storage" value="{{ container['data_volume_h'] }}">
+                                        <option>Select a date storage</option>
+                                        <option value="0"{% if container['data_volume_h']=='0' %} selected{% endif %}>Public data storage</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-1" style="text-align:center;">
+                                    <span class="glyphicon glyphicon-transfer" style="vertical-align:middle;"></span>
+                                </div>
+                                <div class="col-sm-4">
+                                    <input class="form-control" name="data_volume_c" value="{{ container['data_volume_c'] }}" readonly />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="gpu" class="col-sm-3 control-label">GPU(s)</label>
+                                <div class="col-sm-9 gpu-col">
+                                    <input type="text" name="gpu" class="gpu" data-provide="slider" data-slider-handle="square" data-slider-ticks="[0, 1, 2, 3, 4]" value="{{ container['gpu'] }}" data-slider-value="{{ container['gpu'] }}" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="cpu" class="col-sm-3 control-label">CPU(s)</label>
+                                <div class="col-sm-9 gpu-col">
+                                    <p name="cpu" class="form-control-static">Standard/Shared</p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="memory" class="col-sm-3 control-label">Memory</label>
+                                <div class="col-sm-9 gpu-col">
+                                    <p name="memory" class="form-control-static">Standard/Shared</p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="notes" class="col-sm-3 control-label">Notes</label>
+                                <div class="col-sm-9">
+                                    <textarea class="form-control" name="notes" rows="3">{{ container['notes'] }}</textarea>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-12 col-md-9 col-md-offset-3" role="group">
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-save"></span> Save </button>
+                                        <button class="btn btn-default" type="reset">Reset</button>
+                                    </div>
+                                    <div class="btn-group pull-right-sm" role="group">
+                                        <a href="{{ url_for('user.container.reinstall', id=container['_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-cd"></span> Reinstall </a>
+                                        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#remove-dialog-{{ loop.index }}"><span class="glyphicon glyphicon-remove"></span> Remove </button>
+                                    </div>
+                                    <div class="modal fade" id="remove-dialog-{{ loop.index }}" tabindex="-1" role="dialog" aria-labelledby="remove-dialog-{{ loop.index }}-label">
+                                        <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                                    <h4 class="modal-title" id="remove-dialog-{{ loop.index }}-label">Remove a container</h4>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Removing the container, you will lost all the configurations and any files outside of your workspace and data directory.</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <a class="btn btn-danger" href="{{ url_for('user.container.remove', id=container['_id']) }}" role="button"><span class="glyphicon glyphicon-remove"></span> Remove </a>
+                                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <hr>
+                        <form class="form-horizontal" action="{{ url_for('user.container.execute') }}" method="post">
+                            <div class="form-group">
+                                <div class="col-sm-6 col-md-4 col-md-offset-3" role="group">
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('user.container.start', id=container['_id']) }}" class="btn btn-primary" role="button"><span class="glyphicon glyphicon-play"></span> Run </a>
+                                        <a href="{{ url_for('user.container.stop', id=container['_id']) }}" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-stop"></span> Stop </a>
+                                        <a href="{{ url_for('user.container.restart', id=container['_id']) }}" class="btn btn-warning" role="button"><span class="glyphicon glyphicon-repeat"></span> Restart </a>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-md-5" role="group">
+                                    <div class="input-group" role="group">
+                                        <span class="input-group-addon"><span class="glyphicon glyphicon-console"></span></span>
+                                        <input type="text" class="form-control" placeholder="Command to be executed in the container">
+                                        <span class="input-group-btn"><button class="btn btn-default" type="button"> Execute </button></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="panel-body">
+                <p>No container exist. You can create one <a href="{{ url_for('user.container.add') }}">here</a>!</p>
+            </div>
+            {% endif %}
+        </div>
     </div>
-    {% if container_lst %}
-    <div class='row'>
-        <table class="table table-bordered table-hover">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>operation</th>
-                    {% for container_key in container_lst[0].keys() %}
-                    <th>{{container_key}}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for container in container_lst %}
-                <tr>
-                    <td>{{ loop.index0 + 1 }}</td>
-                    <td>
-                        <a href="/user/container/del?id={{container['container_id']}}">del</a>
-                        <a href="/user/container/restart?id={{container['container_id']}}">restart</a>
-                        <a href="/user/container/stop?id={{container['container_id']}}">stop</a>
-                        <a href="/user/container/start?id={{container['container_id']}}">start</a>
-                    </td>
-                    {% for container_key in container.keys() %}
-                    {% if container_key == 'port'%}
-                    <td>
-                        {% for port_ in container['port']%}
-                        <a href="http://192.168.7.170:{{port_['PublicPort']}}" target='_blank'>{{port_['PrivatePort']}}</a>
-                        {% endfor %}
-                    </td>
-                    {% else %}
-                    <td>{{container[container_key]}}</td>
-                    {% endif %}
-                    {% endfor %}
-                    {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% else %}
-    <div class='row'>
-        <h3> none container existed</h3>
-    </div>
-    {% endif %}
 </div>
-{% endblock %}
+<!-- end user-container -->
+{% endblock panel_content %}
+
+{% block head_css %}
+{{ super() }}
+<link href="{{url_for('static', filename='assets/vendor/bootstrap-pull/bootstrap-pull.css')}}" type="text/css" rel="stylesheet">
+<style>
+.panel.th .panel-heading {
+    font-weight: bold;
+}
+</style>
+<link href="{{url_for('static', filename='assets/vendor/selectize.js/css/selectize.css')}}" type="text/css" rel="stylesheet">
+<link href="{{url_for('static', filename='assets/vendor/selectize.js/css/selectize.bootstrap3.css')}}" data-theme="bootstrap3" type="text/css" rel="stylesheet">
+<style>
+/* to match bootstrap style */
+#containers .selectize-dropdown [data-selectable] .highlight {
+    padding: .2em;
+    background-color: #fcf8e3;
+    color: #000;
+    /* and emphasize a little bit more */
+    font-weight: bold;
+    font-size: 1.2em;
+}
+#containers .slider.slider-horizontal {
+    width: 100%;
+}
+div.gpu-col {
+    padding: 0 25px;
+}
+</style>
+<link href="{{url_for('static', filename='assets/vendor/bootstrap-slider/css/bootstrap-slider.min.css')}}" type="text/css" rel="stylesheet">
+{% endblock head_css %}
+
+{% block scripts %}
+{{ super() }}
+<!--[if lt IE 9]>
+<script src="{{url_for('static', filename='assets/vendor/es5-shim/es5-shim.min.js')}}" type="text/javascript"></script>
+<![endif]-->
+<script src="{{url_for('static', filename='assets/vendor/selectize.js/js/standalone/selectize.min.js')}}" type="text/javascript"></script>
+<script src="{{url_for('static', filename='assets/vendor/bootstrap-slider/bootstrap-slider.min.js')}}" type="text/javascript"></script>
+<script type="text/javascript">
+    $(function(){
+        $('select').selectize();
+    });
+</script>
+{% endblock scripts %}

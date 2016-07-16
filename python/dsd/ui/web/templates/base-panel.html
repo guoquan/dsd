@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% import 'macros.html' as M %}
+
+{% block head_css %}
+{{ super() }}
+<link href="{{url_for('static', filename='assets/css/panel.css')}}" type="text/css" rel="stylesheet">
+{% endblock head_css %}
+
+{% block header_controls %}
+{{ super() }}
+<!-- common header controls !-->
+<ul class="nav navbar-nav navbar-right">
+    {{ M.sidebar_li(session['user']['username'], url_for('profile'), bs_icon='user') }}
+    {{ M.sidebar_li('Logout', url_for('logout'), bs_icon='log-out') }}
+</ul>
+<!-- end common header controls !-->
+{% endblock header_controls %}
+
+{% block content %}
+<!-- panel framework !-->
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+            {% block panel_sidebar %}
+            {% block panel_sidebar_control %}
+            {% endblock panel_sidebar_control %}
+
+            {% block panel_sidebar_user %}
+            <ul class="nav nav-stacked nav-bottom">
+                {{ M.sidebar_li('Profile', url_for('profile'), bs_icon='user') }}
+                {{ M.sidebar_li('Logout', url_for('logout'), bs_icon='log-out') }}
+            </ul>
+            {% endblock panel_sidebar_user %}
+            {% endblock panel_sidebar %}
+        </div>
+        <div class="col-sm-9 col-md-10 main">
+            {{ super() }}
+            {% block panel_content %}
+            {% endblock panel_content %}
+        </div>
+    </div>
+</div>
+<!-- end panel framework !-->
+{% endblock content %}

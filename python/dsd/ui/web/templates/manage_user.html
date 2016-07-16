@@ -1,39 +1,55 @@
 {% extends "manage_base.html" %}
-{% block manage_content %}
-<div class='row'>
-    <div class='row'>
-        <h4>User List</h4>
-    </div>
-    <div class='row'>
-        <table class="table table-bordered table-hover">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>user_name</th>
-                    <th>containers_cnt</th>
-                    <th>disk_space</th>
-                    <th>user_type</th>
-                    <th>operation</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for user in user_lst %}
+
+{% block panel_content %}
+{{ super() }}
+<!-- manage users -->
+<div>
+    <h1 class="page-header">Users</h1>
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h2 class="panel-title">Users</h2>
+        </div>
+        {% if user_lst %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
                     <tr>
-                        <th>{{ loop.index0 + 1 }}</th>
-                        <th>{{ user["Username"] }}</th>
-                        <th>3/{{ user["Max_Container_Count"] }}</th>
-                        <th>200/{{ user["Max_Disk_Space"] }}</th>
-                        <th>{{ user["User_Type"] }}</th>
-                        <th>
-                            <a href="{{ url_for('logout') }}">del</a>
-                            <a href="{{ url_for('logout') }}">edit</a>
-                        </th>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <div class="row">
-        <a href="/manage/user/add">add user</a>
+                        <th>#</th>
+                        <th>user_name</th>
+                        <th>containers_cnt</th>
+                        <th>disk_space</th>
+                        <th>user_type</th>
+                        <th>operation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in user_lst %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ user['username'] }}</td>
+                        <td>{% if user['type'] %} ? / {{ user['max_container'] }} {% else %} - {% endif %}</td>
+                        <td>{% if user['type'] %} ? / {{ user['max_disk'] }} {% else %} - {% endif %}</td>
+                        <td>{% if user['type'] %} user {% else %} administrator {% endif %}</td>
+                        <td>
+                            <span class="btn-group" role="group">
+                                <a class="btn btn-default" href="{% if user['username']==cur_user['username'] %}{{ url_for('profile') }}{% else %}{{ url_for('profile', id=user['_id']) }}{% endif %}" role="button"><span class="glyphicon glyphicon-edit"></span> Edit </a>
+                                <button class="btn btn-danger {% if user['username']==cur_user['username'] %}disabled{%endif%}"><span class="glyphicon glyphicon-remove"></span> Remove</button>
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="panel-body">
+            <p>No user exist.</p>
+        </div>
+        {% endif %}
+        <div class="panel-body">
+            <p><a href="{{ url_for('manage.user.add') }}" class="btn btn-default pull-right" role="button">add user</a></p>
+        </div>
     </div>
 </div>
+<!-- end manage users -->
 {% endblock %}

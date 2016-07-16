@@ -3,7 +3,7 @@ from dsd.sys.pygpu import *
 class gpu():
     def __init__(self):
         self.gpuCount = len(get_devices())
-        
+
     def gpu_info(self):
         gpuStatus = []
         for i in range(self.gpuCount):
@@ -17,7 +17,7 @@ class gpu():
             gpuSingle['utilization_memory'] = info['utilization']['memory']
 
             gpuSingle['temperature'] = info['temperature']
-            
+
             gpuStatus.append(gpuSingle)
-            
+
         return gpuStatus

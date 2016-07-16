@@ -1,42 +1,86 @@
 {% extends "manage_base.html" %}
-{% block manage_content %}
-<div class='row'>
-    <div class='row'>
-        <h4>gpu List</h4>
-    </div>
-    <div class='row'>
-        <table class="table table-bordered table-hover">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>owner</th>
-                    <th>gpu</th>
-                    <th>max_disk</th>
-                    <th>max_memory</th>
-                    <th>operation</th>
-                    {% for container_key in container_lst[0].keys() %}
-                        <th>{{container_key}}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for container in container_lst %}
+
+{% block head_css %}
+{{ super() }}
+<style>
+.collapse-inline.in {
+    display: inline-block;
+}
+</style>
+{% endblock head_css %}
+
+{% block panel_content %}
+{{ super() }}
+<!-- manage GPUs -->
+<div>
+    <h1 class="page-header">GPUs</h1>
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h2 class="panel-title">GPUs and Associated Processes</h2>
+        </div>
+        {% if gpu_lst %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Model</th>
+                        <th>Path</th>
+                        <th>Memory</th>
+                        <th>Utilization GPU</th>
+                        <th>Utilization Memory</th>
+                        <th>Temperature</th>
+                        <th>Operations</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for gpu in gpu_lst %}
                     <tr>
                         <td>{{ loop.index0 + 1 }}</td>
-                        <td>{{ container["owner"] }}</td>
-                        <td>{{ container["gpu"] }}</td>
-                        <td>{{ container["max_disk"] }}</td>
-                        <td>{{ container["max_memory"] }}</td>
+                        <td>{{ gpu["Model"] }}</td>
+                        <td>{{ gpu["Path"] }}</td>
+                        <td>{{ gpu['MemoryUsed'] }} / {{ gpu['MemoryTotal'] }}MB</td>
+                        <td>{{ gpu["UtilizationGpu"] }}</td>
+                        <td>{{ gpu["UtilizationMemory"] }}</td>
+                        <td>{{ gpu["Temperature"] }}</td>
                         <td>
-                            <a href="{{ url_for('logout') }}">del</a>
-                            <a href="{{ url_for('logout') }}">edit</a>
+                            <span class="btn-group" role="group">
+                                <a class="btn btn-warning btn-sm" href="#" role="button">Stop All</a>
+                                <a class="btn btn-danger btn-sm" href="#" role="button">Kill All</a>
+                            </span>
                         </td>
-                        {% for container_key in container.keys() %}
-                            <td>{{container[container_key]}}</td>
-                        {% endfor %}
-                {% endfor %}
-            </tbody>
-        </table>
+                    </tr>
+                    <tr>
+                        <td colspan="8">
+                            Processes:
+                            <ul class="list-group">
+                                {% for proc in gpu['Processes'] %}
+                                <li class="list-group-item">
+                                    <span>
+                                        <button class="btn btn-default" data-toggle="collapse" data-target="#action_{{ proc['PID'] }}">Actions</button>
+                                        <span id="action_{{ proc['PID'] }}" class="collapse collapse-inline"><span class="btn-group" role="group">
+                                            <a class="btn btn-warning btn-sm" href="#" role="button">Stop</a>
+                                            <a class="btn btn-danger btn-sm" href="#" role="button">Kill</a>
+                                        </span></span>
+                                    </span>
+                                    <span>
+                                        PID: {{ proc['PID'] }} |
+                                        Name: {{ proc['Name'] }} |
+                                        Memory: {{ proc['MemoryUsed'] }} 'MB'
+                                    </span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p>No GPU exist.</p>
+        {% endif %}
     </div>
 </div>
-{% endblock %}
+<!-- manage GPUs -->
+{% endblock panel_content %}

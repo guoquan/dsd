@@ -6,16 +6,23 @@ class NvDocker():
     def __init__(self, base_url='http://localhost:3476'):
         self.base_url = base_url
         self.cli = Client(base_url)
-    
+        
+    def alive(self):
+        try:
+            self._queryInfo()
+        except Exception as e:
+            return False
+        return True
+
     def _get(self, path):
         return self.cli.get(urljoin(self.base_url, path))
-    
+
     def _queryInfo(self):
         return self._get('/gpu/info/json').json()
-        
+
     def _queryStatus(self):
         return self._get('/gpu/status/json').json()
-        
+
     def _queryCli(self, dev=None):
         if dev:
             if dev is 'all':
@@ -26,11 +33,11 @@ class NvDocker():
             return {'VolumeDriver':'',
                     'Volumes':[],
                     'Devices':[]}
-        
+
     def gpuInfo(self):
         info = self._queryInfo()
         status = self._queryStatus()
-        
+
         gpuStatus = list()
         for dev_info, dev_status in zip(info['Devices'], status['Devices']):
             infoSingle = dict()
@@ -52,15 +59,15 @@ class NvDocker():
             infoSingle['Temperature'] = dev_status['Temperature']
             # processes
             infoSingle['Processes'] = dev_status['Processes']
-            
+
             gpuStatus.append(infoSingle)
-            
+
         return gpuStatus
-     
+
     # cuda version, driver version
     def gpuGlobalInfo(self):
         info = self._queryInfo()
-        
+
         gpuGlobalInfo = dict()
         # cuda version
         gpuGlobalInfo['CudaVersion'] = info['Version']['CUDA']
@@ -83,4 +90,3 @@ class NvDocker():
                'devices': [HCP(device) for device in cli['Devices']]
               }
         return params
-    

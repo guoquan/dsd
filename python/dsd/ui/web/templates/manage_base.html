@@ -1,48 +1,30 @@
-{% extends "base.html" %}
-{% block content %}
-<nav class="navbar navbar-inverse">
-    <div class="container-fluid">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="#">DSD Admin</a>
-        </div>
-        <div id="navbar" class="navbar-collapse collapse">
-            <ul class="nav navbar-nav navbar-right">
-                <li><a href="#">Dashboard</a></li>
-                <li><a href="#">Settings</a></li>
-                <li><a href='/logout'>Log out</a></li>
-            </ul>
-        </div>
-    </div>
-</nav>
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-2 sidebar">
-            <ul class="nav nav-sidebar">
-                <li class="active"><a href="/manage">Overview <span class="sr-only">(current)</span></a></li>
-                <li><a href="/manage/gpu">GPU Manage</a></li>
-                <li><a href="/image">Images Manage</a></li>
-                <li><a href="/manage/container">containers manage</a></li>
-                <li><a href="">dockerfiles</a></li>
-            </ul>
-            <br/>
-            <ul class="nav nav-sidebar">
-                <li><a href="/manage/user">User manage</a></li>
-                <li><a href="">Nav item again</a></li>
-                <li><a href="">One more nav</a></li>
-            </ul>
-        </div>
-        <div class="col-md-10 main">
-            {% block manage_content %}
-            {% endblock %}
-        </div>
-    </div>
-</div>
+{% extends "base-panel.html" %}
+{% import 'macros.html' as M %}
 
+{% block header_controls %}
+{{ super() }}
+<!-- admin header controls !-->
+<ul class="nav navbar-nav navbar-right">
+    {{ M.sidebar_li('Settings', url_for('manage.system'), bs_icon='cog') }}
+</ul>
+<!-- end admin header controls !-->
+{% endblock header_controls %}
 
-{% endblock %}
+{% block panel_sidebar_control %}
+{{ super() }}
+<!-- admin sidebar controls !-->
+<ul class="nav nav-stacked">
+    {{ M.sidebar_li('Dashboard', url_for('manage.index'), bs_icon='th-list') }}
+    {{ M.sidebar_li('GPUs', url_for('manage.gpu'), bs_icon='th') }}
+    {{ M.sidebar_li('Images', url_for('manage.image'), bs_icon='cd') }}
+    {{ M.sidebar_li('Containers', url_for('manage.container'), bs_icon='tasks') }}
+    {{ M.sidebar_li('dockerfiles', bs_icon='duplicate') }}
+</ul>
+<ul class="nav nav-stacked">
+    {{ M.sidebar_li('Users', url_for('manage.user'), bs_icon='user') }}
+</ul>
+<ul class="nav nav-stacked">
+    {{ M.sidebar_li('Settings', url_for('manage.system'), bs_icon='cog') }}
+</ul>
+<!-- end admin sidebar controls !-->
+{% endblock panel_sidebar_control %}
