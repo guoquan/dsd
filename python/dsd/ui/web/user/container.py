@@ -3,6 +3,8 @@ from dsd.ui.web import app
 from dsd.ui.web.utils import *
 from bson.objectid import ObjectId
 import threading
+import urllib2
+import requests
 
 @app.template_filter('docker_image')
 def jinja2_filter_docker_image(id, fields=None, delimiter=' | '):
@@ -165,6 +167,7 @@ def user_container_save():
                 remove_ps(container)
                 del container['ps']
                 del container['ps_id']
+                db.containers.save(container)
 
                 if running:
                     ps_id = create_ps(container)
@@ -195,15 +198,13 @@ def user_container_reinstall():
                 # using the raw interface 'state - Running'; a wrapper should be better here
                 if state['Running'] or ('RemovalInProgress' in state and state['RemovalInProgress']):
                     stop_ps(container)
-                # TODO maybe wait some time? and wait for stop
+                # FIXME maybe wait some time? and wait for stop
                 remove_ps(container)
+                # refresh container and update
+                del container['ps_id']
+                db.containers.save(container)
             else:
                 raise SystemError('Container %s has never been run. No need to reinstall.' % container['name'])
-
-            # refresh container and update
-            container = db.containers.find_one({'_id':container['_id']})
-            del container['ps_id']
-            db.containers.save(container)
         except Exception as e:
             flash('Something\'s wrong: ' + str(e), 'warning')
         else:
@@ -216,32 +217,47 @@ def user_container_reinstall():
 def create_ps(container):
     examine_user(container)
     docker = get_docker()
+    user = session['user']
+    auth_image = db.auth_images.find_one({'_id':container['auth_image_oid']})
+    volumes = []
+    if container['volume_h'] and container['volume_c']:
+        host_path = os.path.join(VOLUME_BASE_WORKSPACES, save_name('-'.join([user['username'], str(container['volume_h'])])))
+        ensure_path(host_path)
+        client_path = container['volume_c']
+        ensure_path(client_path)
+        volumes.append(HCP(h=host_path, c=client_path))
+    if container['data_volume_h'] and container['data_volume_c']:
+        host_path = os.path.join(VOLUME_BASE_DATA, save_name('-'.join(['public', str(container['data_volume_h'])])))
+        ensure_path(host_path)
+        client_path = container['data_volume_c']
+        ensure_path(client_path)
+        volumes.append(HCP(h=host_path, c=client_path))
+    params = {'image': auth_image['image_name'],
+              'detach': True,
+              'name': save_name('-'.join([user['username'], container['name'], str(container['_id'])])),
+              'ports': [HC(c=port) for port in auth_image['ports']],
+              'volumes': volumes}
+
     if container['gpu']:
-        # TODO run with nvdocker
-        raise SystemError('Starting with GPU is not implemented yet. Come back later.')
-    else:
-        user = session['user']
-        auth_image = db.auth_images.find_one({'_id':container['auth_image_oid']})
-        volumes = []
-        if container['volume_h'] and container['volume_c']:
-            host_path = os.path.join(VOLUME_BASE_WORKSPACES, save_name('-'.join([user['username'], str(container['volume_h'])])))
-            ensure_path(host_path)
-            client_path = container['volume_c']
-            ensure_path(client_path)
-            volumes.append(HCP(h=host_path, c=client_path))
-        if container['data_volume_h'] and container['data_volume_c']:
-            host_path = os.path.join(VOLUME_BASE_DATA, save_name('-'.join(['public', str(container['data_volume_h'])])))
-            ensure_path(host_path)
-            client_path = container['data_volume_c']
-            ensure_path(client_path)
-            volumes.append(HCP(h=host_path, c=client_path))
-        params = {'image': auth_image['image_name'],
-                  'detach': True,
-                  'name': save_name('-'.join([user['username'], container['name'], str(container['_id'])])),
-                  'ports': [HC(c=port) for port in auth_image['ports']],
-                  'volumes': volumes}
-        ps_id = docker.create(**params)
-        return ps_id
+        nvd = get_nvd()
+        # TODO control how many and which dev to be assigned
+        try:
+            gpu_params = nvd.cliParams(dev=range(container['gpu']))
+        except (requests.exceptions.HTTPError, urllib2.URLError) as e:
+            raise SystemError('Can\'t generate docker configuration according to your current GPU setting. Adjust it and try start the container again.')
+
+        for volume in gpu_params['volumes']:
+            try:
+                docker.volume_inspect(volume.h)
+            except errors.NotFound:
+                break
+        else:
+            del gpu_params['volume_driver']
+
+        params.update(gpu_params)
+
+    ps_id = docker.create(**params)
+    return ps_id
 
 def run_ps(container):
     examine_user(container)
@@ -301,6 +317,7 @@ def user_container_start():
 
         except Exception as e:
             flash('Something\'s wrong: ' + str(e), 'warning')
+            print type(e)
         else:
             flash('Container %s is running.' % container['name'], 'success')
 
