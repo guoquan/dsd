@@ -75,7 +75,7 @@ def manage_user_add():
     else:
         return invalid_login('Administrators only. Login again.')
 
-@app.route('/manage/user/remove', endpoint='manage.user.remove', methods=['POST'])
+@app.route('/manage/user/remove', endpoint='manage.user.remove', methods=['GET', 'POST'])
 def manage_user_remove():
     if is_admin():
         # TODO implement user remove

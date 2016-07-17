@@ -32,7 +32,7 @@
                         <td>{% if user['type'] %} user {% else %} administrator {% endif %}</td>
                         <td>
                             <span class="btn-group" role="group">
-                                <a class="btn btn-default" href="{% if user['username']==cur_user['username'] %}{{ url_for('profile') }}{% else %}{{ url_for('profile', id=user['_id']) }}{% endif %}" role="button"><span class="glyphicon glyphicon-edit"></span> Edit </a>
+                                <a class="btn btn-default" href="{% if user['username']==cur_user['username'] %}{{ url_for('profile') }}{% else %}{{ url_for('profile', oid=user['_id']) }}{% endif %}" role="button"><span class="glyphicon glyphicon-edit"></span> Edit </a>
                                 <button class="btn btn-danger {% if user['username']==cur_user['username'] %}disabled{%endif%}"><span class="glyphicon glyphicon-remove"></span> Remove</button>
                             </span>
                         </td>

@@ -19,14 +19,14 @@
                 <div class="form-group">
                     <label class="col-sm-4 control-label">Type</label>
                     <div class="col-sm-8">
-                        <p class="form-control-static">{% if session['user']['type'] == 0 %}Administrator{% else %}User{% endif %}</p>
+                        <p class="form-control-static">{% if user['type'] == 0 %}Administrator{% else %}User{% endif %}</p>
                     </div>
                 </div>
             </form>
         </div>
     </div>
 
-    {% if session['user']['type'] == 1 %}
+    {% if user['type'] == 1 %}
     <div class="panel panel-info">
         <div class="panel-heading">
             <h2 class="panel-title">User Information</h2>
