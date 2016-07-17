@@ -30,6 +30,7 @@ def index():
             gpu_global = nvd.gpuGlobalInfo()
             gpu_lst = nvd.gpuInfo()
         else:
+            gpu_global = None
             gpu_lst = []
 
         return render_template('user_index.html',

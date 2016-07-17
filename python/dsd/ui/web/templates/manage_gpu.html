@@ -54,6 +54,7 @@
                         <td colspan="8">
                             Processes:
                             <ul class="list-group">
+                                {% if 'Processes' in gpu and gpu['Processes'] %}
                                 {% for proc in gpu['Processes'] %}
                                 <li class="list-group-item">
                                     <span>
@@ -70,6 +71,7 @@
                                     </span>
                                 </li>
                                 {% endfor %}
+                                {% endif %}
                             </ul>
                         </td>
                     </tr>

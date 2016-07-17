@@ -6,7 +6,18 @@ import requests
 @app.route("/manage", endpoint='manage.index', methods=['GET'])
 def index():
     if is_admin():
-        return render_template('manage_index.html')
+
+        nvd = get_nvd()
+        if nvd:
+            gpu_global = nvd.gpuGlobalInfo()
+            gpu_lst = nvd.gpuInfo()
+        else:
+            gpu_global = None
+            gpu_lst = []
+
+        return render_template('manage_index.html',
+                               gpu_global=gpu_global,
+                               gpu_lst=gpu_lst,)
     else:
         return invalid_login('Administrators only. Login again.')
 
