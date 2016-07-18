@@ -107,6 +107,7 @@ def init(db):
     # add some init users
     user1={}
     user1['username'] = 'user1'
+    user1['active'] = True
     user1['type'] = UserTypes.Administrator
     user1['salt'] = os.urandom(16).encode('hex')
     password = '123'
@@ -118,6 +119,7 @@ def init(db):
 
     user2={}
     user2['username'] = 'user2'
+    user2['active'] = True
     user2['type'] = UserTypes.User
     user2['salt'] = os.urandom(16).encode('hex')
     password = '123'

@@ -19,7 +19,15 @@
                 <div class="form-group">
                     <label class="col-sm-4 control-label">Type</label>
                     <div class="col-sm-8">
-                        <p class="form-control-static">{% if user['type'] == 0 %}Administrator{% else %}User{% endif %}</p>
+                        <p class="form-control-static">
+                            {% if user['type'] == 0 %}
+                            Administrator
+                            {% elif user['type'] == 1 %}
+                            User
+                            {% else %}
+                            Unidentified
+                            {% endif %}
+                        </p>
                     </div>
                 </div>
             </form>

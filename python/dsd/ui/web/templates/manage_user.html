@@ -15,10 +15,11 @@
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>user_name</th>
-                        <th>containers_cnt</th>
-                        <th>disk_space</th>
-                        <th>user_type</th>
+                        <th>Username</th>
+                        <th>Active</th>
+                        <th>Type</th>
+                        <th>Containers</th>
+                        <th>Live</th>
                         <th>operation</th>
                     </tr>
                 </thead>
@@ -27,13 +28,22 @@
                     <tr>
                         <td>{{ loop.index }}</td>
                         <td>{{ user['username'] }}</td>
-                        <td>{% if user['type'] %} ? / {{ user['max_container'] }} {% else %} - {% endif %}</td>
-                        <td>{% if user['type'] %} ? / {{ user['max_disk'] }} {% else %} - {% endif %}</td>
-                        <td>{% if user['type'] %} user {% else %} administrator {% endif %}</td>
+                        <td>{% if user['active'] %}Active{% else %}Inactive{% endif %}</td>
+                        <td>
+                            {% if user['type'] == 0 %}
+                            Administrator
+                            {% elif user['type'] == 1 %}
+                            User
+                            {% else %}
+                            Unidentified
+                            {% endif %}
+                        </td>
+                        <td>{% if user['type'] == 1 %} {{ user['containers'] }} / {{ user['max_container'] }} {% else %} - {% endif %}</td>
+                        <td>{% if user['type'] == 1 %} {{ user['ps'] }} / {{ user['max_live_container'] }} {% else %} - {% endif %}</td>
                         <td>
                             <span class="btn-group" role="group">
-                                <a class="btn btn-default" href="{% if user['username']==cur_user['username'] %}{{ url_for('profile') }}{% else %}{{ url_for('profile', oid=user['_id']) }}{% endif %}" role="button"><span class="glyphicon glyphicon-edit"></span> Edit </a>
-                                <button class="btn btn-danger {% if user['username']==cur_user['username'] %}disabled{%endif%}"><span class="glyphicon glyphicon-remove"></span> Remove</button>
+                                <a class="btn btn-default" href="{% if user['username']==cur_user['username'] %}{{ url_for('profile') }}{% else %}{{ url_for('manage.user.oid', oid=user['_id']) }}{% endif %}" role="button"><span class="glyphicon glyphicon-edit"></span> Edit </a>
+                                <a class="btn btn-danger {% if user['username']==cur_user['username'] %}disabled{%endif%}" href="{{ url_for('manage.user.remove.oid', oid=user['_id']) }}" role="button"><span class="glyphicon glyphicon-remove"></span> Remove</a>
                             </span>
                         </td>
                     </tr>

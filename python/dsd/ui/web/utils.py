@@ -71,6 +71,8 @@ def check_login(username, password):
     user = db.users.find_one({'username':username})
     if not user:
         return None, 'No such user!'
+    elif not user['active']:
+        return None, 'User inactive.'
     elif encrypt_password(password, user['username'], user['salt']) == user['password']:
         return user, 'Login succeed!'
     else:

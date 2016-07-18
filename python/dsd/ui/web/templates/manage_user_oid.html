@@ -1,0 +1,124 @@
+{% extends "manage_base.html" %}
+
+{% block panel_content %}
+{{ super() }}
+<!-- manage add user -->
+<div>
+    <h1 class="page-header">{{ user['username'] }}</h1>
+    <form class="form-horizontal" action="{{ url_for('manage.user.oid', oid=user['_id']) }}" method="post">
+        {% if error %}
+        <div class="alert alert-warning">
+            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+            {{ error }}
+        </div>
+        {% endif %}
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h2 class="panel-title">Basic Information</h2>
+            </div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">Name</label>
+                    <div class="col-sm-8">
+                        <p class="form-control-static">{{ user['username'] }}</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">Active</label>
+                    <div class="col-sm-8">
+                        <div class="btn-group" data-toggle="buttons">
+                            <label class="btn btn-primary{% if 'active' in user and user['active'] %} active{% endif %}" data-toggle="collapse" data-target=".active-state">
+                                <input name="active" type="checkbox" autocomplete="off"{% if 'active' in user and user['active'] %} checked{% endif %}>
+                                <span class="active-state collapse{% if 'active' in user and user['active'] %} in{% endif %}">Active</span>
+                                <span class="active-state collapse{% if 'active' not in user or not user['active'] %} in{% endif %}">Inactive</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">Type</label>
+                    <div class="col-sm-8">
+                        <p class="form-control-static">
+                            {% if user['type'] == 0 %}
+                            Administrator
+                            {% elif user['type'] == 1 %}
+                            User
+                            {% else %}
+                            Unidentified
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if user['type'] == 1 %}
+        <div class="panel panel-info user-setting">
+            <div class="panel-heading">
+                <h2 class="panel-title">User Information</h2>
+            </div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">Max containers</label>
+                    <div class="col-sm-8">
+                        <input type="text" name="max_container" class="form-control" placeholder="Max containers" value="{{ user['max_container'] }}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">Max live containers</label>
+                    <div class="col-sm-8">
+                        <input type="text" name="max_live_container" class="form-control" placeholder="Max live containers" value="{{ user['max_live_container'] }}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">Max GPU</label>
+                    <div class="col-sm-8">
+                        <input type="text" name="max_gpu" class="form-control" placeholder="Max GPU" value="{{ user['max_gpu'] }}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">Max disk</label>
+                    <div class="col-sm-8">
+                        <input type="text" name="max_disk" class="form-control" placeholder="Max disk" value="{{ user['max_disk'] }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="panel panel-warning">
+            <div class="panel-heading">
+                <h2 class="panel-title">Security Information</h2>
+            </div>
+            <div class="panel-body">
+                <p>Leave blank if you don't want to change this part.</p>
+                <div class="form-group">
+                    <label for="new_password" class="col-sm-4 control-label">Password</label>
+                    <div class="col-sm-8">
+                        <input type="password" name="new_password" class="form-control" placeholder="New password">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="new_again_password" class="col-sm-4 control-label">Password again</label>
+                    <div class="col-sm-8">
+                        <input type="password" name="new_again_password" class="form-control" placeholder="New password again">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel panel-info">
+            <div class="panel-body">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label"></label>
+                    <div class="btn-group col-sm-8" role="group">
+                        <button class="btn btn-primary" type="submit">Update User</button>
+                        <button class="btn btn-default" type="reset">Reset</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<!-- end manage add user -->
+{% endblock panel_content %}

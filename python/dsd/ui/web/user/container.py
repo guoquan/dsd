@@ -35,8 +35,6 @@ def jinja2_filter_db(id, collection, fields=None, delimiter=' | '):
 def user_container():
     if is_login():
         docker = get_docker()
-        if not docker:
-            return no_host_redirect()
 
         alive = 0
         container_lst = list(db.containers.find({'user_oid':ObjectId(session['user']['id'])}))
