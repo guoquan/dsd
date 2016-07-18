@@ -27,38 +27,40 @@
                 </div>
                 <div class="panel-body">
                     <p>Usage of your contaners.</p>
-                    <p>
-                        <span>Total: {{ count_container }} / {{ max_container }}</span>
-                        <span>Running: {{ count_live_container }} / {{ max_live_container }} </span>
-                    </p>
+                    <ul class="list-inline">
+                        <li>Total: {{ count_container }} / {{ max_container }}</li>
+                        <li>Running: {{ count_live_container }} / {{ max_live_container }} </li>
+                    </ul>
                 </div>
                 {% if container_lst %}
-                <table class="table table-striped table-hover">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Name</th>
-                            <th>Status</th>
-                            <th>Ports</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for container in container_lst %}
-                        <tr>
-                            <td>{{ loop.index }}</td>
-                            <td>{{ container['name'] }}</td>
-                            <td>{{ container['status_str'] }}</td>
-                            <td>
-                                {% if 'ps' in container %}
-                                {% for port in container['ps']['ports'] %}
-                                <a class="btn btn-primary btn-xs" href="{% if port.p == '0.0.0.0' %}{{ default_host }}{% else %}//{{ port.p }}{% endif %}:{{ port.h }}" role="button" target="_blank"> {{ port.c }} </a>
-                                {% endfor%}
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Status</th>
+                                <th>Ports</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for container in container_lst %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ container['name'] }}</td>
+                                <td>{{ container['status_str'] }}</td>
+                                <td>
+                                    {% if 'ps' in container %}
+                                    {% for port in container['ps']['ports'] %}
+                                    <a class="btn btn-primary btn-xs" href="{% if port.p == '0.0.0.0' %}{{ default_host }}{% else %}//{{ port.p }}{% endif %}:{{ port.h }}" role="button" target="_blank"> {{ port.c }} </a>
+                                    {% endfor%}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
                 {% endif %}
                 <div class="panel-footer"><a href="{{ url_for('user.container') }}">Details &raquo;</a></div>
             </div>
@@ -68,33 +70,43 @@
                 <div class="panel-heading">
                     <h2 class="panel-title">GPUs</h2>
                 </div>
+                {% if gpu_lst %}
                 <div class="panel-body">
                     <p>Usage of your GPUs.</p>
+                    {% if gpu_global %}
+                    <ul class="list-inline">
+                        <li>Driver Version: {{ gpu_global['DriverVersion'] }}</li>
+                        <li>CUDA Version: {{ gpu_global['CudaVersion'] }}</li>
+                    </ul>
+                    {% endif %}
                 </div>
-                <table class="table table-striped table-hover">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>type</th>
-                            <th>Memory-Usage</th>
-                            <th>Volatile</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td>K20</td>
-                            <td>300/2000</td>
-                            <td>80%</td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td>K20</td>
-                            <td>300/2000</td>
-                            <td>80%</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Model</th>
+                                <th>Memory</th>
+                                <th>Utilization</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for gpu in gpu_lst %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ gpu['Model'] }}</td>
+                                <td>{{ gpu['MemoryUsed'] }} / {{ gpu['MemoryTotal'] }} MB</td>
+                                <td>{{ gpu['UtilizationGpu'] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="panel-body">
+                    <p>No GPU detected.</p>
+                </div>
+                {% endif %}
                 <div class="panel-footer"><a href="{{ url_for('user.container') }}">Details &raquo;</a></div>
             </div>
         </div>

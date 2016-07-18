@@ -6,7 +6,7 @@ class NvDocker():
     def __init__(self, base_url='http://localhost:3476'):
         self.base_url = base_url
         self.cli = Client(base_url)
-        
+
     def alive(self):
         try:
             self._queryInfo()
@@ -15,7 +15,9 @@ class NvDocker():
         return True
 
     def _get(self, path):
-        return self.cli.get(urljoin(self.base_url, path))
+        response = self.cli.get(urljoin(self.base_url, path))
+        response.raise_for_status()
+        return response
 
     def _queryInfo(self):
         return self._get('/gpu/info/json').json()

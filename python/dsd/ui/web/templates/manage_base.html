@@ -22,6 +22,11 @@
 </ul>
 <ul class="nav nav-stacked">
     {{ M.sidebar_li('Users', url_for('manage.user'), bs_icon='user') }}
+    <li>
+        <ul class="nav nav-stacked">
+            {{ M.sidebar_li('Add', url_for('manage.user.add'), bs_icon='plus') }}
+        </ul>
+    </li>
 </ul>
 <ul class="nav nav-stacked">
     {{ M.sidebar_li('Settings', url_for('manage.system'), bs_icon='cog') }}

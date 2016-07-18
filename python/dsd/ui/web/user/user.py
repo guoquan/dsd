@@ -25,12 +25,22 @@ def index():
             else:
                 container['status_str'] = 'Initial'
 
+        nvd = get_nvd()
+        if nvd:
+            gpu_global = nvd.gpuGlobalInfo()
+            gpu_lst = nvd.gpuInfo()
+        else:
+            gpu_global = None
+            gpu_lst = []
+
         return render_template('user_index.html',
                                count_container=len(container_lst),
                                count_live_container=alive,
                                max_container=session['user']['max_container'],
                                max_live_container=session['user']['max_live_container'],
                                container_lst=container_lst,
-                               default_host=request.url_root.rsplit(':')[1])
+                               default_host=request.url_root.rsplit(':')[1],
+                               gpu_global=gpu_global,
+                               gpu_lst=gpu_lst,)
     else:
         return invalid_login('Administrators only. Login again.')
