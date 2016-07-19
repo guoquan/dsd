@@ -22,7 +22,7 @@
             <tbody>
                 {% for container in container_lst %}
                     <tr>
-                        <td>{{ loop.index0 + 1 }}</td>
+                        <td>{{ loop.index }}</td>
                         <td>{{ container["owner"] }}</td>
                         <td>{{ container["gpu"] }}</td>
                         <td>{{ container["max_disk"] }}</td>

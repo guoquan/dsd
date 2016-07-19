@@ -6,6 +6,7 @@ import pymongo
 import socket
 import hashlib, binascii, os
 import pprint
+from dsd.sys.docker.pydocker import PyDocker as Docker
 from dsd.ui.web.utils import db
 from dsd.ui.web.utils import get_db, encrypt_password, UserTypes
 
@@ -77,14 +78,46 @@ def init(db):
                             'path_ca':'~/.docker/machine/machines/default/certs/ca.pem'}
     '''
 
-    # user config
-    config['default_user_max_container'] = 3
-    config['default_user_max_live_container'] = 2
-    config['default_user_max_gpu'] = 1
-    config['default_user_max_disk'] = 1024
+    # default config
+    config['default'] = {}
+    config['default']['user'] = {}
+    config['default']['user']['max_container'] = 4
+    config['default']['user']['max_live_container'] = 2
+    config['default']['user']['max_gpu'] = 1
+    config['default']['user']['max_disk'] = 1024
 
     # resource config
-    config['default_resource_max_gpu_usage'] = 2
+    config['resource'] = {}
+    config['resource']['max_gpu_assignment'] = 0
+    config['resource']['volume'] = {}
+    config['resource']['volume']['workspaces'] = '/dsd/workspaces'
+    config['resource']['volume']['data'] = '/dsd/data'
+
+    # environment config
+    VOLUME_PREFIX = '/volumes'
+    if config['docker_tls']['use_tls']:
+        tls = {'client_cert': (config['docker_tls']['path_client_cert'],
+                               config['docker_tls']['path_client_key']),
+               'verify': config['docker_tls']['path_ca'],
+               'assert_hostname': False}
+    else:
+        tls={}
+    docker = Docker(config['docker_url'], **tls)
+    dsd_ps = docker.container(socket.gethostname())
+    host_volume_prefix = None
+    if dsd_ps:
+        mounts = dsd_ps['raw']['Mounts']
+        for mount in mounts:
+            if mount['Destination'] == VOLUME_PREFIX:
+                host_volume_prefix = mount['Source']
+                break
+    # if not detected, we have to assume it is in the same filesystem
+    if not host_volume_prefix:
+        host_volume_prefix = VOLUME_PREFIX
+
+    config['env'] = {}
+    config['env']['volume_prefix'] = VOLUME_PREFIX
+    config['env']['host_volume_prefix'] = host_volume_prefix
 
     # password encryption config
     config['encrypt_salt'] = os.urandom(16).encode('hex')
@@ -124,10 +157,10 @@ def init(db):
     user2['salt'] = os.urandom(16).encode('hex')
     password = '123'
     user2['password'] = encrypt_password(password, user2['username'], user2['salt'])
-    user2['max_container'] = config['default_user_max_container']
-    user2['max_live_container'] = config['default_user_max_live_container']
-    user2['max_gpu'] = config['default_user_max_gpu']
-    user2['max_disk'] = config['default_user_max_disk']
+    user2['max_container'] = config['default']['user']['max_container']
+    user2['max_live_container'] = config['default']['user']['max_live_container']
+    user2['max_gpu'] = config['default']['user']['max_gpu']
+    user2['max_disk'] = config['default']['user']['max_disk']
     print '-' * 20
     print 'Save user:'
     db.users.save(user2)

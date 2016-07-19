@@ -16,7 +16,7 @@ def index():
             container['auth_image'] = db.auth_images.find_one({'_id':container['auth_image_oid']})
             if 'ps_id' in container and container['ps_id']:
                 container['ps'] = docker.container(container['ps_id'])
-                if container['ps']['state']['Running']:
+                if container['ps']['running']:
                     alive += 1
             if container['auth_image']:
                 container['auth_image']['image'] = docker.image(id=container['auth_image']['image_id'], name=container['auth_image']['name'])

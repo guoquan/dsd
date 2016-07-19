@@ -37,7 +37,7 @@
                         <div class="col-sm-3">{{ container['status_str'] }}</div>
                         <div class="col-sm-3">
                             <div class="btn-group" role="group">
-                                {% if 'ps_id' not in container or not container['ps_id'] or not container['ps']['state']['Running']%}
+                                {% if 'ps_id' not in container or not container['ps_id'] or not container['ps']['running']%}
                                 <a href="{{ url_for('user.container.start', oid=container['_id']) }}" class="btn btn-primary" role="button"><span class="glyphicon glyphicon-play"></span> Run </a>
                                 {% else %}
                                 <a href="{{ url_for('user.container.stop', oid=container['_id']) }}" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-stop"></span> Stop </a>

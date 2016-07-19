@@ -44,7 +44,7 @@ def user_container():
             container['auth_image'] = db.auth_images.find_one({'_id':container['auth_image_oid']})
             if 'ps_id' in container and container['ps_id']:
                 container['ps'] = docker.container(container['ps_id'])
-                if container['ps']['state']['Running']:
+                if container['ps']['running']:
                     alive += 1
             if container['auth_image']:
                 container['auth_image']['image'] = docker.image(id=container['auth_image']['image_id'], name=container['auth_image']['name'])
@@ -154,12 +154,11 @@ def user_container_save():
             critical = save_container(request.form, container)
             if critical and 'ps_id' in container and container['ps_id']:
                 #flash('Critical change(s) detected in %s. Reinstall is applied automatically.' % critical, 'warning')
-                flash('Critical change(s) detected. Reinstall is applied automatically.', 'warning')
+                flash('Critical change(s) detected. Reinstall is applied automatically.')
                 container['ps'] = docker.container(container['ps_id'])
-                state = container['ps']['state']
-                running = state['Running']
-                # using the raw interface 'state - Running'; a wrapper should be better here
-                if running or ('RemovalInProgress' in state and state['RemovalInProgress']):
+                was_running = container['ps']['running']
+                state = container['ps']['raw']['State'] # using the raw interface
+                if container['ps']['running'] or ('RemovalInProgress' in state and state['RemovalInProgress']):
                     stop_ps(container)
                 # TODO maybe wait some time? and wait for stop
                 remove_ps(container)
@@ -167,9 +166,10 @@ def user_container_save():
                 del container['ps_id']
                 db.containers.save(container)
 
-                if running:
+                if was_running:
                     ps_id = create_ps(container)
                     container['ps_id'] = ps_id
+                    db.containers.save(container)
                     run_ps(container)
 
             db.containers.save(container)
@@ -192,9 +192,8 @@ def user_container_reinstall(oid):
             examine_user(container)
             if 'ps_id' in container and container['ps_id']:
                 container['ps'] = docker.container(container['ps_id'])
-                state = container['ps']['state']
-                # using the raw interface 'state - Running'; a wrapper should be better here
-                if state['Running'] or ('RemovalInProgress' in state and state['RemovalInProgress']):
+                state = container['ps']['raw']['State'] # using the raw interface
+                if container['ps']['running'] or ('RemovalInProgress' in state and state['RemovalInProgress']):
                     stop_ps(container)
                 # FIXME maybe wait some time? and wait for stop
                 remove_ps(container)
@@ -215,20 +214,29 @@ def user_container_reinstall(oid):
 def create_ps(container):
     examine_user(container)
     docker = get_docker()
+    config = db.config.find_one()
     user = session['user']
     auth_image = db.auth_images.find_one({'_id':container['auth_image_oid']})
     volumes = []
     if container['volume_h'] and container['volume_c']:
-        host_path = os.path.join(VOLUME_BASE_WORKSPACES, save_name('-'.join([user['username'], str(container['volume_h'])])))
-        ensure_path(host_path)
+        dsd_path = os.path.join(config['env']['volume_prefix'],
+                                config['resource']['volume']['workspaces'],
+                                save_name('-'.join([user['username'], str(container['volume_h'])])))
+        ensure_path(dsd_path)
+        host_path = os.path.join(config['env']['host_volume_prefix'],
+                                 config['resource']['volume']['workspaces'],
+                                 save_name('-'.join([user['username'], str(container['volume_h'])])))
         client_path = container['volume_c']
-        ensure_path(client_path)
         volumes.append(HCP(h=host_path, c=client_path))
     if container['data_volume_h'] and container['data_volume_c']:
-        host_path = os.path.join(VOLUME_BASE_DATA, save_name('-'.join(['public', str(container['data_volume_h'])])))
-        ensure_path(host_path)
+        dsd_path = os.path.join(config['env']['volume_prefix'],
+                                config['resource']['volume']['data'],
+                                save_name('-'.join(['public', str(container['data_volume_h'])])))
+        ensure_path(dsd_path)
+        host_path = os.path.join(config['env']['host_volume_prefix'],
+                                 config['resource']['volume']['data'],
+                                 save_name('-'.join(['public', str(container['data_volume_h'])])))
         client_path = container['data_volume_c']
-        ensure_path(client_path)
         volumes.append(HCP(h=host_path, c=client_path))
     params = {'image': auth_image['image_name'],
               'detach': True,
@@ -238,9 +246,20 @@ def create_ps(container):
 
     if container['gpu']:
         nvd = get_nvd()
-        # TODO control how many and which dev to be assigned
+        # calculate how many GPUs the user is used
+        user_containers = list(db.containers.find({'user_oid':user['oid']}))
+        user_gpu = 0
+        if user_containers:
+            for user_container in user_containers:
+                if user_container['gpu'] and \
+                        'ps_id' in user_container and user_container['ps_id']:
+                    ps = docker.container(user_container['ps_id'])
+                    if ps['running']:
+                        user_gpu += user_container['gpu']
+        if user_gpu >= user['max_gpu']:
+            raise SystemError('You can only have %d GPU(s) running. Adjust container setting and try start the container again.' % user['max_gpu'])
         try:
-            gpu_params = nvd.cliParams(dev=range(container['gpu']))
+            gpu_params = nvd.cliParams(dev=gpu_dispatch(container['gpu']))
         except (requests.exceptions.HTTPError, urllib2.URLError) as e:
             raise SystemError('Can\'t generate docker configuration according to your current GPU setting. Adjust it and try start the container again.')
 
@@ -252,8 +271,8 @@ def create_ps(container):
         else:
             del gpu_params['volume_driver']
 
-        params.update(gpu_params)
-
+        dict_deep_update(params, gpu_params)
+    print params
     ps_id = docker.create(**params)
     return ps_id
 
@@ -274,8 +293,7 @@ def user_container_start(oid):
         for container in containers:
             if 'ps_id' in container and container['ps_id']:
                 container['ps'] = docker.container(container['ps_id'])
-                # raw interface is used
-                if container['ps']['state']['Running']:
+                if container['ps']['running']:
                     alive += 1
         if session['user']['max_live_container'] <= alive:
             flash('You can have at most %d container(s) running.' % session['user']['max_live_container'], 'warning')
@@ -291,7 +309,7 @@ def user_container_start(oid):
                 container['ps_id'] = ps_id
                 db.containers.save(container)
             container['ps'] = docker.container(container['ps_id'])
-            state_code = container['ps']['state_code']
+            state_code = container['ps']['state']
             if state_code == ContainerState.Paused:
                 pass
             elif state_code == ContainerState.Restarting:
@@ -343,7 +361,7 @@ def user_container_stop(oid):
             if 'ps_id' not in container or not container['ps_id']:
                 raise SystemError('Container %s has never been run.' % container['name'])
             container['ps'] = docker.container(container['ps_id'])
-            state_code = container['ps']['state_code']
+            state_code = container['ps']['state']
             if state_code == ContainerState.Paused:
                 pass
             elif state_code == ContainerState.Restarting:
@@ -389,7 +407,7 @@ def user_container_restart(oid):
             if 'ps_id' not in container or not container['ps_id']:
                 raise SystemError('Container %s has never been run.' % container['name'])
             container['ps'] = docker.container(container['ps_id'])
-            state_code = container['ps']['state_code']
+            state_code = container['ps']['state']
             if state_code == ContainerState.Paused:
                 flash('Container %s is paused. Still try to restart it.' % container['name'], 'warning')
             elif state_code == ContainerState.Restarting:
@@ -452,9 +470,8 @@ def user_container_remove(oid):
             examine_user(container)
             if 'ps_id' in container and container['ps_id']:
                 container['ps'] = docker.container(container['ps_id'])
-                state = container['ps']['state']
-                # using the raw interface 'state - Running'; a wrapper should be better here
-                if state['Running'] or ('RemovalInProgress' in state and state['RemovalInProgress']):
+                state = container['ps']['raw']['State'] # using the raw interface
+                if container['ps']['running'] or ('RemovalInProgress' in state and state['RemovalInProgress']):
                     stop_ps(container)
                 # TODO maybe wait some time? and wait for stop
                 remove_ps(container)

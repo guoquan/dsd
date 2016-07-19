@@ -7,7 +7,7 @@
     <h1 class="page-header">System Configuration</h1>
     <div class="panel panel-info">
         <div class="panel-heading">
-            <h2 class="panel-title">Host Information</h2>
+            <h2 class="panel-title">Host</h2>
         </div>
         <div class="panel-body">
             {% if host_error %}
@@ -67,47 +67,90 @@
         </div>
     </div>
 
-
     <div class="panel panel-info">
         <div class="panel-heading">
-            <h2 class="panel-title">User Configuration Information</h2>
+            <h2 class="panel-title">Default Configuration</h2>
         </div>
         <div class="panel-body">
-            {% if user_error %}
+            {% if error and 'default' in error %}
             <div class="alert alert-warning">
                 <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                {{ user_error }}
+                {{ error['default'] }}
             </div>
             {% endif %}
-            <form class="form-horizontal" action="{{ url_for('manage.system.user') }}" method="post">
+            <form class="form-horizontal" action="{{ url_for('manage.system.default') }}" method="post">
                 <div class="form-group">
                     <label for="default_user_max_container" class="col-sm-3 control-label">Default Max Container</label>
                     <div class="col-sm-9">
-                        <input type="text" name="default_user_max_container" class="form-control" value="{{ config['default_user_max_container'] }}" required>
+                        <input type="text" name="default_user_max_container" class="form-control" value="{{ config['default']['user']['max_container'] }}" required>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="default_user_max_live_container" class="col-sm-3 control-label">Default Max Live Container</label>
                     <div class="col-sm-9">
-                        <input type="text" name="default_user_max_live_container" class="form-control" value="{{ config['default_user_max_live_container'] }}" required>
+                        <input type="text" name="default_user_max_live_container" class="form-control" value="{{ config['default']['user']['max_live_container'] }}" required>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="default_user_max_gpu" class="col-sm-3 control-label">Default Max GPU</label>
                     <div class="col-sm-9">
-                        <input type="text" name="default_user_max_gpu" class="form-control" value="{{ config['default_user_max_gpu'] }}" required>
+                        <input type="text" name="default_user_max_gpu" class="form-control" value="{{ config['default']['user']['max_gpu'] }}" required>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="default_user_max_disk" class="col-sm-3 control-label">Default Max Disk</label>
                     <div class="col-sm-9">
-                        <input type="text" name="default_user_max_disk" class="form-control" value="{{ config['default_user_max_disk'] }}" required>
+                        <input type="text" name="default_user_max_disk" class="form-control" value="{{ config['default']['user']['max_disk'] }}" required>
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="col-sm-3 control-label"></label>
                     <div class="btn-group col-sm-9" role="group">
-                        <button class="btn btn-primary" type="submit">Update User Configuration Information</button>
+                        <button class="btn btn-primary" type="submit">Update Default Configuration</button>
+                        <button class="btn btn-default" type="reset">Reset</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h2 class="panel-title">Resource Configuration</h2>
+        </div>
+        <div class="panel-body">
+            {% if error and 'resource' in error %}
+            <div class="alert alert-warning">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                {{ error['resource'] }}
+            </div>
+            {% endif %}
+            <form class="form-horizontal" action="{{ url_for('manage.system.resource') }}" method="post">
+                <div class="form-group">
+                    <label for="resource_max_gpu_assignment" class="col-sm-3 control-label">Max GPU Assignment</label>
+                    <div class="col-sm-9">
+                        <input type="text" name="resource_max_gpu_assignment" class="form-control" value="{{ config['resource']['max_gpu_assignment'] }}" required>
+                        <p class="help-block">Maximum number of users that can be assigned to a single GPU. Set to 0 for unlimited.</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="resource_volume_workspaces" class="col-sm-3 control-label">Workspaces Base</label>
+                    <div class="col-sm-9">
+                        <input type="text" name="resource_volume_workspaces" class="form-control" value="{{ config['resource']['volume']['workspaces'] }}" required>
+                        <p class="help-block">The path on the host to store users workspaces.</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="resource_volume_data" class="col-sm-3 control-label">Data Base</label>
+                    <div class="col-sm-9">
+                        <input type="text" name="resource_volume_data" class="form-control" value="{{ config['resource']['volume']['data'] }}" required>
+                        <p class="help-block">The path on the host to store public data.</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label"></label>
+                    <div class="btn-group col-sm-9" role="group">
+                        <button class="btn btn-primary" type="submit">Update Resource Configuration</button>
                         <button class="btn btn-default" type="reset">Reset</button>
                     </div>
                 </div>
@@ -117,7 +160,7 @@
 
     <div class="panel panel-danger">
         <div class="panel-heading">
-            <h2 class="panel-title">Security Information</h2>
+            <h2 class="panel-title">Security</h2>
         </div>
         <div class="panel-body">
             <p>NOTE: Cannot change these security information. Login information of all users will be failed.</p>

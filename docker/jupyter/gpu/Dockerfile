@@ -36,6 +36,8 @@ ENV TINI_VERSION v0.8.4
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /usr/bin/tini
 RUN chmod +x /usr/bin/tini
 
+ENV SHELL bash
+
 ENTRYPOINT ["/usr/bin/tini", "--"]
 # Run ipython defaultly
 # Run notebook for ipython defaultly

@@ -156,6 +156,7 @@ class PyDocker():
 
         image = self.cli.inspect_image(id or name)
         img_info = {}
+        img_info['raw'] = image
         img_info['id'] = image['Id']
         img_info['size'] = image['Size'] / 1e9 # turn in GB
         img_info['created'] = _docker_time(image['Created'])
@@ -236,6 +237,7 @@ class PyDocker():
         api = self.cli.inspect_container(container_id)
 
         container = {}
+        container['raw'] = api
         container['container_name'] = api['Name'].split('/')[-1]
         container['container_id'] = api['Id']
         container['image_name'] = api['Config']['Image']
@@ -245,8 +247,8 @@ class PyDocker():
         container['status_str'] = _docker_status_str(api['State'])
         container['created'] = _docker_time(api['Created'])
 
-        container['state'] = api['State'] # https://github.com/docker/docker/blob/master/container/state.go
-        state = container['state']
+        state = api['State'] # https://github.com/docker/docker/blob/master/container/state.go
+        container['running'] = state['Running']
         if state['Running']:
             if state['Paused']:
                 state_code = ContainerState.Paused
@@ -266,7 +268,7 @@ class PyDocker():
             state_code = ContainerState.UnFinished
         else:
             state_code = ContainerState.Exited
-        container['state_code'] = state_code
+        container['state'] = state_code
 
         ports = []
         if 'Ports' in api['NetworkSettings'] and api['NetworkSettings']['Ports']:

@@ -9,15 +9,13 @@ import hashlib, binascii
 import itertools
 import re
 import os
+import random
 
 _logger = logging.getLogger()
 
 class UserTypes:
     STR = ['Administrator', 'User']
     Administrator, User = range(2)
-
-VOLUME_BASE_WORKSPACES = '/root/workspaces'
-VOLUME_BASE_DATA = '/root/data'
 
 def get_db():
     client = pymongo.MongoClient()
@@ -170,3 +168,21 @@ def save_name(name, accpet=r'a-zA-Z0-9_\.\-'):
 def ensure_path(path):
     if not os.path.exists(path):
         os.makedirs(path)
+
+def gpu_dispatch(num):
+    # TODO control which dev to be assigned
+    nvd = get_nvd()
+    gpus = len(nvd.gpuInfo())
+    # use random dispatch
+    return random.sample(xrange(gpus), num)
+
+def dict_deep_update(dst, src):
+    if not isinstance(dst, dict):
+        raise ValueError('First parameter dst must be a dict.')
+    for k, v in src.iteritems():
+        if k in dst and isinstance(dst[k], dict) and isinstance(v, dict):
+            dict_deep_update(dst[k], v)
+        elif k in dst and isinstance(dst[k], list) and isinstance(v, list):
+            dst[k].extend(v)
+        else:
+            dst[k] = v

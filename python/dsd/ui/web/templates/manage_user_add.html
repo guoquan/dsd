@@ -47,25 +47,25 @@
                 <div class="form-group">
                     <label class="col-sm-4 control-label">Max containers</label>
                     <div class="col-sm-8">
-                        <input type="text" name="max_container" class="form-control" placeholder="Max containers" value="{% if max_container %}{{ max_container[0] }}{% else %}{{ config['default_user_max_container'] }}{% endif %}">
+                        <input type="text" name="max_container" class="form-control" placeholder="Max containers" value="{% if max_container %}{{ max_container[0] }}{% else %}{{ config['default']['user']['max_container'] }}{% endif %}">
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="col-sm-4 control-label">Max live containers</label>
                     <div class="col-sm-8">
-                        <input type="text" name="max_live_container" class="form-control" placeholder="Max live containers" value="{% if max_live_container %}{{ max_live_container[0] }}{% else %}{{ config['default_user_max_live_container'] }}{% endif %}">
+                        <input type="text" name="max_live_container" class="form-control" placeholder="Max live containers" value="{% if max_live_container %}{{ max_live_container[0] }}{% else %}{{ config['default']['user']['max_live_container'] }}{% endif %}">
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="col-sm-4 control-label">Max GPU</label>
                     <div class="col-sm-8">
-                        <input type="text" name="max_gpu" class="form-control" placeholder="Max GPU" value="{% if max_gpu %}{{ max_gpu[0] }}{% else %}{{ config['default_user_max_gpu'] }}{% endif %}">
+                        <input type="text" name="max_gpu" class="form-control" placeholder="Max GPU" value="{% if max_gpu %}{{ max_gpu[0] }}{% else %}{{ config['default']['user']['max_gpu'] }}{% endif %}">
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="col-sm-4 control-label">Max disk</label>
                     <div class="col-sm-8">
-                        <input type="text" name="max_disk" class="form-control" placeholder="Max disk" value="{% if max_disk %}{{ max_disk[0] }}{% else %}{{ config['default_user_max_disk'] }}{% endif %}">
+                        <input type="text" name="max_disk" class="form-control" placeholder="Max disk" value="{% if max_disk %}{{ max_disk[0] }}{% else %}{{ config['default']['user']['max_disk'] }}{% endif %}">
                     </div>
                 </div>
             </div>

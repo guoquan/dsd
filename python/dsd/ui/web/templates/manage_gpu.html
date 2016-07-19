@@ -35,8 +35,9 @@
                 </thead>
                 <tbody>
                     {% for gpu in gpu_lst %}
+                    {% set gpuloop = loop %}
                     <tr>
-                        <td>{{ loop.index0 + 1 }}</td>
+                        <td>{{ loop.index }}</td>
                         <td>{{ gpu["Model"] }}</td>
                         <td>{{ gpu["Path"] }}</td>
                         <td>{{ gpu['MemoryUsed'] }} / {{ gpu['MemoryTotal'] }}MB</td>
@@ -58,8 +59,8 @@
                                 {% for proc in gpu['Processes'] %}
                                 <li class="list-group-item">
                                     <span>
-                                        <button class="btn btn-default" data-toggle="collapse" data-target="#action_{{ proc['PID'] }}">Actions</button>
-                                        <span id="action_{{ proc['PID'] }}" class="collapse collapse-inline"><span class="btn-group" role="group">
+                                        <button class="btn btn-default" data-toggle="collapse" data-target="#action_{{ gpuloop.index }}_{{ loop.index }}">Actions</button>
+                                        <span id="action_{{ gpuloop.index }}_{{ loop.index }}" class="collapse collapse-inline"><span class="btn-group" role="group">
                                             <a class="btn btn-warning btn-sm" href="#" role="button">Stop</a>
                                             <a class="btn btn-danger btn-sm" href="#" role="button">Kill</a>
                                         </span></span>

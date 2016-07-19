@@ -19,7 +19,7 @@ def manage_user():
             for container in containers:
                 if 'ps_id' in container and container['ps_id']:
                     ps = docker.container(container['ps_id'])
-                    if ps['state']['Running']:
+                    if ps['running']:
                         user['ps'] += 1
         return render_template('manage_user.html', cur_user=session['user'], user_lst=user_lst)
     else:
