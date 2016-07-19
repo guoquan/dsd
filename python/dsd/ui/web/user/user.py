@@ -11,7 +11,7 @@ def index():
             return no_host_redirect()
 
         alive = 0
-        container_lst = list(db.containers.find({'user_oid':ObjectId(session['user']['id'])}))
+        container_lst = list(db.containers.find({'user_oid':ObjectId(session['user']['oid'])}))
         for container in container_lst:
             container['auth_image'] = db.auth_images.find_one({'_id':container['auth_image_oid']})
             if 'ps_id' in container and container['ps_id']:

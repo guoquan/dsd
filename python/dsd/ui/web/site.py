@@ -26,9 +26,9 @@ def login():
         user, message = check_login(username, password)
         if user:
             session['is_login'] = True
-            user_id = str(user['_id'])
+            user_oid = str(user['_id'])
             del user['_id'] # session cannot hold ObjectId from MongoDB
-            user['id'] = user_id
+            user['oid'] = user_oid
             session['user'] = user
             flash(message)
             return redirect_back()

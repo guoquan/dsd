@@ -89,14 +89,14 @@ def manage_image_authorize():
     else:
         return invalid_login('Administrators only. Login again.')
 
-@app.route("/manage/image/revoke", endpoint='manage.image.revoke', methods=['GET', 'POST'])
-def manage_image_revoke():
+@app.route("/manage/image/revoke/<oid>", endpoint='manage.image.revoke')
+def manage_image_revoke(oid):
     if is_admin():
-        auth_oid = ObjectId(request.values['id'])
+        oid = ObjectId(oid)
         try:
-            image = db.auth_images.find_one({'_id':auth_oid})
+            image = db.auth_images.find_one({'_id':oid})
             image_name = image['name']
-            db.auth_images.delete_one({'_id':auth_oid})
+            db.auth_images.delete_one({'_id':oid})
         except Exception as e:
             flash(str(e), 'warning')
         else:

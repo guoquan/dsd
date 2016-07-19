@@ -23,9 +23,9 @@ def jinja2_filter_docker_image(id, fields=None, delimiter=' | '):
     return delimiter.join([format % image[field] for format, field in fields if field in image])
 
 @app.template_filter('db')
-def jinja2_filter_db(id, collection, fields=None, delimiter=' | '):
+def jinja2_filter_db(oid, collection, fields=None, delimiter=' | '):
     try:
-        document = db[collection].find_one({'_id':ObjectId(id)})
+        document = db[collection].find_one({'_id':ObjectId(oid)})
     except Exception as e:
         return '<%s>' % str(e)
     else:
@@ -39,7 +39,7 @@ def user_container():
         docker = get_docker()
 
         alive = 0
-        container_lst = list(db.containers.find({'user_oid':ObjectId(session['user']['id'])}))
+        container_lst = list(db.containers.find({'user_oid':ObjectId(session['user']['oid'])}))
         for container in container_lst:
             container['auth_image'] = db.auth_images.find_one({'_id':container['auth_image_oid']})
             if 'ps_id' in container and container['ps_id']:
@@ -105,7 +105,7 @@ def save_container(source, target):
 @app.route("/user/container/add", endpoint='user.container.add', methods=['GET', 'POST'])
 def user_container_add():
     if is_login():
-        if session['user']['max_container'] <= db.containers.find({'user_oid':ObjectId(session['user']['id'])}).count():
+        if session['user']['max_container'] <= db.containers.find({'user_oid':ObjectId(session['user']['oid'])}).count():
             flash('You can have at most %d containers.' % session['user']['max_container'], 'warning')
             return redirect(url_for('user.container'))
 
@@ -117,9 +117,9 @@ def user_container_add():
             if not docker:
                 return no_host_redirect()
 
-            user_oid = ObjectId(session['user']['id'])
+            user_oid = ObjectId(session['user']['oid'])
             name = request.form['name']
-            auth_image_oid = ObjectId(request.form['auth_image'])
+            auth_image_oid = ObjectId(request.form['auth_image_oid'])
             try:
                 #if db.containers.find_one({'user_oid':user_oid, 'name':name}):
                 #    raise SystemError('You already have a container with the same name! Choose another name for your new container.', 'warning')
@@ -140,14 +140,14 @@ def user_container_add():
 
 def examine_user(container):
     user = session['user']
-    if container['user_oid'] != ObjectId(user['id']):
+    if container['user_oid'] != ObjectId(user['oid']):
         raise SystemError('You can only operate your own container.')
 
 @app.route("/user/container/save", endpoint='user.container.save', methods=['POST'])
 def user_container_save():
     if is_login():
         docker = get_docker()
-        oid = ObjectId(request.form['id'])
+        oid = ObjectId(request.form['oid'])
         container = db.containers.find_one({'_id':oid})
         try:
             examine_user(container)
@@ -182,11 +182,11 @@ def user_container_save():
     else:
         return invalid_login()
 
-@app.route("/user/container/reinstall", endpoint='user.container.reinstall', methods=['GET', 'POST'])
-def user_container_reinstall():
+@app.route("/user/container/reinstall/<oid>", endpoint='user.container.reinstall')
+def user_container_reinstall(oid):
     if is_login():
         docker = get_docker()
-        oid = ObjectId(request.values['id'])
+        oid = ObjectId(oid)
         container = db.containers.find_one({'_id':oid})
         try:
             examine_user(container)
@@ -262,14 +262,14 @@ def run_ps(container):
     docker = get_docker()
     docker.start(container=container['ps_id'])
 
-@app.route("/user/container/start", endpoint='user.container.start', methods=['GET', 'POST'])
-def user_container_start():
+@app.route("/user/container/start/<oid>", endpoint='user.container.start')
+def user_container_start(oid):
     if is_login():
         docker = get_docker()
         if not docker:
             return no_host_redirect()
 
-        containers = list(db.containers.find({'user_oid':ObjectId(session['user']['id'])}))
+        containers = list(db.containers.find({'user_oid':ObjectId(session['user']['oid'])}))
         alive = 0
         for container in containers:
             if 'ps_id' in container and container['ps_id']:
@@ -281,7 +281,7 @@ def user_container_start():
             flash('You can have at most %d container(s) running.' % session['user']['max_live_container'], 'warning')
             return redirect(url_for('user.container'))
 
-        oid = ObjectId(request.values['id'])
+        oid = ObjectId(oid)
         container = db.containers.find_one({'_id':oid})
 
         try:
@@ -328,14 +328,14 @@ def stop_ps(container):
     docker = get_docker()
     docker.stop(container=container['ps_id'])
 
-@app.route("/user/container/stop", endpoint='user.container.stop', methods=['GET', 'POST'])
-def user_container_stop():
+@app.route("/user/container/stop/<oid>", endpoint='user.container.stop')
+def user_container_stop(oid):
     if is_login():
         docker = get_docker()
         if not docker:
             return no_host_redirect()
 
-        oid = ObjectId(request.values['id'])
+        oid = ObjectId(oid)
         container = db.containers.find_one({'_id':oid})
 
         try:
@@ -374,14 +374,14 @@ def user_container_stop():
     else:
         return invalid_login()
 
-@app.route("/user/container/restart", endpoint='user.container.restart', methods=['GET', 'POST'])
-def user_container_restart():
+@app.route("/user/container/restart/<oid>", endpoint='user.container.restart')
+def user_container_restart(oid):
     if is_login():
         docker = get_docker()
         if not docker:
             return no_host_redirect()
 
-        oid = ObjectId(request.values['id'])
+        oid = ObjectId(oid)
         container = db.containers.find_one({'_id':oid})
 
         try:
@@ -438,14 +438,14 @@ def remove_ps(container):
     docker = get_docker()
     docker.rm(container=container['ps_id'])
 
-@app.route("/user/container/remove", endpoint='user.container.remove', methods=['GET', 'POST'])
-def user_container_remove():
+@app.route("/user/container/remove/<oid>", endpoint='user.container.remove')
+def user_container_remove(oid):
     if is_login():
         docker = get_docker()
         if not docker:
             return no_host_redirect()
 
-        oid = ObjectId(request.values['id'])
+        oid = ObjectId(oid)
         container = db.containers.find_one({'_id':oid})
 
         try:

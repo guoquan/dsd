@@ -20,7 +20,7 @@
                 <div class="form-group">
                     <label for="image" class="col-sm-3 control-label">Image</label>
                     <div class="col-sm-9">
-                        <select id="auth_image" name="auth_image" placeholder="Select an image">
+                        <select id="auth_image" name="auth_image_oid" placeholder="Select an image">
                             <option>Select an image</option>
                             {% for image_id, auth_images in auth_image_lst|groupby('image_id') %}
                             <optgroup label="{{ image_id|docker_image }}">

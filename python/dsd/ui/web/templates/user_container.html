@@ -21,9 +21,9 @@
                     <div class="row">
                         <div class="col-sm-1">#</div>
                         <div class="col-sm-3">Name</div>
-                        <div class="col-sm-3">Image</div>
+                        <div class="col-sm-2">Image</div>
                         <div class="col-sm-3">Status</div>
-                        <div class="col-sm-2"></div>
+                        <div class="col-sm-3">Operations</div>
                     </div>
                 </div>
             </div>
@@ -33,9 +33,19 @@
                     <div class="row">
                         <div class="col-sm-1">{{ loop.index }}</div>
                         <div class="col-sm-3">{{ container['name'] }}</div>
-                        <div class="col-sm-3">{{ container['auth_image']['name'] }}</div>
+                        <div class="col-sm-2">{{ container['auth_image']['name'] }}</div>
                         <div class="col-sm-3">{{ container['status_str'] }}</div>
-                        <div class="col-sm-2"><button class="btn btn-default" data-toggle="collapse" data-parent="#containers" data-target="#container-{{ loop.index }}"><span class="glyphicon glyphicon-list-alt"></span></button></div>
+                        <div class="col-sm-3">
+                            <div class="btn-group" role="group">
+                                {% if 'ps_id' not in container or not container['ps_id'] or not container['ps']['state']['Running']%}
+                                <a href="{{ url_for('user.container.start', oid=container['_id']) }}" class="btn btn-primary" role="button"><span class="glyphicon glyphicon-play"></span> Run </a>
+                                {% else %}
+                                <a href="{{ url_for('user.container.stop', oid=container['_id']) }}" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-stop"></span> Stop </a>
+                                <a href="{{ url_for('user.container.restart', oid=container['_id']) }}" class="btn btn-warning" role="button"><span class="glyphicon glyphicon-repeat"></span> Restart </a>
+                                {% endif %}
+                            </div>
+                            <button class="btn btn-default" data-toggle="collapse" data-parent="#containers" data-target="#container-{{ loop.index }}"><span class="glyphicon glyphicon-list-alt"></span></button>
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col-sm-11 col-sm-offset-1">
@@ -49,9 +59,8 @@
                 </div>
                 <div id="container-{{ loop.index }}" class="panel-collapse collapse">
                     <div class="panel-body">
-                        <!--<p>{{ container }}</p>!-->
                         <form class="form-horizontal" action="{{ url_for('user.container.save') }}" method="post">
-                            <input type="hidden" class="form-control" name="id" value="{{ container['_id'] }}" />
+                            <input type="hidden" class="form-control" name="oid" value="{{ container['_id'] }}" />
                             <div class="form-group">
                                 <label for="name" class="col-sm-3 control-label">Name</label>
                                 <div class="col-sm-9">
@@ -158,7 +167,7 @@
                                         <button class="btn btn-default" type="reset">Reset</button>
                                     </div>
                                     <div class="btn-group pull-right-sm" role="group">
-                                        <a href="{{ url_for('user.container.reinstall', id=container['_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-cd"></span> Reinstall </a>
+                                        <a href="{{ url_for('user.container.reinstall', oid=container['_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-cd"></span> Reinstall </a>
                                         <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#remove-dialog-{{ loop.index }}"><span class="glyphicon glyphicon-remove"></span> Remove </button>
                                     </div>
                                     <div class="modal fade" id="remove-dialog-{{ loop.index }}" tabindex="-1" role="dialog" aria-labelledby="remove-dialog-{{ loop.index }}-label">
@@ -172,7 +181,7 @@
                                                     <p>Removing the container, you will lost all the configurations and any files outside of your workspace and data directory.</p>
                                                 </div>
                                                 <div class="modal-footer">
-                                                    <a class="btn btn-danger" href="{{ url_for('user.container.remove', id=container['_id']) }}" role="button"><span class="glyphicon glyphicon-remove"></span> Remove </a>
+                                                    <a class="btn btn-danger" href="{{ url_for('user.container.remove', oid=container['_id']) }}" role="button"><span class="glyphicon glyphicon-remove"></span> Remove </a>
                                                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                                                 </div>
                                             </div>
@@ -183,12 +192,13 @@
                         </form>
                         <hr>
                         <form class="form-horizontal" action="{{ url_for('user.container.execute') }}" method="post">
+                            <input type="hidden" class="form-control" name="oid" value="{{ container['_id'] }}" />
                             <div class="form-group">
                                 <div class="col-sm-6 col-md-4 col-md-offset-3" role="group">
                                     <div class="btn-group" role="group">
-                                        <a href="{{ url_for('user.container.start', id=container['_id']) }}" class="btn btn-primary" role="button"><span class="glyphicon glyphicon-play"></span> Run </a>
-                                        <a href="{{ url_for('user.container.stop', id=container['_id']) }}" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-stop"></span> Stop </a>
-                                        <a href="{{ url_for('user.container.restart', id=container['_id']) }}" class="btn btn-warning" role="button"><span class="glyphicon glyphicon-repeat"></span> Restart </a>
+                                        <a href="{{ url_for('user.container.start', oid=container['_id']) }}" class="btn btn-primary" role="button"><span class="glyphicon glyphicon-play"></span> Run </a>
+                                        <a href="{{ url_for('user.container.stop', oid=container['_id']) }}" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-stop"></span> Stop </a>
+                                        <a href="{{ url_for('user.container.restart', oid=container['_id']) }}" class="btn btn-warning" role="button"><span class="glyphicon glyphicon-repeat"></span> Restart </a>
                                     </div>
                                 </div>
                                 <div class="col-sm-6 col-md-5" role="group">
