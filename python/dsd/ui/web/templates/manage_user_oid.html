@@ -55,7 +55,7 @@
         {% if user['type'] == 1 %}
         <div class="panel panel-info user-setting">
             <div class="panel-heading">
-                <h2 class="panel-title">User Information</h2>
+                <h2 class="panel-title">Resources</h2>
             </div>
             <div class="panel-body">
                 <div class="form-group">
@@ -82,6 +82,62 @@
                         <input type="text" name="max_disk" class="form-control" placeholder="Max disk" value="{{ user['max_disk'] }}">
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <div class="panel panel-info user-setting">
+            <div class="panel-heading">
+                <h2 class="panel-title">Containers</h2>
+            </div>
+            <div class="panel-body">
+                {% if user['containers'] %}
+                <div id="containers" class="panel-group">
+                    <div class="panel th">
+                        <div class="panel-heading">
+                            <div class="row">
+                                <div class="col-sm-1">#</div>
+                                <div class="col-sm-3">Name</div>
+                                <div class="col-sm-2">Image</div>
+                                <div class="col-sm-3">Status</div>
+                                <div class="col-sm-3">Operations</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% for container in user['containers'] %}
+                    <div class="panel">
+                        <div class="panel-heading">
+                            <div class="row">
+                                <div class="col-sm-1">{{ loop.index }}</div>
+                                <div class="col-sm-3">{{ container['name'] }}</div>
+                                <div class="col-sm-2">{{ container['auth_image']['name'] }}</div>
+                                <div class="col-sm-3">{{ container['status_str'] }}</div>
+                                <div class="col-sm-3">
+                                    <div class="btn-group" role="group">
+                                        {% if 'ps_id' not in container or not container['ps_id'] or not container['ps']['running']%}
+                                        <a href="{{ url_for('manage.user.container.start.oid', user_oid=user['_id'], oid=container['_id']) }}" class="btn btn-primary" role="button"><span class="glyphicon glyphicon-play"></span> Run </a>
+                                        {% else %}
+                                        <a href="{{ url_for('manage.user.container.stop.oid', user_oid=user['_id'], oid=container['_id']) }}" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-stop"></span> Stop </a>
+                                        <a href="{{ url_for('manage.user.container.restart.oid', user_oid=user['_id'], oid=container['_id']) }}" class="btn btn-warning" role="button"><span class="glyphicon glyphicon-repeat"></span> Restart </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-11 col-sm-offset-1">
+                                    {% if 'ps' in container %}
+                                    {% for port in container['ps']['ports'] %}
+                                    <a class="btn btn-primary" href="{% if port.p == '0.0.0.0' %}{{ default_host }}{% else %}//{{ port.p }}{% endif %}:{{ port.h }}" role="button" target="_blank"><span class="glyphicon glyphicon-eye-open"></span> {{ port.c }} </a>
+                                    {% endfor%}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p>No containers exist.</p>
+                {% endif %}
             </div>
         </div>
         {% endif %}

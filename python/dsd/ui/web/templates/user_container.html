@@ -216,12 +216,12 @@
                 </div>
             </div>
             {% endfor %}
-            {% else %}
-            <div class="panel-body">
-                <p>No container exist. You can create one <a href="{{ url_for('user.container.add') }}">here</a>!</p>
-            </div>
-            {% endif %}
         </div>
+        {% else %}
+        <div class="panel-body">
+            <p>No container exist. You can create one <a href="{{ url_for('user.container.add') }}">here</a>!</p>
+        </div>
+        {% endif %}
     </div>
 </div>
 <!-- end user-container -->
