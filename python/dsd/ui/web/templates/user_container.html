@@ -9,10 +9,12 @@
             <h2 class="panel-title">Containers </h2>
         </div>
         <div class="panel-body">
-            <div class="row">
-                <span class="col-sm-4 col-md-3">Total: {{ count_container }} / {{ max_container }}</span>
-                <span class="col-sm-4 col-md-3">Running: {{ count_live_container }} / {{ max_live_container }} </span>
-            </div>
+            <ul class="list-inline">
+                <li>Total: {{ count_container }} / {{ max_container }}</li>
+                <li>Running: {{ count_live_container }} / {{ max_live_container }}</li>
+                <li>GPUs: {{ user_gpu }} / {{ max_gpu }}</li>
+                <li>Disk: - / {{ max_disk }}</li>
+            </ul>
         </div>
         {% if container_lst %}
         <div id="containers" class="panel-group">
@@ -139,7 +141,7 @@
                             <div class="form-group">
                                 <label for="gpu" class="col-sm-3 control-label">GPU(s)</label>
                                 <div class="col-sm-9 gpu-col">
-                                    <input type="text" name="gpu" class="gpu" data-provide="slider" data-slider-handle="square" data-slider-ticks="[0, 1, 2, 3, 4]" value="{{ container['gpu'] }}" data-slider-value="{{ container['gpu'] }}" />
+                                    <input type="text" name="gpu" class="gpu" data-provide="slider" data-slider-handle="square" data-slider-ticks="[{{ range(gpu_num+1)|join(', ') }}]" value="{{ container['gpu'] }}" data-slider-value="{{ container['gpu'] }}" />
                                 </div>
                             </div>
                             <div class="form-group">

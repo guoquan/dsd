@@ -7,8 +7,8 @@ import socket
 import hashlib, binascii, os
 import pprint
 from dsd.sys.docker.pydocker import PyDocker as Docker
-from dsd.ui.web.utils import db
-from dsd.ui.web.utils import get_db, encrypt_password, UserTypes
+from dsd.ui.web.utils import db, get_db, get_docker, get_nvd
+from dsd.ui.web.utils import encrypt_password, UserTypes
 
 def usage():
     print 'Usage:'
@@ -90,19 +90,12 @@ def init(db):
     config['resource'] = {}
     config['resource']['max_gpu_assignment'] = 0
     config['resource']['volume'] = {}
-    config['resource']['volume']['workspaces'] = '/dsd/workspaces'
-    config['resource']['volume']['data'] = '/dsd/data'
+    config['resource']['volume']['workspaces'] = u'workspaces'
+    config['resource']['volume']['data'] = u'data'
 
     # environment config
-    VOLUME_PREFIX = '/volumes'
-    if config['docker_tls']['use_tls']:
-        tls = {'client_cert': (config['docker_tls']['path_client_cert'],
-                               config['docker_tls']['path_client_key']),
-               'verify': config['docker_tls']['path_ca'],
-               'assert_hostname': False}
-    else:
-        tls={}
-    docker = Docker(config['docker_url'], **tls)
+    VOLUME_PREFIX = u'/volumes'
+    docker = get_docker(config=config)
     dsd_ps = docker.container(socket.gethostname())
     host_volume_prefix = None
     if dsd_ps:
@@ -122,7 +115,7 @@ def init(db):
     # password encryption config
     config['encrypt_salt'] = os.urandom(16).encode('hex')
     config['encrypt_algorithm'] = 'sha256'
-    if callable(getattr(hashlib, "pbkdf2_hmac", None)):
+    if callable(getattr(hashlib, 'pbkdf2_hmac', None)):
         # if pbkdf2_hmac is avaliable, use it
         config['encrypt_method'] = {'method': 'pbkdf2_hmac', 'param':{'dklen': None}}
         config['encrypt_iter'] = 100000
@@ -136,6 +129,13 @@ def init(db):
     print 'Save config:'
     db.config.save(config)
     pprint.pprint(config)
+
+    # add gpu lists
+    nvd = get_nvd(config=config)
+    for i in range(len(nvd.gpuInfo())):
+        gpu = {'index':i,
+               'container_oids':[]}
+        db.gpus.save(gpu)
 
     # add some init users
     user1={}

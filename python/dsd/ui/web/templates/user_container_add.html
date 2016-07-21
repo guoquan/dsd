@@ -69,7 +69,7 @@
                 <div class="form-group">
                     <label for="gpu" class="col-sm-3 control-label">GPU(s)</label>
                     <div class="col-sm-9 gpu-col">
-                        <input type="text" name="gpu" class="gpu" data-provide="slider" data-slider-handle="square" data-slider-ticks="[0, 1, 2, 3, 4]" value="0" data-slider-value="0" />
+                        <input type="text" name="gpu" class="gpu" data-provide="slider" data-slider-handle="square" data-slider-ticks="[{{ range(gpu_num+1)|join(', ') }}]" value="0" data-slider-value="0" />
                     </div>
                 </div>
                 <div class="form-group">

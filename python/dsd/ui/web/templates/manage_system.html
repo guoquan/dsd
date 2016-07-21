@@ -136,15 +136,23 @@
                 <div class="form-group">
                     <label for="resource_volume_workspaces" class="col-sm-3 control-label">Workspaces Base</label>
                     <div class="col-sm-9">
-                        <input type="text" name="resource_volume_workspaces" class="form-control" value="{{ config['resource']['volume']['workspaces'] }}" required>
-                        <p class="help-block">The path on the host to store users workspaces.</p>
+                        <div class="input-group">
+                            <span class="input-group-addon">{{ config['env']['volume_prefix'] }}</span>
+                            <span class="input-group-addon">/</span>
+                            <input type="text" name="resource_volume_workspaces" class="form-control" value="{{ config['resource']['volume']['workspaces'] }}" required>
+                        </div>
+                        <p class="help-block">The path on the host to store users workspaces. Relative paths and symbolic links will be resolved.</p>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="resource_volume_data" class="col-sm-3 control-label">Data Base</label>
                     <div class="col-sm-9">
-                        <input type="text" name="resource_volume_data" class="form-control" value="{{ config['resource']['volume']['data'] }}" required>
-                        <p class="help-block">The path on the host to store public data.</p>
+                        <div class="input-group">
+                            <span class="input-group-addon">{{ config['env']['volume_prefix'] }}</span>
+                            <span class="input-group-addon">/</span>
+                            <input type="text" name="resource_volume_data" class="form-control" value="{{ config['resource']['volume']['data'] }}" required>
+                        </div>
+                        <p class="help-block">The path on the host to store public data. Relative paths and symbolic links will be resolved.</p>
                     </div>
                 </div>
                 <div class="form-group">
@@ -158,12 +166,36 @@
         </div>
     </div>
 
+
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h2 class="panel-title">Environment</h2>
+        </div>
+        <div class="panel-body">
+            <p class="help-block">NOTE: Cannot change these environment setting. They are automatically detected during system initialization.</p>
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">Volume Prefix</label>
+                    <div class="col-sm-9">
+                        <p class="form-control-static">{{ config['env']['volume_prefix'] }}</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">Host Volume Prefix</label>
+                    <div class="col-sm-9">
+                        <p class="form-control-static">{{ config['env']['host_volume_prefix'] }}</p>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="panel panel-danger">
         <div class="panel-heading">
             <h2 class="panel-title">Security</h2>
         </div>
         <div class="panel-body">
-            <p>NOTE: Cannot change these security information. Login information of all users will be failed.</p>
+            <p class="help-block">NOTE: Cannot change these security information. Login information of all users will be failed.</p>
             <form class="form-horizontal">
                 <div class="form-group">
                     <label class="col-sm-3 control-label">Encryption Salt</label>

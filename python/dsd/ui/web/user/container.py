@@ -33,6 +33,18 @@ def jinja2_filter_db(oid, collection, fields=None, delimiter=' | '):
             fields = [('ObjectId: %s', '_id')]
     return delimiter.join([format % document[field] for format, field in fields if field in document])
 
+def get_user_gpu(user):
+    containers = list(db.containers.find({'user_oid':user['oid']}))
+    user_gpu = 0
+    if containers:
+        for container in containers:
+            if container['gpu'] and \
+                    'ps_id' in container and container['ps_id']:
+                ps = docker.container(container['ps_id'])
+                if ps['running']:
+                    user_gpu += container['gpu']
+    return user_gpu
+
 @app.route("/user/container", endpoint='user.container', methods=['GET'])
 def user_container():
     if is_login():
@@ -53,12 +65,19 @@ def user_container():
             else:
                 container['status_str'] = 'Initial'
 
+        user_gpu = get_user_gpu(session['user'])
+        gpu_num = db.gpus.find().count()
+
         return render_template('user_container.html',
                                count_container=len(container_lst),
                                count_live_container=alive,
                                max_container=session['user']['max_container'],
                                max_live_container=session['user']['max_live_container'],
+                               max_gpu=session['user']['max_gpu'],
+                               max_disk=session['user']['max_disk'],
+                               user_gpu=user_gpu,
                                container_lst=container_lst,
+                               gpu_num=gpu_num,
                                default_host=request.url_root.rsplit(':')[1])
     else:
         return invalid_login()
@@ -111,7 +130,8 @@ def user_container_add():
 
         if request.method == 'GET':
             auth_image_lst = db.auth_images.find()
-            return render_template('user_container_add.html', auth_image_lst=auth_image_lst)
+            gpu_num = db.gpus.find().count()
+            return render_template('user_container_add.html', auth_image_lst=auth_image_lst, gpu_num=gpu_num)
         else:
             docker = get_docker()
             if not docker:
@@ -199,6 +219,7 @@ def user_container_reinstall(oid):
                 remove_ps(container)
                 # refresh container and update
                 del container['ps_id']
+                del container['ps']
                 db.containers.save(container)
             else:
                 raise SystemError('Container %s has never been run. No need to reinstall.' % container['name'])
@@ -247,19 +268,12 @@ def create_ps(container):
     if container['gpu']:
         nvd = get_nvd()
         # calculate how many GPUs the user is used
-        user_containers = list(db.containers.find({'user_oid':user['oid']}))
-        user_gpu = 0
-        if user_containers:
-            for user_container in user_containers:
-                if user_container['gpu'] and \
-                        'ps_id' in user_container and user_container['ps_id']:
-                    ps = docker.container(user_container['ps_id'])
-                    if ps['running']:
-                        user_gpu += user_container['gpu']
-        if user_gpu >= user['max_gpu']:
+        user_gpu = get_user_gpu(user)
+        if user_gpu + container['gpu'] > user['max_gpu']:
             raise SystemError('You can only have %d GPU(s) running. Adjust container setting and try start the container again.' % user['max_gpu'])
         try:
-            gpu_params = nvd.cliParams(dev=gpu_dispatch(container['gpu']))
+            gpu_indexes = gpu_dispatch(container['gpu'])
+            gpu_params = nvd.cliParams(dev=gpu_indexes)
         except (requests.exceptions.HTTPError, urllib2.URLError) as e:
             raise SystemError('Can\'t generate docker configuration according to your current GPU setting. Adjust it and try start the container again.')
 
@@ -271,9 +285,20 @@ def create_ps(container):
         else:
             del gpu_params['volume_driver']
 
+        #print params
+        #print gpu_params
         dict_deep_update(params, gpu_params)
-    print params
+    #print params
+
+    # create the container
     ps_id = docker.create(**params)
+
+    # update gpu list
+    if container['gpu']:
+        for gpu_index in gpu_indexes:
+            gpu = db.gpus.find_one({'index':gpu_index})
+            gpu['container_oids'].append(container['_id'])
+
     return ps_id
 
 def run_ps(container):
@@ -333,7 +358,7 @@ def user_container_start(oid):
 
         except Exception as e:
             flash('Something\'s wrong: ' + str(e), 'warning')
-            print type(e)
+            #raise
         else:
             flash('Container %s is running.' % container['name'], 'success')
 

@@ -114,11 +114,12 @@ def is_admin():
     return is_login() and session['user']['type'] is UserTypes.Administrator
 
 _docker = None
-def get_docker(update=False, base_url=None):
+def get_docker(update=False, base_url=None, config=None):
     global _docker
     if update or not _docker:
         if not base_url:
-            config = db.config.find_one()
+            if not config:
+                config = db.config.find_one()
             base_url = config['docker_url']
         if config['docker_tls']['use_tls']:
             tls = {'client_cert': (config['docker_tls']['path_client_cert'],
@@ -133,11 +134,12 @@ def get_docker(update=False, base_url=None):
     return _docker
 
 _nvd = None
-def get_nvd(update=False, base_url=None):
+def get_nvd(update=False, base_url=None, config=None):
     global _nvd
     if update or not _nvd:
         if not base_url:
-            config = db.config.find_one()
+            if not config:
+                config = db.config.find_one()
             base_url=config['nvd_url']
         _nvd = NVD(base_url)
         if not _nvd.alive():
@@ -171,10 +173,18 @@ def ensure_path(path):
 
 def gpu_dispatch(num):
     # TODO control which dev to be assigned
+    config = db.config.find_one()
+    max_gpu_assignment = config['resource']['max_gpu_assignment']
     nvd = get_nvd()
-    gpus = len(nvd.gpuInfo())
+    if max_gpu_assignment:
+        gpus = [gpu['index'] for gpu in list(db.gpus.find()) \
+                    if len(gpu['container_oids']) < max_gpu_assignment ]
+    else:
+        gpus = [gpu['index'] for gpu in list(db.gpus.find())]
+    if len(gpus) < num:
+        raise SystemError('There is no sufficient GPU(s) for your request now. Please adjust your setting or wait for GPU resources.')
     # use random dispatch
-    return random.sample(xrange(gpus), num)
+    return random.sample(gpus, num)
 
 def dict_deep_update(dst, src):
     if not isinstance(dst, dict):

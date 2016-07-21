@@ -91,13 +91,33 @@ def manage_system_default():
     else:
         return invalid_login('Administrators only. Login again.')
 
+
+def prepare_path(path, old_path, prefix, message_path_name='', error={}):
+    if os.path.isabs(path):
+        error.update({'resource':'Set %s path to a relative path within %s.' % (message_path_name, prefix)})
+        raise ValueError('Absolute path is not allow for %s.' % (message_path_name))
+
+    if path.startswith('..'):
+        error.update({'resource':'Set %s to a relative path within %s.' % (message_path_name, prefix)})
+        raise ValueError('Path of %s must be in %s.' % (message_path_name, prefix))
+
+    old_full = os.path.join(prefix, old_path)
+    if os.path.exists(old_full):
+        ensure_path(full)
+        if not os.path.samefile(old_full, full):
+            flash('Files are detected in old %s. They are moved to the new path.' % message_path_name)
+            shutil.move(old_full, full)
+    return path
+
 @app.route("/manage/system/resource", endpoint='manage.system.resource', methods=['POST'])
 def manage_system_resource():
     if is_admin():
         config = db.config.find_one()
         try:
-            cur_workspaces = config['resource']['volume']['workspaces']
-            cur_data = config['resource']['volume']['data']
+            error = {}
+
+            old_workspaces = config['resource']['volume']['workspaces']
+            old_data = config['resource']['volume']['data']
 
             config['resource']['max_gpu_assignment'] = request.form['resource_max_gpu_assignment']
             config['resource']['volume']['workspaces'] = request.form['resource_volume_workspaces']
@@ -106,19 +126,17 @@ def manage_system_resource():
             try:
                 config['resource']['max_gpu_assignment'] = int(config['resource']['max_gpu_assignment'])
             except ValueError:
-                error={'resource':'Set Max GPU Assignment an integer.'}
+                error.update({'resource':'Set Max GPU Assignment an integer.'})
                 raise ValueError('Max GPU Assignment must be an integer.')
 
-            if os.path.exists(os.path.join(config['env']['volume_prefix'], cur_workspaces)):
-                #os.renames(cur_workspaces, config['resource']['volume']['workspaces'])
-                flash('Files are detected in old workspaces base. They are moved to the new path automatically.')
-                shutil.move(os.path.join(config['env']['volume_prefix'], cur_workspaces),
-                            os.path.join(config['env']['volume_prefix'], config['resource']['volume']['workspaces']))
-            if os.path.exists(os.path.join(config['env']['volume_prefix'], cur_data)):
-                #os.renames(cur_data, config['resource']['volume']['data'])
-                flash('Files are detected in old data base. They are moved to the new path automatically.')
-                shutil.move(os.path.join(config['env']['volume_prefix'], cur_data),
-                            os.path.join(config['env']['volume_prefix'], config['resource']['volume']['data']))
+            prefix = config['env']['volume_prefix']
+
+            config['resource']['volume']['workspaces'] = \
+                prepare_path(config['resource']['volume']['workspaces'], old_workspaces, prefix, \
+                             message_path_name='workspaces base', error=error)
+            config['resource']['volume']['data'] = \
+                prepare_path(config['resource']['volume']['data'], old_data, prefix, \
+                             message_path_name='data base', error=error)
 
             db.config.save(config)
         except Exception as e:
