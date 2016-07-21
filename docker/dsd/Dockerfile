@@ -36,7 +36,7 @@ RUN pip install docker-py
 EXPOSE 80 443 5000 8888
 
 # expose some directories to the host
-VOLUME ["/root/dsd", "/etc/nginx/conf.d", "/root/workspace", "/volumes"]
+VOLUME ["/root/dsd", "/etc/nginx/conf.d", "/root/workspace", "/volumes", "/data"]
 
 # set workdir to workspace
 WORKDIR /root/workspace

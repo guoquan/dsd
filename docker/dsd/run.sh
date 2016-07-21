@@ -69,6 +69,7 @@ sudo nvidia-docker run --rm -P $@ \
     -v $(pwd)/workspace:/root/workspace \
     -v $(cd ../..; pwd):/root/workspace/dsd \
     -v $(pwd)/volumes:/volumes \
+    -v $(pwd)/data:/data \
     dsdgroup/dsd-console
 sleep $(bc <<< "1 + 2 * $POLL_INTERVAL")s
 )
