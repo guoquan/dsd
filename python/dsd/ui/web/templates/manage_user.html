@@ -43,7 +43,7 @@
                         <td>
                             <span class="btn-group" role="group">
                                 <a class="btn btn-default" href="{% if user['username']==cur_user['username'] %}{{ url_for('profile') }}{% else %}{{ url_for('manage.user.oid', oid=user['_id']) }}{% endif %}" role="button"><span class="glyphicon glyphicon-edit"></span> Edit </a>
-                                <a class="btn btn-danger {% if user['username']==cur_user['username'] %}disabled{%endif%}" href="{{ url_for('manage.user.remove.oid', oid=user['_id']) }}" role="button"><span class="glyphicon glyphicon-remove"></span> Remove</a>
+                                <a class="btn btn-danger {% if user['username']==cur_user['username'] %}disabled{%endif%}" href="{{ url_for('manage.user.remove', oid=user['_id']) }}" role="button"><span class="glyphicon glyphicon-remove"></span> Remove</a>
                             </span>
                         </td>
                     </tr>

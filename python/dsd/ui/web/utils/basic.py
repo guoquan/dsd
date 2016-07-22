@@ -10,6 +10,7 @@ import itertools
 import re
 import os
 import random
+from bson.objectid import ObjectId
 
 _logger = logging.getLogger()
 

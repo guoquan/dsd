@@ -56,8 +56,8 @@ def manage_user_oid(oid):
                                    default_host=request.url_root.rsplit(':')[1])
         else:
             try:
+                error = None
                 user['active'] = bool('active' in request.form and request.form['active'])
-
                 if user['type'] == UserTypes.Administrator:
                     pass
                 elif user['type'] == UserTypes.User:
@@ -99,11 +99,26 @@ def manage_user_oid(oid):
             except Exception as e:
                 flash('Something\'s wrong: ' + str(e), 'warning')
                 flash('Nothing is updated due to error.', 'warning')
-                #return redirect(url_for('manage.user.add'))
-                return render_template('manage_user_oid.html', user=user, error=error)
+                user['containers'] = list(db.containers.find({'user_oid':user_oid}))
+                alive = 0
+                if user['containers']:
+                    for container in user['containers']:
+                        container['auth_image'] = db.auth_images.find_one({'_id':container['auth_image_oid']})
+                        if 'ps_id' in container and container['ps_id']:
+                            container['ps'] = docker.container(container['ps_id'])
+                            if container['ps']['running']:
+                                alive += 1
+                        if container['auth_image']:
+                            container['auth_image']['image'] = docker.image(id=container['auth_image']['image_id'], name=container['auth_image']['name'])
+                        if 'ps' in container:
+                            container['status_str'] = container['ps']['status_str']
+                        else:
+                            container['status_str'] = 'Initial'
+                return render_template('manage_user_oid.html', user=user, error=error,
+                                       default_host=request.url_root.rsplit(':')[1])
 
             flash('User %s is updated.' % user['username'], 'success')
-            return render_template('manage_user_oid.html', user=user)
+            return redirect(url_for('manage.user.oid', oid=user['_id']))
     else:
         return invalid_login('Administrators only. Login again.')
 
@@ -173,7 +188,7 @@ def manage_user_add():
     else:
         return invalid_login('Administrators only. Login again.')
 
-@app.route('/manage/user/remove/<oid>', endpoint='manage.user.remove.oid', methods=['GET', 'POST'])
+@app.route('/manage/user/<oid>/remove', endpoint='manage.user.remove', methods=['GET', 'POST'])
 def manage_user_remove_oid(oid):
     if is_admin():
         user_oid = ObjectId(oid)
@@ -190,26 +205,42 @@ def manage_user_remove_oid(oid):
     else:
         return invalid_login('Administrators only. Login again.')
 
-@app.route('/manage/user/<user_oid>/container/start/<oid>', endpoint='manage.user.container.start.oid', methods=['GET', 'POST'])
+@app.route('/manage/user/<user_oid>/container/<oid>/start', endpoint='manage.user.container.start', methods=['GET', 'POST'])
 def manage_user_container_start(user_oid, oid):
     if is_admin():
 
-        return redirect(url_for('manage.user'))
+        return redirect(url_for('manage.user.oid', oid=user_oid))
     else:
         return invalid_login('Administrators only. Login again.')
 
-@app.route('/manage/user/<user_oid>/container/stop/<oid>', endpoint='manage.user.container.stop.oid', methods=['GET', 'POST'])
+@app.route('/manage/user/<user_oid>/container/<oid>/stop', endpoint='manage.user.container.stop', methods=['GET', 'POST'])
 def manage_user_container_stop(user_oid, oid):
     if is_admin():
 
-        return redirect(url_for('manage.user'))
+        return redirect(url_for('manage.user.oid', oid=user_oid))
     else:
         return invalid_login('Administrators only. Login again.')
 
-@app.route('/manage/user/<user_oid>/container/restart/<oid>', endpoint='manage.user.container.restart.oid', methods=['GET', 'POST'])
+@app.route('/manage/user/<user_oid>/container/<oid>/restart', endpoint='manage.user.container.restart', methods=['GET', 'POST'])
 def manage_user_container_restart(user_oid, oid):
     if is_admin():
 
-        return redirect(url_for('manage.user'))
+        return redirect(url_for('manage.user.oid', oid=user_oid))
+    else:
+        return invalid_login('Administrators only. Login again.')
+
+@app.route('/manage/user/<user_oid>/container/<oid>/reinstall', endpoint='manage.user.container.reinstall', methods=['GET', 'POST'])
+def manage_user_container_reinstall(user_oid, oid):
+    if is_admin():
+
+        return redirect(url_for('manage.user.oid', oid=user_oid))
+    else:
+        return invalid_login('Administrators only. Login again.')
+
+@app.route('/manage/user/<user_oid>/container/<oid>/remove', endpoint='manage.user.container.remove', methods=['GET', 'POST'])
+def manage_user_container_remove(user_oid, oid):
+    if is_admin():
+
+        return redirect(url_for('manage.user.oid', oid=user_oid))
     else:
         return invalid_login('Administrators only. Login again.')

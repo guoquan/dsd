@@ -75,6 +75,7 @@
                     <p>Usage of your GPUs.</p>
                     {% if gpu_global %}
                     <ul class="list-inline">
+                        <li>GPUs: {{ user_gpu }} / {{ max_gpu }}</li>
                         <li>Driver Version: {{ gpu_global['DriverVersion'] }}</li>
                         <li>CUDA Version: {{ gpu_global['CudaVersion'] }}</li>
                     </ul>

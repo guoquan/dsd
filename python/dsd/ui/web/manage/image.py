@@ -89,7 +89,7 @@ def manage_image_authorize():
     else:
         return invalid_login('Administrators only. Login again.')
 
-@app.route("/manage/image/revoke/<oid>", endpoint='manage.image.revoke')
+@app.route("/manage/image/<oid>/revoke", endpoint='manage.image.revoke')
 def manage_image_revoke(oid):
     if is_admin():
         oid = ObjectId(oid)

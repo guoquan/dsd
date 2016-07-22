@@ -33,6 +33,7 @@
                                 <span class="active-state collapse{% if 'active' not in user or not user['active'] %} in{% endif %}">Inactive</span>
                             </label>
                         </div>
+                        <span class="active-state collapse help-block">Remember to update user to save the changes made.</span>
                     </div>
                 </div>
                 <div class="form-group">
@@ -97,9 +98,8 @@
                             <div class="row">
                                 <div class="col-sm-1">#</div>
                                 <div class="col-sm-3">Name</div>
-                                <div class="col-sm-2">Image</div>
-                                <div class="col-sm-3">Status</div>
-                                <div class="col-sm-3">Operations</div>
+                                <div class="col-sm-3">Image</div>
+                                <div class="col-sm-5">Status</div>
                             </div>
                         </div>
                     </div>
@@ -109,26 +109,28 @@
                             <div class="row">
                                 <div class="col-sm-1">{{ loop.index }}</div>
                                 <div class="col-sm-3">{{ container['name'] }}</div>
-                                <div class="col-sm-2">{{ container['auth_image']['name'] }}</div>
-                                <div class="col-sm-3">{{ container['status_str'] }}</div>
-                                <div class="col-sm-3">
-                                    <div class="btn-group" role="group">
-                                        {% if 'ps_id' not in container or not container['ps_id'] or not container['ps']['running']%}
-                                        <a href="{{ url_for('manage.user.container.start.oid', user_oid=user['_id'], oid=container['_id']) }}" class="btn btn-primary" role="button"><span class="glyphicon glyphicon-play"></span> Run </a>
-                                        {% else %}
-                                        <a href="{{ url_for('manage.user.container.stop.oid', user_oid=user['_id'], oid=container['_id']) }}" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-stop"></span> Stop </a>
-                                        <a href="{{ url_for('manage.user.container.restart.oid', user_oid=user['_id'], oid=container['_id']) }}" class="btn btn-warning" role="button"><span class="glyphicon glyphicon-repeat"></span> Restart </a>
-                                        {% endif %}
-                                    </div>
-                                </div>
+                                <div class="col-sm-3">{{ container['auth_image']['name'] }}</div>
+                                <div class="col-sm-5">{{ container['status_str'] }}</div>
                             </div>
                             <div class="row">
                                 <div class="col-sm-11 col-sm-offset-1">
-                                    {% if 'ps' in container %}
-                                    {% for port in container['ps']['ports'] %}
-                                    <a class="btn btn-primary" href="{% if port.p == '0.0.0.0' %}{{ default_host }}{% else %}//{{ port.p }}{% endif %}:{{ port.h }}" role="button" target="_blank"><span class="glyphicon glyphicon-eye-open"></span> {{ port.c }} </a>
-                                    {% endfor%}
-                                    {% endif %}
+                                    <div class="well">
+                                        <div class="btn-group" role="group">
+                                            {% if 'ps_id' not in container or not container['ps_id'] or not container['ps']['running']%}
+                                            <a href="{{ url_for('manage.user.container.start', user_oid=user['_id'], oid=container['_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-play"></span> Run </a>
+                                            {% else %}
+                                            <a href="{{ url_for('manage.user.container.stop', user_oid=user['_id'], oid=container['_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-stop"></span> Stop </a>
+                                            <a href="{{ url_for('manage.user.container.restart', user_oid=user['_id'], oid=container['_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-repeat"></span> Restart </a>
+                                            {% endif %}
+                                            <a href="{{ url_for('manage.user.container.reinstall', user_oid=user['_id'], oid=container['_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-cd"></span> Reinstall </a>
+                                            <a href="{{ url_for('manage.user.container.remove', user_oid=user['_id'], oid=container['_id']) }}" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-remove"></span> Remove </a>
+                                        </div>
+                                        {% if 'ps' in container %}
+                                        {% for port in container['ps']['ports'] %}
+                                        <a class="btn btn-sm btn-primary" href="{% if port.p == '0.0.0.0' %}{{ default_host }}{% else %}//{{ port.p }}{% endif %}:{{ port.h }}" role="button" target="_blank"><span class="glyphicon glyphicon-eye-open"></span> {{ port.c }} </a>
+                                        {% endfor%}
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
                         </div>
