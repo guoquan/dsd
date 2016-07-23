@@ -1,15 +1,12 @@
 from flask import request, redirect, url_for, render_template, flash
 from dsd.ui.web import app
 from dsd.ui.web.utils import *
-import datetime
 from bson.objectid import ObjectId
 
 @app.route("/manage/user", endpoint='manage.user', methods=['GET'])
 def manage_user():
     if is_admin():
         docker = get_docker()
-        if not docker:
-            return no_host_redirect()
 
         user_lst = list(db.users.find())
         for user in user_lst:
@@ -29,8 +26,6 @@ def manage_user():
 def manage_user_oid(oid):
     if is_admin():
         docker = get_docker()
-        if not docker:
-            return no_host_redirect()
 
         user_oid = ObjectId(oid)
         user = db.users.find_one({'_id':user_oid})

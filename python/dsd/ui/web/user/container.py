@@ -6,33 +6,6 @@ import threading
 import urllib2
 import requests
 
-@app.template_filter('docker_image')
-def jinja2_filter_docker_image(id, fields=None, delimiter=' | '):
-    docker = get_docker()
-    if not docker:
-        return '<no docker connection>'
-
-    try:
-        image = docker.image(id)
-    except Exception as e:
-        return '<%s>' % str(e)
-    else:
-        if not fields:
-            fields = [('Image: %s', 'RepoTags'), ('Size: %s GB', 'size')]
-
-    return delimiter.join([format % image[field] for format, field in fields if field in image])
-
-@app.template_filter('db')
-def jinja2_filter_db(oid, collection, fields=None, delimiter=' | '):
-    try:
-        document = db[collection].find_one({'_id':ObjectId(oid)})
-    except Exception as e:
-        return '<%s>' % str(e)
-    else:
-        if not fields:
-            fields = [('ObjectId: %s', '_id')]
-    return delimiter.join([format % document[field] for format, field in fields if field in document])
-
 @app.route("/user/container", endpoint='user.container', methods=['GET'])
 def user_container():
     if is_login():

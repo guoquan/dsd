@@ -28,8 +28,8 @@
                 <div class="panel-body">
                     <p>Usage of your contaners.</p>
                     <ul class="list-inline">
-                        <li>Total: {{ count_container }} / {{ max_container }}</li>
-                        <li>Running: {{ count_live_container }} / {{ max_live_container }} </li>
+                        <li>Total: <span class="badge">{{ count_container }} / {{ max_container }}</span></li>
+                        <li>Running: <span class="badge">{{ count_live_container }} / {{ max_live_container }}</span></li>
                     </ul>
                 </div>
                 {% if container_lst %}
@@ -75,9 +75,9 @@
                     <p>Usage of your GPUs.</p>
                     {% if gpu_global %}
                     <ul class="list-inline">
-                        <li>GPUs: {{ user_gpu }} / {{ max_gpu }}</li>
-                        <li>Driver Version: {{ gpu_global['DriverVersion'] }}</li>
-                        <li>CUDA Version: {{ gpu_global['CudaVersion'] }}</li>
+                        <li>GPUs: <span class="badge">{{ user_gpu }} / {{ max_gpu }}</span></li>
+                        <li>Driver Version: <span class="badge">{{ gpu_global['DriverVersion'] }}</span></li>
+                        <li>CUDA Version: <span class="badge">{{ gpu_global['CudaVersion'] }}</span></li>
                     </ul>
                     {% endif %}
                 </div>

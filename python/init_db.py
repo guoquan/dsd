@@ -7,8 +7,8 @@ import socket
 import hashlib, binascii, os
 import pprint
 from dsd.sys.docker.pydocker import PyDocker as Docker
-from dsd.ui.web.utils import db, get_db, get_docker, get_nvd
-from dsd.ui.web.utils import encrypt_password, UserTypes
+from dsd.ui.web.utils.basic import db, get_db, get_docker, get_nvd
+from dsd.ui.web.utils.basic import encrypt_password, UserTypes
 
 def usage():
     print 'Usage:'

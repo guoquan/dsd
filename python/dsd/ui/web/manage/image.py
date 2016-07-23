@@ -1,12 +1,7 @@
 from flask import request, redirect, url_for, render_template, flash
 from dsd.ui.web import app
 from dsd.ui.web.utils import *
-import datetime
 from bson.objectid import ObjectId
-
-@app.template_filter('timestamp2datetime')
-def jinja2_filter_timestamp2datetime(timestamp):
-    return str(datetime.datetime.fromtimestamp(timestamp))
 
 @app.route("/manage/image", endpoint='manage.image', methods=['GET'])
 def manage_image():

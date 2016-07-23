@@ -10,10 +10,10 @@
         </div>
         <div class="panel-body">
             <ul class="list-inline">
-                <li>Total: {{ count_container }} / {{ max_container }}</li>
-                <li>Running: {{ count_live_container }} / {{ max_live_container }}</li>
-                <li>GPUs: {{ user_gpu }} / {{ max_gpu }}</li>
-                <li>Disk: - / {{ max_disk }}</li>
+                <li>Total: <span class="badge">{{ count_container }} / {{ max_container }}</span></li>
+                <li>Running: <span class="badge">{{ count_live_container }} / {{ max_live_container }}</span></li>
+                <li>GPUs: <span class="badge">{{ user_gpu }} / {{ max_gpu }}</span></li>
+                <li>Disk: <span class="badge"> - / {{ max_disk }}</span></li>
             </ul>
         </div>
         {% if container_lst %}
