@@ -88,10 +88,10 @@ def _docker_status_str(state):
     if state['Dead']:
         return u'Dead'
 
-    if not _docker_time(state['StartedAt']):
+    if _docker_time(state['StartedAt']) == datetime.datetime.min:
         return u'Created'
 
-    if not _docker_time(state['FinishedAt']):
+    if _docker_time(state['FinishedAt']) == datetime.datetime.min:
         return u''
 
     return u'Exited (%d) %s ago' % (state['ExitCode'], _human_time_abs_delta(datetime.datetime.now() - _docker_time(state['FinishedAt'])))

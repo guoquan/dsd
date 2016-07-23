@@ -208,7 +208,12 @@ def manage_user_remove_oid(oid):
 @app.route('/manage/user/<user_oid>/container/<oid>/start', endpoint='manage.user.container.start', methods=['GET', 'POST'])
 def manage_user_container_start(user_oid, oid):
     if is_admin():
-
+        try:
+            name = container_start(oid, user_oid)
+        except Exception as e:
+            flash('Something\'s wrong: ' + str(e), 'warning')
+        else:
+            flash('Container %s is running.' % name, 'success')
         return redirect(url_for('manage.user.oid', oid=user_oid))
     else:
         return invalid_login('Administrators only. Login again.')
@@ -216,7 +221,12 @@ def manage_user_container_start(user_oid, oid):
 @app.route('/manage/user/<user_oid>/container/<oid>/stop', endpoint='manage.user.container.stop', methods=['GET', 'POST'])
 def manage_user_container_stop(user_oid, oid):
     if is_admin():
-
+        try:
+            name = container_stop(oid, user_oid)
+        except Exception as e:
+            flash('Something\'s wrong: ' + str(e), 'warning')
+        else:
+            flash('Container %s is stopped.' % name, 'success')
         return redirect(url_for('manage.user.oid', oid=user_oid))
     else:
         return invalid_login('Administrators only. Login again.')
@@ -224,7 +234,12 @@ def manage_user_container_stop(user_oid, oid):
 @app.route('/manage/user/<user_oid>/container/<oid>/restart', endpoint='manage.user.container.restart', methods=['GET', 'POST'])
 def manage_user_container_restart(user_oid, oid):
     if is_admin():
-
+        try:
+            name = container_restart(oid, user_oid)
+        except Exception as e:
+            flash('Something\'s wrong: ' + str(e), 'warning')
+        else:
+            flash('Container %s is restarted.' % name, 'success')
         return redirect(url_for('manage.user.oid', oid=user_oid))
     else:
         return invalid_login('Administrators only. Login again.')
@@ -232,7 +247,12 @@ def manage_user_container_restart(user_oid, oid):
 @app.route('/manage/user/<user_oid>/container/<oid>/reinstall', endpoint='manage.user.container.reinstall', methods=['GET', 'POST'])
 def manage_user_container_reinstall(user_oid, oid):
     if is_admin():
-
+        try:
+            name = container_reinstall(oid, user_oid)
+        except Exception as e:
+            flash('Something\'s wrong: ' + str(e), 'warning')
+        else:
+            flash('Container %s is reinstalled.' % name, 'success')
         return redirect(url_for('manage.user.oid', oid=user_oid))
     else:
         return invalid_login('Administrators only. Login again.')
@@ -240,7 +260,12 @@ def manage_user_container_reinstall(user_oid, oid):
 @app.route('/manage/user/<user_oid>/container/<oid>/remove', endpoint='manage.user.container.remove', methods=['GET', 'POST'])
 def manage_user_container_remove(user_oid, oid):
     if is_admin():
-
+        try:
+            name = container_remove(oid, user_oid)
+        except Exception as e:
+            flash('Something\'s wrong: ' + str(e), 'warning')
+        else:
+            flash('Container %s is removed.' % name, 'success')
         return redirect(url_for('manage.user.oid', oid=user_oid))
     else:
         return invalid_login('Administrators only. Login again.')

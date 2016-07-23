@@ -169,7 +169,7 @@ def user_container_execute():
     else:
         return invalid_login()
 
-@app.route("/user/container/<oid>/remove/", endpoint='user.container.remove')
+@app.route("/user/container/<oid>/remove", endpoint='user.container.remove')
 def user_container_remove(oid):
     if is_login():
         try:
