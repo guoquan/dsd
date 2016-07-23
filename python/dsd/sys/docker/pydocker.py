@@ -217,11 +217,17 @@ class PyDocker():
             ps_single['created'] = _docker_time(ps['Created'])
             ports = []
             if 'Ports' in ps and ps['Ports']:
+                print ps['Ports']
                 for port in ps['Ports']:
                     if port['Type'] == u'tcp': # u'tcp' == 'tcp' is True
-                        ports.append(HCP(h=port['PublicPort'],
-                                         c=port['PrivatePort'],
-                                         p=port['IP']))
+                        if 'PublicPort' in port and 'IP' in port:
+                            ports.append(HCP(h=port['PublicPort'],
+                                             c=port['PrivatePort'],
+                                             p=port['IP']))
+                        else:
+                            ports.append(HCP(h='N/A',
+                                             c=port['PrivatePort'],
+                                             p='N/A'))
             ps_single['ports'] = ports # need process
             ps_single['names'] = [name.split('/')[-1] for name in ps['Names']]
 

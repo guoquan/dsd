@@ -39,6 +39,7 @@ def get_docker(update=False, base_url=None, config=None):
         _docker = Docker(base_url, **tls)
         if not _docker.alive():
             _docker = None
+    
     return _docker
 
 _nvd = None

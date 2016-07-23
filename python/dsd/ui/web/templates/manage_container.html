@@ -1,42 +1,197 @@
 {% extends "manage_base.html" %}
-{% block manage_content %}
-<div class='row'>
-    <div class='row'>
-        <h4>container List</h4>
+
+{% block panel_content %}
+{{ super() }}
+<!-- manage containers -->
+<div>
+    <h1 class="page-header">Containers</h1>
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h2 class="panel-title">Containers Information</h2>
+        </div>
+        <div class="panel-body">
+            <ul class="list-inline">
+                <li><strong>Total</strong>: <span class="badge"> - </span></li>
+                <li><strong>Managed</strong>: <span class="badge"> - / - </span></li>
+                <li>GPUs: <span class="badge"> - </span></li>
+                <li>Disk: <span class="badge"> - </span></li>
+                <li><strong>Unmanaged</strong>: <span class="badge"> - / - </span></li>
+                <li>GPUs: <span class="badge"> - </span></li>
+                <li>Disk: <span class="badge"> - </span></li>
+            </ul>
+        </div>
     </div>
-    <div class='row'>
-        <table class="table table-bordered table-hover">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>owner</th>
-                    <th>gpu</th>
-                    <th>max_disk</th>
-                    <th>max_memory</th>
-                    <th>operations</th>
-                    {% for container_key in container_lst[0].keys() %}
-                        <th>{{container_key}}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for container in container_lst %}
-                    <tr>
-                        <td>{{ loop.index }}</td>
-                        <td>{{ container["owner"] }}</td>
-                        <td>{{ container["gpu"] }}</td>
-                        <td>{{ container["max_disk"] }}</td>
-                        <td>{{ container["max_memory"] }}</td>
-                        <td>
-                            <a href="{{ url_for('logout') }}">del</a>
-                            <a href="{{ url_for('logout') }}">edit</a>
-                        </td>
-                        {% for container_key in container.keys() %}
-                            <td>{{container[container_key]}}</td>
-                        {% endfor %}
+
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h2 class="panel-title">Managed Containers</h2>
+        </div>
+        <div class="panel-body">
+            {% if managed_lst %}
+            <div id="containers" class="panel-group">
+                <div class="panel th">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-sm-1">#</div>
+                            <div class="col-sm-2">Name</div>
+                            <div class="col-sm-2">User</div>
+                            <div class="col-sm-3">Image</div>
+                            <div class="col-sm-4">Status</div>
+                        </div>
+                    </div>
+                </div>
+                {% for container in managed_lst %}
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-sm-1">{{ loop.index }}</div>
+                            <div class="col-sm-2">{{ container['name'] }}</div>
+                            <div class="col-sm-2">{{ container['user']['username'] }}</div>
+                            <div class="col-sm-3">{{ container['auth_image']['name'] }}</div>
+                            <div class="col-sm-4">{{ container['status_str'] }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-11 col-sm-offset-1">
+                                <div class="well">
+                                    <div class="btn-group" role="group">
+                                        {% if 'ps_id' not in container or not container['ps_id'] or not container['ps']['running']%}
+                                        <a href="{{ url_for('manage.user.container.start', user_oid=container['user']['_id'], oid=container['_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-play"></span> Run </a>
+                                        {% else %}
+                                        <a href="{{ url_for('manage.user.container.stop', user_oid=container['user']['_id'], oid=container['_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-stop"></span> Stop </a>
+                                        <a href="{{ url_for('manage.user.container.restart', user_oid=container['user']['_id'], oid=container['_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-repeat"></span> Restart </a>
+                                        {% endif %}
+                                        <a href="{{ url_for('manage.user.container.reinstall', user_oid=container['user']['_id'], oid=container['_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-cd"></span> Reinstall </a>
+                                        <a href="{{ url_for('manage.user.container.remove', user_oid=container['user']['_id'], oid=container['_id']) }}" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-remove"></span> Remove </a>
+                                    </div>
+                                    {% if 'ps' in container %}
+                                    {% for port in container['ps']['ports'] %}
+                                    <a class="btn btn-sm btn-primary" href="{% if port.p == '0.0.0.0' %}{{ default_host }}{% else %}//{{ port.p }}{% endif %}:{{ port.h }}" role="button" target="_blank"><span class="glyphicon glyphicon-eye-open"></span> {{ port.c }} </a>
+                                    {% endfor%}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 {% endfor %}
-            </tbody>
-        </table>
+            </div>
+            {% else %}
+            <p>No managed container exist.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="panel panel-warning">
+        <div class="panel-heading">
+            <h2 class="panel-title">Unmanaged Containers</h2>
+        </div>
+        <div class="panel-body">
+            <p class="help-block">Be careful when operating unmanaged contaners!</p>
+            {% if container_lst %}
+            <div id="containers" class="panel-group">
+                <div class="panel th">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-sm-1">#</div>
+                            <div class="col-sm-3">Name</div>
+                            <div class="col-sm-3">Image</div>
+                            <div class="col-sm-5">Status</div>
+                        </div>
+                    </div>
+                </div>
+                {% for container in container_lst %}
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-sm-1">{{ loop.index }}</div>
+                            <div class="col-sm-3">{{ container['container_name'] }}</div>
+                            <div class="col-sm-3">{{ container['image_name'] }}</div>
+                            <div class="col-sm-5">{{ container['status_str'] }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-11 col-sm-offset-1">
+                                <div class="well">
+                                    <div class="btn-group" role="group">
+                                        {% if not container['status_str'].startswith('Up') %}
+                                        <a href="{{ url_for('manage.container.start', id=container['container_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-play"></span> Run </a>
+                                        {% else %}
+                                        <a href="{{ url_for('manage.container.stop', id=container['container_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-stop"></span> Stop </a>
+                                        <a href="{{ url_for('manage.container.restart', id=container['container_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-repeat"></span> Restart </a>
+                                        {% endif %}
+                                        <a href="{{ url_for('manage.container.remove', id=container['container_id']) }}" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-remove"></span> Remove </a>
+                                    </div>
+                                    {% if 'ports' in container and container['ports'] %}
+                                    {% for port in container['ports'] %}
+                                    <a class="btn btn-sm btn-primary" href="{% if port.p == '0.0.0.0' %}{{ default_host }}{% else %}//{{ port.p }}{% endif %}:{{ port.h }}" role="button" target="_blank"><span class="glyphicon glyphicon-eye-open"></span> {{ port.c }} </a>
+                                    {% endfor%}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p>No unmanaged container exist.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="panel panel-danger">
+        <div class="panel-heading">
+            <h2 class="panel-title">DSD Runtime Containers</h2>
+        </div>
+        <div class="panel-body">
+            <p class="help-block">Be careful when trying to operate DSD runtime contaners!</p>
+            {% if dsd_container %}
+            <div id="containers" class="panel-group">
+                <div class="panel th">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-sm-1">#</div>
+                            <div class="col-sm-3">Name</div>
+                            <div class="col-sm-3">Image</div>
+                            <div class="col-sm-5">Status</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-sm-1">{{ loop.index }}</div>
+                            <div class="col-sm-3">{{ dsd_container['container_name'] }}</div>
+                            <div class="col-sm-3">{{ dsd_container['image_name'] }}</div>
+                            <div class="col-sm-5">{{ dsd_container['status_str'] }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-11 col-sm-offset-1">
+                                <div class="well">
+                                    <div class="btn-group" role="group">
+                                        {% if not dsd_container['status_str'].startswith('Up') %}
+                                        <button type="button" class="btn btn-default" role="button"><span class="glyphicon glyphicon-play"></span> Run (What?! I am not running? It must be a mistake.) </button>
+                                        {% else %}
+                                        <button type="button" class="btn btn-default" role="button"><span class="glyphicon glyphicon-stop"></span> Stop </button>
+                                        <button type="button" class="btn btn-default" role="button"><span class="glyphicon glyphicon-repeat"></span> Restart </button>
+                                        {% endif %}
+                                        <button type="button" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-remove"></span> Remove </button>
+                                    </div>
+                                    {% if 'ports' in dsd_container and dsd_container['ports'] %}
+                                    {% for port in dsd_container['ports'] %}
+                                    <a class="btn btn-sm btn-primary" href="{% if port.p == '0.0.0.0' %}{{ default_host }}{% else %}//{{ port.p }}{% endif %}:{{ port.h }}" role="button" target="_blank"><span class="glyphicon glyphicon-eye-open"></span> {{ port.c }} </a>
+                                    {% endfor%}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <p>Cannot detect DSD runtime container.</p>
+            {% endif %}
+        </div>
     </div>
 </div>
+<!-- end manage containers -->
 {% endblock %}

@@ -177,7 +177,7 @@ def remove_ps(container, user):
     state = ps['raw']['State'] # using the raw interface
     if ps['running'] or ('RemovalInProgress' in state and state['RemovalInProgress']):
         stop_ps(container, user)
-    # FIXME shall we wait some time for the container to be really stopped
+        # FIXME shall we wait some time for the container to be really stopped
     docker.rm(container=container['ps_id'])
     del container['ps_id']
     db.containers.save(container)

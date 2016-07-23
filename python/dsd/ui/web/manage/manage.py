@@ -11,6 +11,8 @@ def index():
         if nvd:
             gpu_global = nvd.gpuGlobalInfo()
             gpu_lst = nvd.gpuInfo()
+            for gpu in list(db.gpus.find()):
+                gpu_lst[gpu['index']]['containers'] = len(gpu['container_oids'])
         else:
             gpu_global = None
             gpu_lst = []
@@ -40,12 +42,21 @@ def manage_container():
         if not docker:
             return no_host_redirect()
 
-        container_lst = list(db.containers.find())
-        for container in container_lst:
+        container_lst = docker.ps(all=True)
+        try:
+            dsd_container = docker.container(socket.gethostname())
+            container_lst = [container for container in container_lst if container['container_id'] != dsd_container['container_id']]
+        except Exception:
+            dsd_container = None
+
+        managed_lst = list(db.containers.find())
+        managed_ids = []
+        for container in managed_lst:
             container['user'] = db.users.find_one({'_id':container['user_oid']})
             container['auth_image'] = db.auth_images.find_one({'_id':container['auth_image_oid']})
             if 'ps_id' in container and container['ps_id']:
                 container['ps'] = docker.container(container['ps_id'])
+                managed_ids.append(container['ps_id'])
             if container['auth_image']:
                 container['auth_image']['image'] = docker.image(id=container['auth_image']['image_id'], name=container['auth_image']['name'])
             if 'ps' in container:
@@ -53,6 +64,68 @@ def manage_container():
             else:
                 container['status_str'] = 'Initial'
 
-        return render_template('manage_container.html', container_lst=container_lst)
+        container_lst = [container for container in container_lst if container['container_id'] not in managed_ids]
+
+        return render_template('manage_container.html', managed_lst=managed_lst,
+                               container_lst=container_lst, dsd_container=dsd_container,
+                               default_host=request.url_root.rsplit(':')[1])
+    else:
+        return invalid_login('Administrators only. Login again.')
+
+@app.route('/manage/container/<id>/start', endpoint='manage.container.start', methods=['GET', 'POST'])
+def manage_user_container_start(id):
+    if is_admin():
+        try:
+            docker = get_docker()
+            docker.start(container=id)
+        except Exception as e:
+            flash('Something\'s wrong: ' + str(e), 'warning')
+        else:
+            flash('Container %s is running.' % name, 'success')
+        return redirect(url_for('manage.container'))
+    else:
+        return invalid_login('Administrators only. Login again.')
+
+@app.route('/manage/container/<id>/stop', endpoint='manage.container.stop', methods=['GET', 'POST'])
+def manage_user_container_stop(id):
+    if is_admin():
+        try:
+            docker = get_docker()
+            docker.stop(container=id)
+        except Exception as e:
+            flash('Something\'s wrong: ' + str(e), 'warning')
+        else:
+            flash('Container %s is stopped.' % name, 'success')
+        return redirect(url_for('manage.container'))
+    else:
+        return invalid_login('Administrators only. Login again.')
+
+@app.route('/manage/container/<id>/restart', endpoint='manage.container.restart', methods=['GET', 'POST'])
+def manage_user_container_restart(id):
+    if is_admin():
+        try:
+            docker = get_docker()
+            docker.stop(container=id)
+            docker.start(container=id)
+        except Exception as e:
+            flash('Something\'s wrong: ' + str(e), 'warning')
+        else:
+            flash('Container %s is restarted.' % name, 'success')
+        return redirect(url_for('manage.container'))
+    else:
+        return invalid_login('Administrators only. Login again.')
+
+@app.route('/manage/container/<id>/remove', endpoint='manage.container.remove', methods=['GET', 'POST'])
+def manage_user_container_remove(id):
+    if is_admin():
+        try:
+            docker = get_docker()
+            docker.stop(container=id)
+            docker.rm(container=id)
+        except Exception as e:
+            flash('Something\'s wrong: ' + str(e), 'warning')
+        else:
+            flash('Container %s is removed.' % name, 'success')
+        return redirect(url_for('manage.container'))
     else:
         return invalid_login('Administrators only. Login again.')

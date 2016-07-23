@@ -117,8 +117,8 @@
                     <p>Usage of your GPUs.</p>
                     {% if gpu_global %}
                     <ul class="list-inline">
-                        <li>Driver Version: {{ gpu_global['DriverVersion'] }}</li>
-                        <li>CUDA Version: {{ gpu_global['CudaVersion'] }}</li>
+                        <li>Driver Version: <span class="badge">{{ gpu_global['DriverVersion'] }}</span></li>
+                        <li>CUDA Version: <span class="badge">{{ gpu_global['CudaVersion'] }}</span></li>
                     </ul>
                     {% endif %}
                 </div>
@@ -130,6 +130,8 @@
                                 <th>Model</th>
                                 <th>Memory</th>
                                 <th>Utilization</th>
+                                <th>Processes</th>
+                                <th>Containers</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -139,6 +141,8 @@
                                 <td>{{ gpu['Model'] }}</td>
                                 <td>{{ gpu['MemoryUsed'] }} / {{ gpu['MemoryTotal'] }} MB</td>
                                 <td>{{ gpu['UtilizationGpu'] }}</td>
+                                <td>{{ gpu['Processes']|default([], true)|length }}</td>
+                                <td>{{ gpu['containers']|default('-') }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
