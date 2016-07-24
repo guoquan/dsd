@@ -127,7 +127,7 @@
                                         </div>
                                         {% if 'ps' in container %}
                                         {% for port in container['ps']['ports'] %}
-                                        <a class="btn btn-sm btn-primary" href="{% if port.p == '0.0.0.0' %}{{ default_host }}{% else %}//{{ port.p }}{% endif %}:{{ port.h }}" role="button" target="_blank"><span class="glyphicon glyphicon-eye-open"></span> {{ port.c }} </a>
+                                        <a class="btn btn-sm btn-{% if port.h %}primary{% else %}default disabled{% endif %}" href="{% if port.p == '0.0.0.0' %}{{ default_host }}{% else %}//{{ port.p }}{% endif %}:{{ port.h }}" role="button" target="_blank"><span class="glyphicon glyphicon-eye-{% if port.h %}open{% else %}close{% endif %}"></span> {{ port.c }} </a>
                                         {% endfor%}
                                         {% endif %}
                                     </div>
@@ -180,3 +180,12 @@
 </div>
 <!-- end manage add user -->
 {% endblock panel_content %}
+
+{% block head_css %}
+{{ super() }}
+<style>
+.panel.th .panel-heading {
+    font-weight: bold;
+}
+</style>
+{% endblock head_css %}

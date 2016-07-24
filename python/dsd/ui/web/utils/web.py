@@ -59,3 +59,11 @@ def no_host_redirect(state_message=None, user_back=None):
         return redirect(url_for('manage.system'))
     else:
         return redirect(url_for('error', error=state_message+' Please contact system administrator.', next=get_redirect_target()))
+
+def default_url_for(next, **next_args):
+    if 'next' in request.values:
+        next = request.values['next']
+        next_args = {} # if next is reset by request, unset next_args first
+    if 'next_args' in request.values:
+        next_args = request.values['next_args']
+    return url_for(next, **next_args)

@@ -52,7 +52,7 @@
                                 <td>
                                     {% if 'ps' in container %}
                                     {% for port in container['ps']['ports'] %}
-                                    <a class="btn btn-primary btn-xs" href="{% if port.p == '0.0.0.0' %}{{ default_host }}{% else %}//{{ port.p }}{% endif %}:{{ port.h }}" role="button" target="_blank"> {{ port.c }} </a>
+                                    <a class="btn btn-{% if port.h %}primary{% else %}default disabled{% endif %} btn-xs" href="{% if port.p == '0.0.0.0' %}{{ default_host }}{% else %}//{{ port.p }}{% endif %}:{{ port.h }}" role="button" target="_blank"> {{ port.c }} </a>
                                     {% endfor%}
                                     {% endif %}
                                 </td>
