@@ -20,7 +20,7 @@
                 <div class="form-group{% if not docker %} has-error has-feedback{% endif %}">
                     <label for="docker_url" class="col-sm-3 control-label">Docker base url</label>
                     <div class="col-sm-6 col-md-7">
-                        <input type="text" name="docker_url" class="form-control" placeholder="Docker base url" value="{{ config['docker_url'] }}" required>
+                        <input type="text" name="docker_url" class="form-control" placeholder="Docker base url" value="{{ config['docker']['url'] }}" required>
                         {% if not docker %}
                         <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
                         <span class="sr-only">(error)</span>
@@ -30,25 +30,25 @@
                     <div class="col-sm-3 col-md-2">
                         <div class="checkbox">
                             <label>
-                                <input type="checkbox" name="use_tls" data-toggle="collapse" data-target="#d_path_pem"{% if config['docker_tls']['use_tls'] %} checked{% endif %}> Use TLS
+                                <input type="checkbox" name="use_tls" data-toggle="collapse" data-target="#d_path_pem"{% if config['docker']['tls']['use_tls'] %} checked{% endif %}> Use TLS
                             </label>
                         </div>
                     </div>
-                    <div class="col-sm-9 col-sm-offset-3 collapse{% if config['docker_tls']['use_tls'] %} in{% endif %}" id="d_path_pem">
+                    <div class="col-sm-9 col-sm-offset-3 collapse{% if config['docker']['tls']['use_tls'] %} in{% endif %}" id="d_path_pem">
                         <div class="well">
                             <label for="path_client_cert" class="control-label">Client certificate</label>
-                            <input type="text" name="path_client_cert" class="form-control" placeholder="Path to client certificate"{{ {'value':config['docker_tls']['path_client_cert']}|xmlattr }}>
+                            <input type="text" name="path_client_cert" class="form-control" placeholder="Path to client certificate"{{ {'value':config['docker']['tls']['path_client_cert']}|xmlattr }}>
                             <label for="path_client_key" class="control-label">Client certificate key</label>
-                            <input type="text" name="path_client_key" class="form-control" placeholder="Path to client certificate key"{{ {'value':config['docker_tls']['path_client_key']}|xmlattr }}>
+                            <input type="text" name="path_client_key" class="form-control" placeholder="Path to client certificate key"{{ {'value':config['docker']['tls']['path_client_key']}|xmlattr }}>
                             <label for="path_ca" class="control-label">CA to authenticate server (optional)</label>
-                            <input type="text" name="path_ca" class="form-control" placeholder="CA to authenticate server (optional)"{{ {'value':config['docker_tls']['path_ca']}|xmlattr }}>
+                            <input type="text" name="path_ca" class="form-control" placeholder="CA to authenticate server (optional)"{{ {'value':config['docker']['tls']['path_ca']}|xmlattr }}>
                         </div>
                     </div>
                 </div>
                 <div class="form-group{% if not nvd %} has-error has-feedback{% endif %}">
                     <label for="nvd_url" class="col-sm-3 control-label">NVIDIA Docker API base url</label>
                     <div class="col-sm-9">
-                        <input type="text" name="nvd_url" class="form-control" placeholder="NVIDIA Docker API base url" value="{{ config['nvd_url'] }}" required>
+                        <input type="text" name="nvd_url" class="form-control" placeholder="NVIDIA Docker API base url" value="{{ config['nvd']['url'] }}" required>
                         {% if not nvd %}
                         <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
                         <span class="sr-only">(error)</span>
@@ -200,25 +200,25 @@
                 <div class="form-group">
                     <label class="col-sm-3 control-label">Encryption Salt</label>
                     <div class="col-sm-9">
-                        <p class="form-control-static">{{ config['encrypt_salt'] }}</p>
+                        <p class="form-control-static">{{ config['encrypt']['salt'] }}</p>
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="col-sm-3 control-label">Encryption Algorithm</label>
                     <div class="col-sm-9">
-                        <p class="form-control-static">{{ config['encrypt_algorithm'] }}</p>
+                        <p class="form-control-static">{{ config['encrypt']['algorithm'] }}</p>
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="col-sm-3 control-label">Encryption Method</label>
                     <div class="col-sm-9">
-                        <p class="form-control-static">{{ config['encrypt_method']['method'] }}</p>
+                        <p class="form-control-static">{{ config['encrypt']['method']['method'] }}</p>
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="col-sm-3 control-label">Encryption Iteration</label>
                     <div class="col-sm-9">
-                        <p class="form-control-static">{{ config['encrypt_iter'] }}</p>
+                        <p class="form-control-static">{{ config['encrypt']['iter'] }}</p>
                     </div>
                 </div>
             </form>

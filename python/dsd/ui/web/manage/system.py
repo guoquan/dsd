@@ -27,12 +27,12 @@ def manage_system_host():
         nvd_url = request.form['nvd_url']
 
         config = db.config.find_one()
-        config['docker_url'] = docker_url
-        config['docker_tls'] = {'use_tls':use_tls,
-                                'path_client_cert':path_client_cert,
-                                'path_client_key':path_client_key,
-                                'path_ca':path_ca}
-        config['nvd_url'] = nvd_url
+        config['docker']['url'] = docker_url
+        config['docker']['tls'] = {'use_tls':use_tls,
+                                   'path_client_cert':path_client_cert,
+                                   'path_client_key':path_client_key,
+                                   'path_ca':path_ca}
+        config['nvd']['url'] = nvd_url
         db.config.save(config)
 
         docker = get_docker(True)

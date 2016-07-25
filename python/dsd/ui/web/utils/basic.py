@@ -23,38 +23,50 @@ def get_db():
 db, client = get_db()
 
 _docker = None
-def get_docker(update=False, base_url=None, config=None):
+def get_docker(update=False, base_url=None, test_config=None):
     global _docker
     if update or not _docker:
         if not base_url:
-            if not config:
+            if test_config:
+                config = test_config
+            else:
                 config = db.config.find_one()
-            base_url = config['docker_url']
-        if config['docker_tls']['use_tls']:
+            base_url = config['docker']['url']
+        if 'tls' in config['docker'] and config['docker']['tls']['use_tls']:
             tls = {'client_cert': (config['docker_tls']['path_client_cert'],
                                    config['docker_tls']['path_client_key']),
-                   'verify': config['docker_tls']['path_ca'],
+                   'verify': config['docker_tls'].get('path_ca',None),
                    'assert_hostname': False}
         else:
             tls={}
-        _docker = Docker(base_url, **tls)
-        if not _docker.alive():
-            _docker = None
-        update_env(_docker)
-    return _docker
+        docker = Docker(base_url, **tls)
+        if not docker.alive():
+            docker = None
+        if not test_config:
+            _docker = docker
+            update_env(docker)
+    else:
+        docker = _docker
+    return docker
 
 _nvd = None
-def get_nvd(update=False, base_url=None, config=None):
+def get_nvd(update=False, base_url=None, test_config=None):
     global _nvd
     if update or not _nvd:
         if not base_url:
-            if not config:
+            if test_config:
+                config = test_config
+            else:
                 config = db.config.find_one()
-            base_url=config['nvd_url']
-        _nvd = NVD(base_url)
-        if not _nvd.alive():
-            _nvd = None
-    return _nvd
+            base_url=config['nvd']['url']
+        nvd = NVD(base_url)
+        if not nvd.alive():
+            nvd = None
+        if not test_config:
+            _nvd = nvd
+    else:
+        nvd = _nvd
+    return nvd
 
 def simple(digest, password, salt, iterations):
     dk = password
@@ -82,19 +94,19 @@ def encrypt_password(password, username, user_salt,
     _logger.debug('encrypt_password: %s | %s | %s | %s | %s' % (password, username, user_salt, iterations, digest))
     config = db.config.find_one()
     if not iterations:
-        iterations = config['encrypt_iter']
+        iterations = config['encrypt']['iter']
     if not digest:
-        digest = hashlib.new(config['encrypt_algorithm'])
+        digest = hashlib.new(config['encrypt']['algorithm'])
 
     # get a larger salt
-    salt = config['encrypt_salt'] + password + user_salt + username
+    salt = config['encrypt']['salt'] + password + user_salt + username
 
     # generate the encrypted password
     try:
-        dk = _methods[config['encrypt_method']['method']](digest, password, salt, iterations,
-                                                **config['encrypt_method']['param'])
+        dk = _methods[config['encrypt']['method']['method']](digest, password, salt, iterations,
+                                                **config['encrypt']['method']['param'])
     except KeyError:
-        _logger.warning('Encryption method %s is not supported, plain password is used.' % config['encrypt_method']['method'])
+        _logger.warning('Encryption method %s is not supported, plain password is used.' % config['encrypt']['method']['method'])
         dk = password
     return dk
 

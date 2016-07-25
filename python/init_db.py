@@ -6,8 +6,9 @@ import pymongo
 import socket
 import hashlib, binascii, os
 import pprint
-from dsd.ui.web.utils.basic import db, get_db, get_nvd
+from dsd.ui.web.utils.basic import db, get_db, get_docker, get_nvd
 from dsd.ui.web.utils.basic import encrypt_password, UserTypes
+import os
 
 def usage():
     print 'Usage:'
@@ -56,26 +57,53 @@ def init(db):
     config = {}
 
     # docker config
+    # detect the runtime environment
+    # opt x.1: try dockerhost hostname
+    dockerhost = 'dockerhost'
     try:
         # try resolve dockerhost and init using it
         socket.gethostbyname('dockerhost')
-        config['docker_url'] = 'tcp://dockerhost:4243'
-        config['nvd_url'] = 'http://dockerhost:3476'
     except socket.error:
-        # if failed, fallback to local connect
-        config['docker_url'] = 'unix:///var/run/docker.sock'
-        config['nvd_url'] = 'http://localhost:3476'
-    config['docker_tls'] = {'use_tls':False,
-                            'path_client_cert':None,
-                            'path_client_key':None,
-                            'path_ca':None}
-    ''' for boot2docker using virtalbox
-    config['docker_url'] = tcp://192.168.99.100:2376
-    config['docker_tls'] = {'use_tls':True,
-                            'path_client_cert':'~/.docker/machine/machines/default/certs/cert.pem'(!on the host!),
-                            'path_client_key':'~/.docker/machine/machines/default/certs/key.pem',
-                            'path_ca':'~/.docker/machine/machines/default/certs/ca.pem'}
-    '''
+        # if failed, now we have to guess the host
+        # opt x.2: try default docker network
+        dockerhost = '172.17.0.1'
+        #if not avaliable
+        # opt x.3: try default boot2docker
+        #dockerhost = '192.168.99.100'
+
+    config['docker'] = {}
+    sock = '/var/run/docker.sock'
+    if os.path.exists(sock):
+        # opt 1: using the unix sock
+        config['docker']['url'] = 'unix://' + sock
+        config['docker']['tls'] = {'use_tls':False}
+    else:
+        # opt 2: using tls
+        # opt 2.x: say we have a dockerhost x
+        cert_path = '~/.docker'
+        client_cert = 'cert.pem'
+        client_key = 'key.pem'
+        ca = 'ca.pem'
+        path_client_cert = os.path.join(cert_path, client_cert)
+        path_client_key = os.path.join(cert_path, client_key)
+        path_ca = os.path.join(cert_path, ca)
+        if os.path.isfile(path_client_cert) and os.path.isfile(path_client_key):
+            # opt 2.x.1: using tls client verification
+            config['docker']['url'] = 'tcp://' + dockerhost + ':2376'
+            config['docker']['tls'] = {'use_tls':True,
+                                       'path_client_cert':path_client_cert,
+                                       'path_client_key':path_client_key}
+            if os.path.isfile(path_ca):
+                # opt 2.x.1.1: using ca
+                config['docker']['tls']['path_ca'] = path_ca
+        else:
+            # opt 2.x.2: using unencrypted tcp
+            config['docker']['url'] = 'tcp://' + dockerhost + ':4243'
+            config['docker']['tls'] = {'use_tls':False}
+
+    # nvd is simpler
+    config['nvd']={}
+    config['nvd']['url'] = 'http://' + dockerhost + ':3476'
 
     # default config
     config['default'] = {}
@@ -96,17 +124,19 @@ def init(db):
     config['env'] = {}
 
     # password encryption config
-    config['encrypt_salt'] = os.urandom(16).encode('hex')
-    config['encrypt_algorithm'] = 'sha256'
+    config['encrypt'] = {}
+    config['encrypt']['salt'] = os.urandom(16).encode('hex')
+    config['encrypt']['algorithm'] = 'sha256'
     if callable(getattr(hashlib, 'pbkdf2_hmac', None)):
         # if pbkdf2_hmac is avaliable, use it
-        config['encrypt_method'] = {'method': 'pbkdf2_hmac', 'param':{'dklen': None}}
-        config['encrypt_iter'] = 100000
+        config['encrypt']['method'] = {'method':'pbkdf2_hmac',
+                                       'param':{'dklen': None}}
+        config['encrypt']['iter'] = 100000
     else:
         # otherwise, fallback to simple implement multiple round digest,
         #   but *much* less secure and posibly slow.
-        config['encrypt_method'] = {'method': 'simple', 'param':{}}
-        config['encrypt_iter'] = 100000
+        config['encrypt']['method'] = {'method':'simple', 'param':{}}
+        config['encrypt']['iter'] = 100000
 
     print '-' * 20
     print 'Save config:'
@@ -114,7 +144,7 @@ def init(db):
     pprint.pprint(config)
 
     # add gpu lists
-    nvd = get_nvd(config=config)
+    nvd = get_nvd(test_config=config)
     for i in range(len(nvd.gpuInfo())):
         gpu = {'index':i,
                'container_oids':[]}
