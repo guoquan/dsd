@@ -222,6 +222,63 @@
         </div>
         {% endif %}
     </div>
+
+    <div class="panel panel-warning">
+        <div class="panel-heading">
+            <h2 class="panel-title">Unmanaged Containers</h2>
+        </div>
+        <div class="panel-body">
+            <p class="help-block">Be careful when operating unmanaged contaners!</p>
+            {% if unmanaged_lst %}
+            <div id="containers" class="panel-group">
+                <div class="panel th">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-sm-1">#</div>
+                            <div class="col-sm-3">Name</div>
+                            <div class="col-sm-3">Image</div>
+                            <div class="col-sm-5">Status</div>
+                        </div>
+                    </div>
+                </div>
+                {% for container in unmanaged_lst %}
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-sm-1">{{ loop.index }}</div>
+                            <div class="col-sm-3">{{ container['container_name'] }}</div>
+                            <div class="col-sm-3">{{ container['image_name'] }}</div>
+                            <div class="col-sm-5">{{ container['status_str'] }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-11 col-sm-offset-1">
+                                <div class="well">
+                                    <div class="btn-group" role="group">
+                                        {% if not container['status_str'].startswith('Up') %}
+                                        <a href="{{ url_for('user.unmanaged.start', id=container['container_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-play"></span> Run </a>
+                                        {% else %}
+                                        <a href="{{ url_for('user.unmanaged.stop', id=container['container_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-stop"></span> Stop </a>
+                                        <a href="{{ url_for('user.unmanaged.restart', id=container['container_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-repeat"></span> Restart </a>
+                                        {% endif %}
+                                        <a href="{{ url_for('user.unmanaged.remove', id=container['container_id']) }}" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-remove"></span> Remove </a>
+                                    </div>
+                                    {% if 'ports' in container and container['ports'] %}
+                                    {% for port in container['ports'] %}
+                                    <a class="btn btn-sm btn-{% if port.h %}primary{% else %}default disabled{% endif %}" href="{% if port.p == '0.0.0.0' %}{{ default_host }}{% else %}//{{ port.p }}{% endif %}:{{ port.h }}" role="button" target="_blank"><span class="glyphicon glyphicon-eye-{% if port.h %}open{% else %}close{% endif %}"></span> {{ port.c }} </a>
+                                    {% endfor%}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p>No unmanaged container exist.</p>
+            {% endif %}
+        </div>
+    </div>
 </div>
 <!-- end user-container -->
 {% endblock panel_content %}

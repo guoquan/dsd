@@ -220,19 +220,19 @@ def container_add(source, user_oid=None):
     container = {'user_oid':user['_id'],
                  'auth_image_oid':ObjectId(source['auth_image_oid'])}
     save_container(container, source, user)
-    return container['name']
+    return container
 
 def container_save(container_oid, source, user_oid=None):
     container, user = get_container_user(container_oid, user_oid)
-    critical = save_container(container, source, user)
-    return container['name']
+    save_container(container, source, user)
+    return container
 
 def container_reinstall(container_oid, user_oid=None):
     container, user = get_container_user(container_oid, user_oid)
     if 'ps_id' not in container or not container['ps_id']:
         raise SystemError('Container %s has never been run. No need to reinstall.' % container['name'])
     remove_ps(container, user)
-    return container['name']
+    return container
 
 def container_start(container_oid, user_oid=None):
     container, user = get_container_user(container_oid, user_oid)
@@ -260,7 +260,7 @@ def container_start(container_oid, user_oid=None):
     elif state_code == ContainerState.Exited:
         pass
     run_ps(container, user)
-    return container['name']
+    return container
 
 def container_stop(container_oid, user_oid=None):
     container, user = get_container_user(container_oid, user_oid)
@@ -284,7 +284,7 @@ def container_stop(container_oid, user_oid=None):
     elif state_code == ContainerState.Exited:
         raise SystemError('Container %s is already exited.' % container['name'])
     stop_ps(container, user)
-    return container['name']
+    return container
 
 def container_restart(container_oid, user_oid=None):
     container, user = get_container_user(container_oid, user_oid)
@@ -309,7 +309,7 @@ def container_restart(container_oid, user_oid=None):
         flash('Container %s is already exited. Just start it.' % container['name'], 'warning')
     stop_ps(container, user)
     run_ps(container, user)
-    return container['name']
+    return container
 
 def container_execute(container_oid, command, user_oid=None):
     container, user = get_container_user(container_oid, user_oid)
@@ -320,4 +320,34 @@ def container_remove(container_oid, user_oid=None):
     if 'ps_id' in container and container['ps_id']:
         remove_ps(container, user)
     db.containers.delete_one({'_id':container['_id']})
-    return container['name']
+    return container
+
+def unmanaged_start(id):
+    docker = get_docker()
+    container = docker.container(id)
+    name = container['container_name']
+    docker.start(container=id)
+    return name
+
+def unmanaged_stop(id):
+    docker = get_docker()
+    container = docker.container(id)
+    name = container['container_name']
+    docker.stop(container=id)
+    return name
+
+def unmanaged_restart(id):
+    docker = get_docker()
+    container = docker.container(id)
+    name = container['container_name']
+    docker.stop(container=id)
+    docker.start(container=id)
+    return name
+
+def unmanaged_remove(id):
+    docker = get_docker()
+    container = docker.container(id)
+    name = container['container_name']
+    docker.stop(container=id)
+    docker.rm(container=id)
+    return name

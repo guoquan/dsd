@@ -1,6 +1,6 @@
 #content, #footer {
    font-size: 18px;
-   /*line-height: 2;*/
+   /*line-height: 2em;*/
 }
 
 body,button, input, select, textarea,h1 ,h2, h3, h4, h5, h6 {

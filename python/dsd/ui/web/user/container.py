@@ -29,6 +29,11 @@ def user_container():
         user_gpu = get_user_gpu(session['user']['oid'])
         gpu_num = db.gpus.find().count()
 
+        unmanaged_lst = list(db.unmanaged.find({'user_oid':ObjectId(session['user']['oid'])}))
+        for container in unmanaged_lst:
+            ps = docker.container(container['ps_id'])
+            container.update(ps)
+
         return render_template('user_container.html',
                                count_container=len(container_lst),
                                count_live_container=alive,
@@ -39,6 +44,7 @@ def user_container():
                                user_gpu=user_gpu,
                                container_lst=container_lst,
                                gpu_num=gpu_num,
+                               unmanaged_lst = unmanaged_lst,
                                default_host=request.url_root.rsplit(':')[1])
     else:
         return invalid_login()
@@ -56,12 +62,12 @@ def user_container_add():
             return render_template('user_container_add.html', auth_image_lst=auth_image_lst, gpu_num=gpu_num)
         else:
             try:
-                name = container_add(request.form)
+                container = container_add(request.form)
             except Exception as e:
                 flash('Something\'s wrong: ' + str(e), 'warning')
                 return redirect(url_for('user.container.add'))
             else:
-                flash('New container %s is created.' % name, 'success')
+                flash('New container %s is created.' % container['name'], 'success')
             return redirect(url_for('user.container'))
     else:
         return invalid_login()
@@ -71,12 +77,11 @@ def user_container_save():
     if is_login():
         oid = request.form['oid']
         try:
-            name = container_save(oid, request.form)
+            container = container_save(oid, request.form)
         except Exception as e:
             flash('Something\'s wrong: ' + str(e), 'warning')
         else:
-            flash('Container %s is updated.' % name, 'success')
-
+            flash('Container %s is updated.' % container['name'], 'success')
         return redirect(url_for('user.container'))
     else:
         return invalid_login()
@@ -85,11 +90,11 @@ def user_container_save():
 def user_container_reinstall(oid):
     if is_login():
         try:
-            name = container_reinstall(oid)
+            container = container_reinstall(oid)
         except Exception as e:
             flash('Something\'s wrong: ' + str(e), 'warning')
         else:
-            flash('Container %s is reinstalled.' % name, 'success')
+            flash('Container %s is reinstalled.' % container['name'], 'success')
         return redirect(url_for('user.container'))
     else:
         return invalid_login()
@@ -98,12 +103,12 @@ def user_container_reinstall(oid):
 def user_container_start(oid):
     if is_login():
         try:
-            name = container_start(oid)
+            container = container_start(oid)
         except Exception as e:
             flash('Something\'s wrong: ' + str(e), 'warning')
             #raise
         else:
-            flash('Container %s is running.' % name, 'success')
+            flash('Container %s is running.' % container['name'], 'success')
         return redirect(url_for('user.container'))
     else:
         return invalid_login()
@@ -112,11 +117,11 @@ def user_container_start(oid):
 def user_container_stop(oid):
     if is_login():
         try:
-            name = container_stop(oid)
+            container = container_stop(oid)
         except Exception as e:
             flash('Something\'s wrong: ' + str(e), 'warning')
         else:
-            flash('Container %s is stopped.' % name, 'success')
+            flash('Container %s is stopped.' % container['name'], 'success')
         return redirect(url_for('user.container'))
     else:
         return invalid_login()
@@ -125,11 +130,11 @@ def user_container_stop(oid):
 def user_container_restart(oid):
     if is_login():
         try:
-            name = container_restart(oid)
+            container = container_restart(oid)
         except Exception as e:
             flash('Something\'s wrong: ' + str(e), 'warning')
         else:
-            flash('Container %s is restarted.' % name, 'success')
+            flash('Container %s is restarted.' % container['name'], 'success')
         return redirect(url_for('user.container'))
     else:
         return invalid_login()
@@ -146,11 +151,72 @@ def user_container_execute():
 def user_container_remove(oid):
     if is_login():
         try:
-            name = container_remove(oid)
+            container = container_remove(oid)
         except Exception as e:
             flash('Something\'s wrong: ' + str(e), 'warning')
         else:
-            flash('Container %s is removed.' % name, 'success')
+            flash('Container %s is removed.' % container['name'], 'success')
+        return redirect(url_for('user.container'))
+    else:
+        return invalid_login()
+
+
+@app.route('/user/unmanaged/<id>/start', endpoint='user.unmanaged.start', methods=['GET', 'POST'])
+def user_unmanaged_start(id):
+    if is_login():
+        try:
+            if not db.unmanaged.find_one({'user_oid':ObjectId(session['user']['oid']), 'ps_id':id}):
+                raise SystemError('You can only operate your own container.')
+            name = unmanaged_start(id)
+        except Exception as e:
+            flash('Something\'s wrong: ' + str(e), 'warning')
+        else:
+            flash('Unmanaged container %s is running.' % name, 'success')
+        return redirect(url_for('user.container'))
+    else:
+        return invalid_login()
+
+@app.route('/user/unmanaged/<id>/stop', endpoint='user.unmanaged.stop', methods=['GET', 'POST'])
+def user_container_stop(id):
+    if is_login():
+        try:
+            if not db.unmanaged.find_one({'user_oid':ObjectId(session['user']['oid']), 'ps_id':id}):
+                raise SystemError('You can only operate your own container.')
+            name = unmanaged_stop(id)
+        except Exception as e:
+            flash('Something\'s wrong: ' + str(e), 'warning')
+        else:
+            flash('Unmanaged container %s is stopped.' % name, 'success')
+        return redirect(url_for('user.container'))
+    else:
+        return invalid_login()
+
+@app.route('/user/unmanaged/<id>/restart', endpoint='user.unmanaged.restart', methods=['GET', 'POST'])
+def user_container_restart(id):
+    if is_login():
+        try:
+            if not db.unmanaged.find_one({'user_oid':ObjectId(session['user']['oid']), 'ps_id':id}):
+                raise SystemError('You can only operate your own container.')
+            name = unmanaged_restart(id)
+        except Exception as e:
+            flash('Something\'s wrong: ' + str(e), 'warning')
+        else:
+            flash('Unmanaged container %s is restarted.' % name, 'success')
+        return redirect(url_for('user.container'))
+    else:
+        return invalid_login()
+
+@app.route('/user/unmanaged/<id>/remove', endpoint='user.unmanaged.remove', methods=['GET', 'POST'])
+def user_container_remove(id):
+    if is_login():
+        try:
+            if not db.unmanaged.find_one({'user_oid':ObjectId(session['user']['oid']), 'ps_id':id}):
+                raise SystemError('You can only operate your own container.')
+            name = unmanaged_remove(id)
+        except Exception as e:
+            flash('Something\'s wrong: ' + str(e), 'warning')
+        else:
+            flash('Unmanaged container %s is removed.' % name, 'success')
         return redirect(url_for('user.container'))
     else:
         return invalid_login()

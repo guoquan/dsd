@@ -64,6 +64,7 @@ def default_url_for(next, **next_args):
     if 'next' in request.values:
         next = request.values['next']
         next_args = {} # if next is reset by request, unset next_args first
-    if 'next_args' in request.values:
-        next_args = request.values['next_args']
+    for next_arg, value in request.values.iteritems():
+        if next_arg.startswith('next_'):
+            next_args.update({next_arg[5:]:value})
     return url_for(next, **next_args)

@@ -47,6 +47,10 @@ def manage_user_oid(oid):
                     else:
                         container['status_str'] = 'Initial'
 
+            user['unmanaged'] = list(db.unmanaged.find({'user_oid':user_oid}))
+            for container in user['unmanaged']:
+                ps = docker.container(container['ps_id'])
+                container.update(ps)
             return render_template('manage_user_oid.html', user=user,
                                    default_host=request.url_root.rsplit(':')[1])
         else:
@@ -204,11 +208,11 @@ def manage_user_remove_oid(oid):
 def manage_user_container_start(user_oid, oid):
     if is_admin():
         try:
-            name = container_start(oid, user_oid)
+            container = container_start(oid, user_oid)
         except Exception as e:
             flash('Something\'s wrong: ' + str(e), 'warning')
         else:
-            flash('Container %s is running.' % name, 'success')
+            flash('Container %s is running.' % container['name'], 'success')
         return redirect(default_url_for('manage.user.oid', oid=user_oid))
     else:
         return invalid_login('Administrators only. Login again.')
@@ -217,11 +221,11 @@ def manage_user_container_start(user_oid, oid):
 def manage_user_container_stop(user_oid, oid):
     if is_admin():
         try:
-            name = container_stop(oid, user_oid)
+            container = container_stop(oid, user_oid)
         except Exception as e:
             flash('Something\'s wrong: ' + str(e), 'warning')
         else:
-            flash('Container %s is stopped.' % name, 'success')
+            flash('Container %s is stopped.' % container['name'], 'success')
         return redirect(default_url_for('manage.user.oid', oid=user_oid))
     else:
         return invalid_login('Administrators only. Login again.')
@@ -230,11 +234,11 @@ def manage_user_container_stop(user_oid, oid):
 def manage_user_container_restart(user_oid, oid):
     if is_admin():
         try:
-            name = container_restart(oid, user_oid)
+            container = container_restart(oid, user_oid)
         except Exception as e:
             flash('Something\'s wrong: ' + str(e), 'warning')
         else:
-            flash('Container %s is restarted.' % name, 'success')
+            flash('Container %s is restarted.' % container['name'], 'success')
         return redirect(default_url_for('manage.user.oid', oid=user_oid))
     else:
         return invalid_login('Administrators only. Login again.')
@@ -243,11 +247,11 @@ def manage_user_container_restart(user_oid, oid):
 def manage_user_container_reinstall(user_oid, oid):
     if is_admin():
         try:
-            name = container_reinstall(oid, user_oid)
+            container = container_reinstall(oid, user_oid)
         except Exception as e:
             flash('Something\'s wrong: ' + str(e), 'warning')
         else:
-            flash('Container %s is reinstalled.' % name, 'success')
+            flash('Container %s is reinstalled.' % container['name'], 'success')
         return redirect(default_url_for('manage.user.oid', oid=user_oid))
     else:
         return invalid_login('Administrators only. Login again.')
@@ -256,11 +260,11 @@ def manage_user_container_reinstall(user_oid, oid):
 def manage_user_container_remove(user_oid, oid):
     if is_admin():
         try:
-            name = container_remove(oid, user_oid)
+            container = container_remove(oid, user_oid)
         except Exception as e:
             flash('Something\'s wrong: ' + str(e), 'warning')
         else:
-            flash('Container %s is removed.' % name, 'success')
+            flash('Container %s is removed.' % container['name'], 'success')
         return redirect(default_url_for('manage.user.oid', oid=user_oid))
     else:
         return invalid_login('Administrators only. Login again.')
