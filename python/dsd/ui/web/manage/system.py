@@ -19,11 +19,8 @@ def manage_system(error={}, config=None):
 @app.route("/manage/system/host", endpoint='manage.system.host', methods=['POST'])
 def manage_system_host():
     if is_admin():
-        docker = get_docker()
-        nvd = get_nvd()
-
         docker_url = request.form['docker_url']
-        use_tls = bool(request.form['use_tls'])
+        use_tls = bool('use_tls' in request.form and request.form['use_tls'])
         path_client_cert = request.form['path_client_cert']
         path_client_key = request.form['path_client_key']
         path_ca = request.form['path_ca']

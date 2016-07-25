@@ -6,8 +6,7 @@ import pymongo
 import socket
 import hashlib, binascii, os
 import pprint
-from dsd.sys.docker.pydocker import PyDocker as Docker
-from dsd.ui.web.utils.basic import db, get_db, get_docker, get_nvd
+from dsd.ui.web.utils.basic import db, get_db, get_nvd
 from dsd.ui.web.utils.basic import encrypt_password, UserTypes
 
 def usage():
@@ -94,23 +93,7 @@ def init(db):
     config['resource']['volume']['data'] = u'data'
 
     # environment config
-    VOLUME_PREFIX = u'/volumes'
-    docker = get_docker(config=config)
-    dsd_ps = docker.container(socket.gethostname())
-    host_volume_prefix = None
-    if dsd_ps:
-        mounts = dsd_ps['raw']['Mounts']
-        for mount in mounts:
-            if mount['Destination'] == VOLUME_PREFIX:
-                host_volume_prefix = mount['Source']
-                break
-    # if not detected, we have to assume it is in the same filesystem
-    if not host_volume_prefix:
-        host_volume_prefix = VOLUME_PREFIX
-
     config['env'] = {}
-    config['env']['volume_prefix'] = VOLUME_PREFIX
-    config['env']['host_volume_prefix'] = host_volume_prefix
 
     # password encryption config
     config['encrypt_salt'] = os.urandom(16).encode('hex')

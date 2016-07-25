@@ -8,6 +8,7 @@ import itertools
 import re
 import os
 import random
+import socket
 
 _logger = logging.getLogger()
 
@@ -39,7 +40,7 @@ def get_docker(update=False, base_url=None, config=None):
         _docker = Docker(base_url, **tls)
         if not _docker.alive():
             _docker = None
-    
+        update_env(_docker)
     return _docker
 
 _nvd = None
@@ -138,3 +139,26 @@ def dict_deep_update(dst, src):
             dst[k].extend(v)
         else:
             dst[k] = v
+
+VOLUME_PREFIX = u'/volumes'
+def update_env(docker):
+    if docker:
+        dsd_ps = docker.container(socket.gethostname())
+        host_volume_prefix = None
+        if dsd_ps:
+            mounts = dsd_ps['raw']['Mounts']
+            for mount in mounts:
+                if mount['Destination'] == VOLUME_PREFIX:
+                    host_volume_prefix = mount['Source']
+                    break
+        # if not detected, we have to assume it is in the same filesystem
+        if not host_volume_prefix:
+            host_volume_prefix = VOLUME_PREFIX
+        volume_base = {'volume_prefix':VOLUME_PREFIX,
+                       'host_volume_prefix':host_volume_prefix}
+    else:
+        volume_base = {'volume_prefix':VOLUME_PREFIX,
+                       'host_volume_prefix':'<Cannot connect to the docker host>'}
+    config = db.config.find_one()
+    config['env'].update(volume_base)
+    db.config.save(config)
