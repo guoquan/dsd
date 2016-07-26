@@ -33,14 +33,14 @@ RUN pip install docker-py
 EXPOSE 5000 8888
 
 # expose some directories to the host
-VOLUME ["/root/dsd", "/root/workspace", "/volumes", "/data"]
+VOLUME ["/opt/dsd", "/root/workspace", "/volumes", "/data"]
 
 # set workdir to workspace
 WORKDIR /root/workspace
 
 # setup env
 ENV SHELL bash
-ENV PYTHONPATH /root/dsd
+ENV PYTHONPATH /opt/dsd/python
 ENV DSD_DEV 1
 
 # default start jupyter using tini

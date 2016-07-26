@@ -1,1 +1,1 @@
-# data for dsd-console runtime
+# data for dsd-console

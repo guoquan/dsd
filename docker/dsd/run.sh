@@ -40,12 +40,18 @@ get_link()
 }
 
 # runtime/dev
-if [[ ! -z "$1" ]] && [[ "$1" -eq "--dev" ]]; then
+if [[ ! -z "$1" ]] && [[ "$1" -eq "dev" ]]; then
     DEV=1
     shift
+    echo "Run in development mode"
 else
     DEV=0
+    echo "Run in runtime mode"
 fi
+
+# script path
+SCRIPT_PATH=$(dirname $0)
+DSD_PATH=$(cd $SCRIPT_PATH/../..; pwd)
 
 # ensure sudo
 sudo echo hello sudo >/dev/null
@@ -63,8 +69,8 @@ sleep 1s; if $(container_alive $NEW_NAME); then
         "\nContainer: $NEW_NAME" \
         "\n-------------------------------------" \
         "\nUse the following links:" \
-        "\n* $(get_link $NEW_NAME 5000/tcp) for flask" \
-        "\n* $(get_link $NEW_NAME 8888/tcp) for jupyter" \
+        "\n* $(get_link $NEW_NAME 5000/tcp) for flask (DSD service)" \
+        "\n* $(get_link $NEW_NAME 8888/tcp) for jupyter (DSD development)" \
         "\n=====================================" \
         "\n\n"
 else
@@ -80,11 +86,11 @@ if [[ $DEV -eq 1 ]]; then
         --add-host=dockerhost:$(ip route | awk '/docker0/ { print $NF }') \
         -v /var/run/docker.sock:/var/run/docker.sock \
         -v ~/.ssh:/root/.ssh \
-        -v $(cd ../..; pwd):/root/dsd:ro \
-        -v $(pwd)/workspace:/root/workspace \
-        -v $(pwd)/volumes:/volumes \
-        -v $(pwd)/data:/data \
-        -v $(cd ../..; pwd):/root/workspace/dsd \
+        -v $DSD_PATH:/opt/dsd:ro \
+        -v $DSD_PATH/workspace:/root/workspace \
+        -v $SCRIPT_PATH/volumes:/volumes \
+        -v $SCRIPT_PATH/data:/data \
+        -v $DSD_PATH:/root/workspace/dsd \
         dsdgroup/dsd-console
 else
     sudo nvidia-docker run \
@@ -94,10 +100,10 @@ else
         -p 5000 \
         --add-host=dockerhost:$(ip route | awk '/docker0/ { print $NF }') \
         -v /var/run/docker.sock:/var/run/docker.sock \
-        -v $(cd ../..; pwd):/root/dsd:ro \
-        -v $(pwd)/workspace:/root/workspace \
-        -v $(pwd)/volumes:/volumes \
-        -v $(pwd)/data:/data \
+        -v $DSD_PATH:/opt/dsd:ro \
+        -v $DSD_PATH/workspace:/root/workspace \
+        -v $SCRIPT_PATH/volumes:/volumes \
+        -v $SCRIPT_PATH/data:/data \
         dsdgroup/dsd-console \
         bash start.sh $@
 fi

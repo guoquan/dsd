@@ -22,7 +22,7 @@
                     <span class="btn btn-default">GPUs <span class="badge"> {{ unmanaged_gpu|default('N/A') }} </span></span>
                     <span class="btn btn-default">Disk <span class="badge"> {{ unmanaged_disk|default('N/A') }} </span></span>
                 </li>
-                <li class="list-group-item"> DSD Runtime <span class="badge"> {{ dsd_container['container_name']|default('Not found') }} </span></li>
+                <li class="list-group-item"> DSD console <span class="badge"> {{ dsd_container['container_name']|default('Not found') }} </span></li>
             </ul>
         </div>
     </div>
@@ -155,10 +155,10 @@
 
     <div class="panel panel-danger">
         <div class="panel-heading">
-            <h2 class="panel-title">DSD Runtime Containers</h2>
+            <h2 class="panel-title">DSD Console Containers</h2>
         </div>
         <div class="panel-body">
-            <p class="help-block">Be very careful when trying to operate DSD runtime contaners!</p>
+            <p class="help-block">Be very careful when trying to operate DSD Console contaners!</p>
             {% if dsd_container %}
             <div id="containers" class="panel-group">
                 <div class="panel th">
@@ -217,7 +217,7 @@
                 </div>
             </div>
             {% else %}
-            <p>Cannot detect DSD runtime container.</p>
+            <p>Cannot detect DSD Console container.</p>
             {% endif %}
         </div>
     </div>

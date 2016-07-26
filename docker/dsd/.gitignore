@@ -1,4 +1,4 @@
-# dsd runtime workspace
+# dsd console workspace
 data/**
 !data/readme.md
 volumes/**

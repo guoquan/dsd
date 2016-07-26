@@ -139,7 +139,7 @@ def init(db):
         config['encrypt']['iter'] = 100000
 
     print '-' * 20
-    print 'Save config:'
+    print '[dsd] Save config:'
     db.config.save(config)
     pprint.pprint(config)
 
@@ -159,7 +159,7 @@ def init(db):
     password = '123'
     user1['password'] = encrypt_password(password, user1['username'], user1['salt'])
     print '-' * 20
-    print 'Save user (administrator):'
+    print '[dsd] Save user (administrator):'
     db.users.save(user1)
     pprint.pprint(user1)
 
@@ -175,7 +175,7 @@ def init(db):
     user2['max_gpu'] = config['default']['user']['max_gpu']
     user2['max_disk'] = config['default']['user']['max_disk']
     print '-' * 20
-    print 'Save user:'
+    print '[dsd] Save user:'
     db.users.save(user2)
     pprint.pprint(user2)
 
