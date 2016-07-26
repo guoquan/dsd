@@ -59,7 +59,7 @@ git pull
     ```
     bash dsd/docker/dsd/run.sh dev
     ```
-    It is recommend to read [`readme`](docker/dsd) there for more information.
+    It is recommend to read `README.md` in [`docker/dsd`](docker/dsd) for more information.
 
     2. Follow the promoted links to visit the development web interface.
     Go to the `jupyter` links first, using a browser.
@@ -79,7 +79,7 @@ git pull
     It invoke `init_db.py` to initialize and start the database, and then start DSD console using `run.py`.
     All parameters of `start.sh` will be pass to `init_db.py`.
     Use `python init_db.py --help` to see their meaning.
-    More information are available in [`readme`](workspace) there.
+    More information are available in `README.md` in [`workspace`](workspace).
 
 7. With any progress, commit your update.
 ```

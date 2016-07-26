@@ -84,7 +84,7 @@ if [[ $DEV -eq 1 ]]; then
         -P \
         --add-host=dockerhost:$(ip route | awk '/docker0/ { print $NF }') \
         -v /var/run/docker.sock:/var/run/docker.sock \
-        -v ~/.ssh:/root/.ssh \
+        -v ~/.ssh:/root/.ssh:ro \
         -v $DSD_PATH:/opt/dsd:ro \
         -v $DSD_PATH/workspace:/root/workspace \
         -v $DSD_PATH/docker/dsd/volumes:/volumes \
