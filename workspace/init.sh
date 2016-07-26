@@ -13,5 +13,5 @@ echo "[dsd] Sleep 1 second for mongodb to get prepared"
 sleep 1s
 fi
 
-echo "[dsd] Initial database"
+echo "[dsd] Initialize database"
 python $(dirname $0)/init_db.py $1
