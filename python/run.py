@@ -1,8 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from dsd.ui.web import app
+import dsd
+import os
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0',
-            debug = True)
+    if 'DSD_DEV' in os.environ and os.environ['DSD_DEV']:
+        dsd.DSD.start(dev=True)
+    else:
+        dsd.DSD.start()

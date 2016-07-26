@@ -1,5 +1,7 @@
 #!/bin/bash
 
+POLL_INTERVAL=0.1
+
 uuid()
 {
     cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w ${1:-32} | head -n 1
@@ -7,7 +9,11 @@ uuid()
 
 name()
 {
-    echo dsd-console-devel-$1
+    if [[ $2 -eq 1 ]]; then
+        echo dsd-console-devel-$1
+    else
+        echo dsd-console-runtime-$1
+    fi
 }
 
 container_alive()
@@ -33,12 +39,19 @@ get_link()
     echo ${3:-http}://$(sudo docker port $1 $2 | sed 's/0.0.0.0/'$IP'/g')
 }
 
-POLL_INTERVAL=0.1
-NEW_UUID=$(uuid 8)
-NEW_NAME=$(name $NEW_UUID)
+# runtime/dev
+if [[ ! -z "$1" ]] && [[ "$1" -eq "--dev" ]]; then
+    DEV=1
+    shift
+else
+    DEV=0
+fi
 
 # ensure sudo
 sudo echo hello sudo >/dev/null
+
+NEW_UUID=$(uuid 8)
+NEW_NAME=$(name $NEW_UUID $DEV)
 
 (
 wait_container $NEW_NAME $POLL_INTERVAL
@@ -60,17 +73,37 @@ else
     echo "Container not start normally. Check and try again."
 fi
 ) & (
-sudo nvidia-docker run --rm -P $@ \
-    --name=$NEW_NAME \
-    --add-host=dockerhost:$(ip route | awk '/docker0/ { print $NF }') \
-    -v ~/.ssh:/root/.ssh \
-    -v $(cd ../..; pwd):/root/dsd:ro \
-    -v $(pwd)/nginx-conf:/etc/nginx/conf.d \
-    -v $(pwd)/workspace:/root/workspace \
-    -v $(cd ../..; pwd):/root/workspace/dsd \
-    -v $(pwd)/volumes:/volumes \
-    -v $(pwd)/data:/data \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    dsdgroup/dsd-console
+if [[ $DEV -eq 1 ]]; then
+    sudo nvidia-docker run \
+        --name=$NEW_NAME \
+        --rm \
+        -e "DSD_DEV=$DEV" \
+        -P \
+        --add-host=dockerhost:$(ip route | awk '/docker0/ { print $NF }') \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v ~/.ssh:/root/.ssh \
+        -v $(cd ../..; pwd):/root/dsd:ro \
+        -v $(pwd)/nginx-conf:/etc/nginx/conf.d \
+        -v $(pwd)/workspace:/root/workspace \
+        -v $(cd ../..; pwd):/root/workspace/dsd \
+        -v $(pwd)/volumes:/volumes \
+        -v $(pwd)/data:/data \
+        dsdgroup/dsd-console
+else
+    sudo nvidia-docker run \
+        --name=$NEW_NAME \
+        --rm \
+        -e "DSD_DEV=$DEV" \
+        -p 5000 \
+        --add-host=dockerhost:$(ip route | awk '/docker0/ { print $NF }') \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v $(cd ../..; pwd):/root/dsd:ro \
+        -v $(pwd)/nginx-conf:/etc/nginx/conf.d \
+        -v $(pwd)/workspace:/root/workspace \
+        -v $(pwd)/volumes:/volumes \
+        -v $(pwd)/data:/data \
+        dsdgroup/dsd-console \
+        bash start.sh $@
+fi
 sleep $(bc <<< "1 + 2 * $POLL_INTERVAL")s
 )

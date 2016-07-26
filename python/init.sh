@@ -14,4 +14,4 @@ sleep 1s
 fi
 
 echo "Initial database"
-python init_db.py $1
+python $(dirname $0)/init_db.py $1

@@ -41,7 +41,11 @@ VOLUME ["/root/dsd", "/etc/nginx/conf.d", "/root/workspace", "/volumes", "/data"
 # set workdir to workspace
 WORKDIR /root/workspace
 
+# setup env
+ENV SHELL bash
+ENV PYTHONPATH /root/dsd
+ENV DSD_DEV 0
+
 # default start jupyter using tini
 ENTRYPOINT ["/usr/bin/tini", "--"]
-ENV SHELL bash
 CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--port=8888","--no-browser"]
