@@ -34,9 +34,3 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
-
-# dsd runtime workspace
-docker/dsd/data/
-!docker/dsd/data/readme.md
-docker/dsd/volumes/
-!docker/dsd/volumes/readme.md

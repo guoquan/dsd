@@ -8,9 +8,6 @@ RUN apt-get update
 RUN apt-get install -y git python python-dev python-pip python-setuptools && \
     pip install -U pip
 
-# Nginx: front-end web server
-RUN apt-get install -y nginx
-
 # Jupyter: we develop with jupyter
 RUN pip install ipython jupyter
 
@@ -32,11 +29,11 @@ RUN pip install pymongo
 # docker-py: python interface to interact with docker
 RUN pip install docker-py
 
-# expose 80 (http) and 443 (https) for Nginx, and 5000 for flask, 8888 for jupyter
-EXPOSE 80 443 5000 8888
+# expose 5000 for flask, 8888 for jupyter
+EXPOSE 5000 8888
 
 # expose some directories to the host
-VOLUME ["/root/dsd", "/etc/nginx/conf.d", "/root/workspace", "/volumes", "/data"]
+VOLUME ["/root/dsd", "/root/workspace", "/volumes", "/data"]
 
 # set workdir to workspace
 WORKDIR /root/workspace
@@ -44,7 +41,7 @@ WORKDIR /root/workspace
 # setup env
 ENV SHELL bash
 ENV PYTHONPATH /root/dsd
-ENV DSD_DEV 0
+ENV DSD_DEV 1
 
 # default start jupyter using tini
 ENTRYPOINT ["/usr/bin/tini", "--"]

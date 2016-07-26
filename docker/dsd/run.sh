@@ -63,8 +63,6 @@ sleep 1s; if $(container_alive $NEW_NAME); then
         "\nContainer: $NEW_NAME" \
         "\n-------------------------------------" \
         "\nUse the following links:" \
-        "\n* $(get_link $NEW_NAME 80/tcp) for nginx on http" \
-        "\n* $(get_link $NEW_NAME 443/tcp https) for nginx on https" \
         "\n* $(get_link $NEW_NAME 5000/tcp) for flask" \
         "\n* $(get_link $NEW_NAME 8888/tcp) for jupyter" \
         "\n=====================================" \
@@ -83,11 +81,10 @@ if [[ $DEV -eq 1 ]]; then
         -v /var/run/docker.sock:/var/run/docker.sock \
         -v ~/.ssh:/root/.ssh \
         -v $(cd ../..; pwd):/root/dsd:ro \
-        -v $(pwd)/nginx-conf:/etc/nginx/conf.d \
         -v $(pwd)/workspace:/root/workspace \
-        -v $(cd ../..; pwd):/root/workspace/dsd \
         -v $(pwd)/volumes:/volumes \
         -v $(pwd)/data:/data \
+        -v $(cd ../..; pwd):/root/workspace/dsd \
         dsdgroup/dsd-console
 else
     sudo nvidia-docker run \
@@ -98,7 +95,6 @@ else
         --add-host=dockerhost:$(ip route | awk '/docker0/ { print $NF }') \
         -v /var/run/docker.sock:/var/run/docker.sock \
         -v $(cd ../..; pwd):/root/dsd:ro \
-        -v $(pwd)/nginx-conf:/etc/nginx/conf.d \
         -v $(pwd)/workspace:/root/workspace \
         -v $(pwd)/volumes:/volumes \
         -v $(pwd)/data:/data \
