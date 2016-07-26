@@ -33,9 +33,9 @@ def get_docker(update=False, base_url=None, test_config=None):
                 config = db.config.find_one()
             base_url = config['docker']['url']
         if 'tls' in config['docker'] and config['docker']['tls']['use_tls']:
-            tls = {'client_cert': (config['docker_tls']['path_client_cert'],
-                                   config['docker_tls']['path_client_key']),
-                   'verify': config['docker_tls'].get('path_ca',None),
+            tls = {'client_cert': (config['docker']['tls']['path_client_cert'],
+                                   config['docker']['tls']['path_client_key']),
+                   'verify': config['docker']['tls'].get('path_ca', None),
                    'assert_hostname': False}
         else:
             tls={}

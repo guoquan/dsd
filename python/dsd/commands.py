@@ -32,7 +32,7 @@ def create_sample_data(db):
     else:
         # opt 2: using tls
         # opt 2.x: say we have a dockerhost x
-        cert_path = '~/.docker'
+        cert_path = os.path.expanduser('~/.docker')
         client_cert = 'cert.pem'
         client_key = 'key.pem'
         ca = 'ca.pem'
@@ -97,10 +97,11 @@ def create_sample_data(db):
 
     # add gpu lists
     nvd = get_nvd(test_config=config)
-    for i in range(len(nvd.gpuInfo())):
-        gpu = {'index':i,
-               'container_oids':[]}
-        db.gpus.save(gpu)
+    if nvd:
+        for i in range(len(nvd.gpuInfo())):
+            gpu = {'index':i,
+                   'container_oids':[]}
+            db.gpus.save(gpu)
 
     # add some init users
     user1={}

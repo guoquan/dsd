@@ -82,6 +82,7 @@ sudo nvidia-docker run \
     dsdgroup/dsd-console
 ```
 Specify `<local_flask_port>`, `<local_jupyter_port>`, and `<DSD_path>` to run the container.
+Be sure to use absolute path. Otherwise it could conflict with volume-driver plugin of nvidia-docker.
 
 Following are the meaning of each parameter.
 * `--name=dsd-console-devel` specifies a name of the container.
@@ -124,3 +125,31 @@ Special parameters are as follows.
 * `--rm`, `-p <local_jupyter_port>:8888`, and `-v <DSD_path>:/root/workspace/dsd` are removed.
 
 If you are sure you understand above code, it is OK just to run it in your own way.
+
+## Examples
+An example to run DSD Console in development mode on OSX with boot2docker(in VM) and Kitematic is as follows.
+```
+docker run \
+    --name=dsd-console-devel \
+    -e "DSD_DEV=1" \
+    -p 5000:5000 -p 8888:8888 \
+    --add-host=dockerhost:192.168.99.100 \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    dsdgroup/dsd-console
+```
+Later, you can modify other directories mounting on Kitematic interface.
+But never touch `/var/run/docker.sock`, because Kitematic cannot resolve it in fact.
+
+I also found that it may have problem with privilege of `docker/dsd/data` that prevent MongoDB starting normally.
+Just don't set that path in this case.
+
+You can also try using TLS in above environment.
+```
+docker run \
+    --name=dsd-console-devel-certs \
+    -e "DSD_DEV=1" \
+    -p 5000:5000 -p 8888:8888 \
+    --add-host=dockerhost:192.168.99.100 \
+    -v ~/.docker/machine/certs:/root/.docker \
+    dsdgroup/dsd-console
+```
