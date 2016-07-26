@@ -12,7 +12,7 @@ name()
     if [[ $2 -eq 1 ]]; then
         echo dsd-console-devel-$1
     else
-        echo dsd-console-runtime-$1
+        echo dsd-console-runtime
     fi
 }
 
@@ -50,8 +50,7 @@ else
 fi
 
 # script path
-SCRIPT_PATH=$(dirname $0)
-DSD_PATH=$(cd $SCRIPT_PATH/../..; pwd)
+DSD_PATH=$(cd $(dirname $0)/../..; pwd)
 
 # ensure sudo
 sudo echo hello sudo >/dev/null
@@ -88,24 +87,28 @@ if [[ $DEV -eq 1 ]]; then
         -v ~/.ssh:/root/.ssh \
         -v $DSD_PATH:/opt/dsd:ro \
         -v $DSD_PATH/workspace:/root/workspace \
-        -v $SCRIPT_PATH/volumes:/volumes \
-        -v $SCRIPT_PATH/data:/data \
+        -v $DSD_PATH/docker/dsd/volumes:/volumes \
+        -v $DSD_PATH/docker/dsd/data:/data \
         -v $DSD_PATH:/root/workspace/dsd \
         dsdgroup/dsd-console
 else
-    sudo nvidia-docker run \
-        --name=$NEW_NAME \
-        --rm \
-        -e "DSD_DEV=$DEV" \
-        -p 5000 \
-        --add-host=dockerhost:$(ip route | awk '/docker0/ { print $NF }') \
-        -v /var/run/docker.sock:/var/run/docker.sock \
-        -v $DSD_PATH:/opt/dsd:ro \
-        -v $DSD_PATH/workspace:/root/workspace \
-        -v $SCRIPT_PATH/volumes:/volumes \
-        -v $SCRIPT_PATH/data:/data \
-        dsdgroup/dsd-console \
-        bash start.sh $@
+    if $(container_alive $NEW_NAME); then
+        sudo docker start $NEW_NAME
+    else
+        sudo nvidia-docker run \
+            --name=$NEW_NAME \
+            -d --restart=on-failure\
+            -e "DSD_DEV=$DEV" \
+            -p 5000 \
+            --add-host=dockerhost:$(ip route | awk '/docker0/ { print $NF }') \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $DSD_PATH:/opt/dsd:ro \
+            -v $DSD_PATH/workspace:/root/workspace \
+            -v $DSD_PATH/docker/dsd/volumes:/volumes \
+            -v $DSD_PATH/docker/dsd/data:/data \
+            dsdgroup/dsd-console \
+            bash start.sh $@
+    fi
 fi
 sleep $(bc <<< "1 + 2 * $POLL_INTERVAL")s
 )
