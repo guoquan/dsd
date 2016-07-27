@@ -40,7 +40,7 @@ get_link()
 }
 
 # runtime/dev
-if [[ ! -z "$1" ]] && [[ "$1" -eq "dev" ]]; then
+if [[ ( ! -z "$1" ) ]] && [[ ( "$1" == "dev" ) ]]; then
     DEV=1
     shift
     echo "Run in development mode"
