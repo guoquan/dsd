@@ -1,12 +1,7 @@
 from flask import request, redirect, url_for, render_template, flash
 from dsd.ui.web import app
 from dsd.ui.web.utils import *
-import datetime
 from bson.objectid import ObjectId
-
-@app.template_filter('timestamp2datetime')
-def jinja2_filter_timestamp2datetime(timestamp):
-    return str(datetime.datetime.fromtimestamp(timestamp))
 
 @app.route("/manage/image", endpoint='manage.image', methods=['GET'])
 def manage_image():
@@ -78,20 +73,25 @@ def manage_image_authorize():
                 return redirect(url_for('manage.image'))
             except ValueError as e:
                 flash(str(e), 'warning')
-                return redirect(url_for('manage.image.authorize', **request.form))
+                error = str(e)
+                #return redirect(url_for('manage.image.authorize', **request.form))
+                image = docker.image(id=request.form['image_id'],
+                                     name=request.form['image_name'])
+                return render_template('manage_image_authorize.html', image=image,
+                                       error=error, **request.form)
             except Exception as e:
                 print '-'*10, type(e), ':', str(e), e.args
     else:
         return invalid_login('Administrators only. Login again.')
 
-@app.route("/manage/image/revoke", endpoint='manage.image.revoke', methods=['GET', 'POST'])
-def manage_image_revoke():
+@app.route("/manage/image/<oid>/revoke", endpoint='manage.image.revoke')
+def manage_image_revoke(oid):
     if is_admin():
-        auth_oid = ObjectId(request.values['id'])
+        oid = ObjectId(oid)
         try:
-            image = db.auth_images.find_one({'_id':auth_oid})
+            image = db.auth_images.find_one({'_id':oid})
             image_name = image['name']
-            db.auth_images.delete_one({'_id':auth_oid})
+            db.auth_images.delete_one({'_id':oid})
         except Exception as e:
             flash(str(e), 'warning')
         else:

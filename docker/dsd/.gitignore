@@ -1,0 +1,6 @@
+# dsd console workspace
+data/**
+!data/readme.md
+volumes/**
+!volumes/readme.md
+workspace/tmp

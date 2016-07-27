@@ -33,7 +33,7 @@
                         </td>
                         <td>{{ image['description'] }}</td>
                         <td>
-                            <a class="btn btn-danger" href="{{ url_for('manage.image.revoke', id=image['_id']) }}" role="button"><span class="glyphicon glyphicon-trash"></span> Revoke</a>
+                            <a class="btn btn-danger" href="{{ url_for('manage.image.revoke', oid=image['_id']) }}" role="button"><span class="glyphicon glyphicon-trash"></span> Revoke</a>
                         </td>
                     </tr>
                     {% endfor %}

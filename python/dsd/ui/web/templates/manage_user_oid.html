@@ -1,0 +1,248 @@
+{% extends "manage_base.html" %}
+
+{% block panel_content %}
+{{ super() }}
+<!-- manage add user -->
+<div>
+    <h1 class="page-header">{{ user['username'] }}</h1>
+    <form class="form-horizontal" action="{{ url_for('manage.user.oid', oid=user['_id']) }}" method="post">
+        {% if error %}
+        <div class="alert alert-warning">
+            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+            {{ error }}
+        </div>
+        {% endif %}
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h2 class="panel-title">Basic Information</h2>
+            </div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">Name</label>
+                    <div class="col-sm-8">
+                        <p class="form-control-static">{{ user['username'] }}</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">Active</label>
+                    <div class="col-sm-8">
+                        <div class="btn-group" data-toggle="buttons">
+                            <label class="btn btn-primary{% if 'active' in user and user['active'] %} active{% endif %}" data-toggle="collapse" data-target=".active-state">
+                                <input name="active" type="checkbox" autocomplete="off"{% if 'active' in user and user['active'] %} checked{% endif %}>
+                                <span class="active-state collapse{% if 'active' in user and user['active'] %} in{% endif %}">Active</span>
+                                <span class="active-state collapse{% if 'active' not in user or not user['active'] %} in{% endif %}">Inactive</span>
+                            </label>
+                        </div>
+                        <span class="active-state collapse help-block">Remember to update user to save the changes made.</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">Type</label>
+                    <div class="col-sm-8">
+                        <p class="form-control-static">
+                            {% if user['type'] == 0 %}
+                            Administrator
+                            {% elif user['type'] == 1 %}
+                            User
+                            {% else %}
+                            Unidentified
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if user['type'] == 1 %}
+        <div class="panel panel-info user-setting">
+            <div class="panel-heading">
+                <h2 class="panel-title">Resources</h2>
+            </div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">Max containers</label>
+                    <div class="col-sm-8">
+                        <input type="text" name="max_container" class="form-control" placeholder="Max containers" value="{{ user['max_container'] }}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">Max live containers</label>
+                    <div class="col-sm-8">
+                        <input type="text" name="max_live_container" class="form-control" placeholder="Max live containers" value="{{ user['max_live_container'] }}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">Max GPU</label>
+                    <div class="col-sm-8">
+                        <input type="text" name="max_gpu" class="form-control" placeholder="Max GPU" value="{{ user['max_gpu'] }}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">Max disk</label>
+                    <div class="col-sm-8">
+                        <input type="text" name="max_disk" class="form-control" placeholder="Max disk" value="{{ user['max_disk'] }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel panel-info user-setting">
+            <div class="panel-heading">
+                <h2 class="panel-title">Containers</h2>
+            </div>
+            <div class="panel-body">
+                {% if user['containers'] %}
+                <div id="containers" class="panel-group">
+                    <div class="panel th">
+                        <div class="panel-heading">
+                            <div class="row">
+                                <div class="col-sm-1">#</div>
+                                <div class="col-sm-3">Name</div>
+                                <div class="col-sm-3">Image</div>
+                                <div class="col-sm-5">Status</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% for container in user['containers'] %}
+                    <div class="panel">
+                        <div class="panel-heading">
+                            <div class="row">
+                                <div class="col-sm-1">{{ loop.index }}</div>
+                                <div class="col-sm-3">{{ container['name'] }}</div>
+                                <div class="col-sm-3">{{ container['auth_image']['name'] }}</div>
+                                <div class="col-sm-5">{{ container['status_str'] }}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-11 col-sm-offset-1">
+                                    <div class="well">
+                                        <div class="btn-group" role="group">
+                                            {% if 'ps_id' not in container or not container['ps_id'] or not container['ps']['running']%}
+                                            <a href="{{ url_for('manage.user.container.start', user_oid=user['_id'], oid=container['_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-play"></span> Run </a>
+                                            {% else %}
+                                            <a href="{{ url_for('manage.user.container.stop', user_oid=user['_id'], oid=container['_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-stop"></span> Stop </a>
+                                            <a href="{{ url_for('manage.user.container.restart', user_oid=user['_id'], oid=container['_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-repeat"></span> Restart </a>
+                                            {% endif %}
+                                            <a href="{{ url_for('manage.user.container.reinstall', user_oid=user['_id'], oid=container['_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-cd"></span> Reinstall </a>
+                                            <a href="{{ url_for('manage.user.container.remove', user_oid=user['_id'], oid=container['_id']) }}" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-remove"></span> Remove </a>
+                                        </div>
+                                        {% if 'ps' in container %}
+                                        {% for port in container['ps']['ports'] %}
+                                        <a class="btn btn-sm btn-{% if port.h %}primary{% else %}default disabled{% endif %}" href="{% if port.p == '0.0.0.0' %}{{ default_host }}{% else %}//{{ port.p }}{% endif %}:{{ port.h }}" role="button" target="_blank"><span class="glyphicon glyphicon-eye-{% if port.h %}open{% else %}close{% endif %}"></span> {{ port.c }} </a>
+                                        {% endfor%}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p>No containers exist.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="panel panel-warning">
+            <div class="panel-heading">
+                <h2 class="panel-title">Unmanaged Containers</h2>
+            </div>
+            <div class="panel-body">
+                <p class="help-block">Be careful when operating unmanaged contaners!</p>
+                {% if user['unmanaged'] %}
+                <div id="containers" class="panel-group">
+                    <div class="panel th">
+                        <div class="panel-heading">
+                            <div class="row">
+                                <div class="col-sm-1">#</div>
+                                <div class="col-sm-3">Name</div>
+                                <div class="col-sm-3">Image</div>
+                                <div class="col-sm-5">Status</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% for container in user['unmanaged'] %}
+                    <div class="panel">
+                        <div class="panel-heading">
+                            <div class="row">
+                                <div class="col-sm-1">{{ loop.index }}</div>
+                                <div class="col-sm-3">{{ container['container_name'] }}</div>
+                                <div class="col-sm-3">{{ container['image_name'] }}</div>
+                                <div class="col-sm-5">{{ container['status_str'] }}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-11 col-sm-offset-1">
+                                    <div class="well">
+                                        <div class="btn-group" role="group">
+                                            {% if not container['status_str'].startswith('Up') %}
+                                            <a href="{{ url_for('manage.unmanaged.start', id=container['container_id'], next='manage.user.oid', next_oid=user['_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-play"></span> Run </a>
+                                            {% else %}
+                                            <a href="{{ url_for('manage.unmanaged.stop', id=container['container_id'], next='manage.user.oid', next_oid=user['_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-stop"></span> Stop </a>
+                                            <a href="{{ url_for('manage.unmanaged.restart', id=container['container_id'], next='manage.user.oid', next_oid=user['_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-repeat"></span> Restart </a>
+                                            {% endif %}
+                                            <a href="{{ url_for('manage.unmanaged.remove', id=container['container_id'], next='manage.user.oid', next_oid=user['_id']) }}" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-remove"></span> Remove </a>
+                                        </div>
+                                        {% if 'ports' in container and container['ports'] %}
+                                        {% for port in container['ports'] %}
+                                        <a class="btn btn-sm btn-{% if port.h %}primary{% else %}default disabled{% endif %}" href="{% if port.p == '0.0.0.0' %}{{ default_host }}{% else %}//{{ port.p }}{% endif %}:{{ port.h }}" role="button" target="_blank"><span class="glyphicon glyphicon-eye-{% if port.h %}open{% else %}close{% endif %}"></span> {{ port.c }} </a>
+                                        {% endfor%}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p>No unmanaged container exist.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="panel panel-warning">
+            <div class="panel-heading">
+                <h2 class="panel-title">Security Information</h2>
+            </div>
+            <div class="panel-body">
+                <p>Leave blank if you don't want to change this part.</p>
+                <div class="form-group">
+                    <label for="new_password" class="col-sm-4 control-label">Password</label>
+                    <div class="col-sm-8">
+                        <input type="password" name="new_password" class="form-control" placeholder="New password">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="new_again_password" class="col-sm-4 control-label">Password again</label>
+                    <div class="col-sm-8">
+                        <input type="password" name="new_again_password" class="form-control" placeholder="New password again">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel panel-info">
+            <div class="panel-body">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label"></label>
+                    <div class="btn-group col-sm-8" role="group">
+                        <button class="btn btn-primary" type="submit">Update User</button>
+                        <button class="btn btn-default" type="reset">Reset</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<!-- end manage add user -->
+{% endblock panel_content %}
+
+{% block head_css %}
+{{ super() }}
+<style>
+.panel.th .panel-heading {
+    font-weight: bold;
+}
+</style>
+{% endblock head_css %}

@@ -1,50 +1,9 @@
-# python docker interface
+# DSD Console
 
-## Requirements
+DSD Console is a web app to manage Docker container for data science researchers.
+DSD Console is implemented in python, currently using `Flask` framework.
+It uses a document database `Mongodb`, and `docker-py` API to interact with Docker environment.
 
-```bash
-pip install docker-py
-```
-
-## tutorial usage
-See `tutorial-pydocker.ipynb`.
-
-
-# dsd-console
-
-## prepare database
-
-We use mongodb. Initialize database by the script `init_db.sh`.
-
-```bash
-chmod u+x init_db.sh
-./init_db.sh
-```
-
-The script will also initialize directories, database, and basic structure that are needed if they are not exist.
-Otherwise it will purely run mongodb deamon.
-
-## evaluate database
-
-It is possible to connect to the database with mongodb client and see what is in it.
-
-```bash
-mongo
-```
-
-Inside mongodb client console, we can inspect `users`.
-
-```
-use db_dsd
-db.users.find()
-```
-
-### run server
-
-The server is a `flask` web app.
-Simply run `run.py`.
-
-```bash
-chmod u+x run.py
-./run.py
-```
+* Read [`usage.md`](usage.md) for basic usage of DSD Console. (For administrators, users)
+* Read [`api.md`](api.md) for program interfaces in the project. (For developers)
+* Read [`database.md`](database.md) for database in the project. (For developers)

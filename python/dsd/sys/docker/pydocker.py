@@ -88,10 +88,10 @@ def _docker_status_str(state):
     if state['Dead']:
         return u'Dead'
 
-    if not _docker_time(state['StartedAt']):
+    if _docker_time(state['StartedAt']) == datetime.datetime.min:
         return u'Created'
 
-    if not _docker_time(state['FinishedAt']):
+    if _docker_time(state['FinishedAt']) == datetime.datetime.min:
         return u''
 
     return u'Exited (%d) %s ago' % (state['ExitCode'], _human_time_abs_delta(datetime.datetime.now() - _docker_time(state['FinishedAt'])))
@@ -156,6 +156,7 @@ class PyDocker():
 
         image = self.cli.inspect_image(id or name)
         img_info = {}
+        img_info['raw'] = image
         img_info['id'] = image['Id']
         img_info['size'] = image['Size'] / 1e9 # turn in GB
         img_info['created'] = _docker_time(image['Created'])
@@ -218,9 +219,14 @@ class PyDocker():
             if 'Ports' in ps and ps['Ports']:
                 for port in ps['Ports']:
                     if port['Type'] == u'tcp': # u'tcp' == 'tcp' is True
-                        ports.append(HCP(h=port['PublicPort'],
-                                         c=port['PrivatePort'],
-                                         p=port['IP']))
+                        if 'PublicPort' in port and 'IP' in port:
+                            ports.append(HCP(h=port['PublicPort'],
+                                             c=port['PrivatePort'],
+                                             p=port['IP']))
+                        else:
+                            ports.append(HCP(h=None,
+                                             c=port['PrivatePort'],
+                                             p=None))
             ps_single['ports'] = ports # need process
             ps_single['names'] = [name.split('/')[-1] for name in ps['Names']]
 
@@ -236,6 +242,7 @@ class PyDocker():
         api = self.cli.inspect_container(container_id)
 
         container = {}
+        container['raw'] = api
         container['container_name'] = api['Name'].split('/')[-1]
         container['container_id'] = api['Id']
         container['image_name'] = api['Config']['Image']
@@ -245,8 +252,8 @@ class PyDocker():
         container['status_str'] = _docker_status_str(api['State'])
         container['created'] = _docker_time(api['Created'])
 
-        container['state'] = api['State'] # https://github.com/docker/docker/blob/master/container/state.go
-        state = container['state']
+        state = api['State'] # https://github.com/docker/docker/blob/master/container/state.go
+        container['running'] = state['Running']
         if state['Running']:
             if state['Paused']:
                 state_code = ContainerState.Paused
@@ -266,7 +273,7 @@ class PyDocker():
             state_code = ContainerState.UnFinished
         else:
             state_code = ContainerState.Exited
-        container['state_code'] = state_code
+        container['state'] = state_code
 
         ports = []
         if 'Ports' in api['NetworkSettings'] and api['NetworkSettings']['Ports']:

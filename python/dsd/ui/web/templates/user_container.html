@@ -6,13 +6,15 @@
     <h1 class="page-header">Containers</h1>
     <div class="panel panel-info">
         <div class="panel-heading">
-            <h2 class="panel-title">Containers </h2>
+            <h2 class="panel-title">Containers</h2>
         </div>
         <div class="panel-body">
-            <div class="row">
-                <span class="col-sm-4 col-md-3">Total: {{ count_container }} / {{ max_container }}</span>
-                <span class="col-sm-4 col-md-3">Running: {{ count_live_container }} / {{ max_live_container }} </span>
-            </div>
+            <ul class="list-inline">
+                <li>Total: <span class="badge">{{ count_container }} / {{ max_container }}</span></li>
+                <li>Running: <span class="badge">{{ count_live_container }} / {{ max_live_container }}</span></li>
+                <li>GPUs: <span class="badge">{{ user_gpu }} / {{ max_gpu }}</span></li>
+                <li>Disk: <span class="badge"> - / {{ max_disk }}</span></li>
+            </ul>
         </div>
         {% if container_lst %}
         <div id="containers" class="panel-group">
@@ -22,8 +24,7 @@
                         <div class="col-sm-1">#</div>
                         <div class="col-sm-3">Name</div>
                         <div class="col-sm-3">Image</div>
-                        <div class="col-sm-3">Status</div>
-                        <div class="col-sm-2"></div>
+                        <div class="col-sm-5">Status</div>
                     </div>
                 </div>
             </div>
@@ -34,24 +35,33 @@
                         <div class="col-sm-1">{{ loop.index }}</div>
                         <div class="col-sm-3">{{ container['name'] }}</div>
                         <div class="col-sm-3">{{ container['auth_image']['name'] }}</div>
-                        <div class="col-sm-3">{{ container['status_str'] }}</div>
-                        <div class="col-sm-2"><button class="btn btn-default" data-toggle="collapse" data-parent="#containers" data-target="#container-{{ loop.index }}"><span class="glyphicon glyphicon-list-alt"></span></button></div>
+                        <div class="col-sm-5">{{ container['status_str'] }}</div>
                     </div>
                     <div class="row">
                         <div class="col-sm-11 col-sm-offset-1">
-                            {% if 'ps' in container %}
-                            {% for port in container['ps']['ports'] %}
-                            <a class="btn btn-primary" href="{% if port.p == '0.0.0.0' %}{{ default_host }}{% else %}//{{ port.p }}{% endif %}:{{ port.h }}" role="button" target="_blank"><span class="glyphicon glyphicon-eye-open"></span> {{ port.c }} </a>
-                            {% endfor%}
-                            {% endif %}
+                            <div class="well">
+                                <button class="btn btn-default" data-toggle="collapse" data-parent="#containers" data-target="#container-{{ loop.index }}"><span class="glyphicon glyphicon-list-alt"></span> Details </button>
+                                <div class="btn-group" role="group">
+                                    {% if 'ps_id' not in container or not container['ps_id'] or not container['ps']['running']%}
+                                    <a href="{{ url_for('user.container.start', oid=container['_id']) }}" class="btn btn-primary" role="button"><span class="glyphicon glyphicon-play"></span> Run </a>
+                                    {% else %}
+                                    <a href="{{ url_for('user.container.stop', oid=container['_id']) }}" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-stop"></span> Stop </a>
+                                    <a href="{{ url_for('user.container.restart', oid=container['_id']) }}" class="btn btn-warning" role="button"><span class="glyphicon glyphicon-repeat"></span> Restart </a>
+                                    {% endif %}
+                                </div>
+                                {% if 'ps' in container %}
+                                {% for port in container['ps']['ports'] %}
+                                <a class="btn btn-sm btn-{% if port.h %}primary{% else %}default disabled{% endif %}" href="{% if port.p == '0.0.0.0' %}{{ default_host }}{% else %}//{{ port.p }}{% endif %}:{{ port.h }}" role="button" target="_blank"><span class="glyphicon glyphicon-eye-{% if port.h %}open{% else %}close{% endif %}"></span> {{ port.c }} </a>
+                                {% endfor%}
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div id="container-{{ loop.index }}" class="panel-collapse collapse">
                     <div class="panel-body">
-                        <!--<p>{{ container }}</p>!-->
                         <form class="form-horizontal" action="{{ url_for('user.container.save') }}" method="post">
-                            <input type="hidden" class="form-control" name="id" value="{{ container['_id'] }}" />
+                            <input type="hidden" class="form-control" name="oid" value="{{ container['_id'] }}" />
                             <div class="form-group">
                                 <label for="name" class="col-sm-3 control-label">Name</label>
                                 <div class="col-sm-9">
@@ -130,7 +140,7 @@
                             <div class="form-group">
                                 <label for="gpu" class="col-sm-3 control-label">GPU(s)</label>
                                 <div class="col-sm-9 gpu-col">
-                                    <input type="text" name="gpu" class="gpu" data-provide="slider" data-slider-handle="square" data-slider-ticks="[0, 1, 2, 3, 4]" value="{{ container['gpu'] }}" data-slider-value="{{ container['gpu'] }}" />
+                                    <input type="text" name="gpu" class="gpu" data-provide="slider" data-slider-handle="square" data-slider-ticks="[{{ range(gpu_num+1)|join(', ') }}]" value="{{ container['gpu'] }}" data-slider-value="{{ container['gpu'] }}" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -158,7 +168,7 @@
                                         <button class="btn btn-default" type="reset">Reset</button>
                                     </div>
                                     <div class="btn-group pull-right-sm" role="group">
-                                        <a href="{{ url_for('user.container.reinstall', id=container['_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-cd"></span> Reinstall </a>
+                                        <a href="{{ url_for('user.container.reinstall', oid=container['_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-cd"></span> Reinstall </a>
                                         <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#remove-dialog-{{ loop.index }}"><span class="glyphicon glyphicon-remove"></span> Remove </button>
                                     </div>
                                     <div class="modal fade" id="remove-dialog-{{ loop.index }}" tabindex="-1" role="dialog" aria-labelledby="remove-dialog-{{ loop.index }}-label">
@@ -172,7 +182,7 @@
                                                     <p>Removing the container, you will lost all the configurations and any files outside of your workspace and data directory.</p>
                                                 </div>
                                                 <div class="modal-footer">
-                                                    <a class="btn btn-danger" href="{{ url_for('user.container.remove', id=container['_id']) }}" role="button"><span class="glyphicon glyphicon-remove"></span> Remove </a>
+                                                    <a class="btn btn-danger" href="{{ url_for('user.container.remove', oid=container['_id']) }}" role="button"><span class="glyphicon glyphicon-remove"></span> Remove </a>
                                                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                                                 </div>
                                             </div>
@@ -183,12 +193,13 @@
                         </form>
                         <hr>
                         <form class="form-horizontal" action="{{ url_for('user.container.execute') }}" method="post">
+                            <input type="hidden" class="form-control" name="oid" value="{{ container['_id'] }}" />
                             <div class="form-group">
                                 <div class="col-sm-6 col-md-4 col-md-offset-3" role="group">
                                     <div class="btn-group" role="group">
-                                        <a href="{{ url_for('user.container.start', id=container['_id']) }}" class="btn btn-primary" role="button"><span class="glyphicon glyphicon-play"></span> Run </a>
-                                        <a href="{{ url_for('user.container.stop', id=container['_id']) }}" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-stop"></span> Stop </a>
-                                        <a href="{{ url_for('user.container.restart', id=container['_id']) }}" class="btn btn-warning" role="button"><span class="glyphicon glyphicon-repeat"></span> Restart </a>
+                                        <a href="{{ url_for('user.container.start', oid=container['_id']) }}" class="btn btn-primary" role="button"><span class="glyphicon glyphicon-play"></span> Run </a>
+                                        <a href="{{ url_for('user.container.stop', oid=container['_id']) }}" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-stop"></span> Stop </a>
+                                        <a href="{{ url_for('user.container.restart', oid=container['_id']) }}" class="btn btn-warning" role="button"><span class="glyphicon glyphicon-repeat"></span> Restart </a>
                                     </div>
                                 </div>
                                 <div class="col-sm-6 col-md-5" role="group">
@@ -204,10 +215,67 @@
                 </div>
             </div>
             {% endfor %}
-            {% else %}
-            <div class="panel-body">
-                <p>No container exist. You can create one <a href="{{ url_for('user.container.add') }}">here</a>!</p>
+        </div>
+        {% else %}
+        <div class="panel-body">
+            <p>No container exist. You can create one <a href="{{ url_for('user.container.add') }}">here</a>!</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="panel panel-warning">
+        <div class="panel-heading">
+            <h2 class="panel-title">Unmanaged Containers</h2>
+        </div>
+        <div class="panel-body">
+            <p class="help-block">Be careful when operating unmanaged contaners!</p>
+            {% if unmanaged_lst %}
+            <div id="containers" class="panel-group">
+                <div class="panel th">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-sm-1">#</div>
+                            <div class="col-sm-3">Name</div>
+                            <div class="col-sm-3">Image</div>
+                            <div class="col-sm-5">Status</div>
+                        </div>
+                    </div>
+                </div>
+                {% for container in unmanaged_lst %}
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-sm-1">{{ loop.index }}</div>
+                            <div class="col-sm-3">{{ container['container_name'] }}</div>
+                            <div class="col-sm-3">{{ container['image_name'] }}</div>
+                            <div class="col-sm-5">{{ container['status_str'] }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-11 col-sm-offset-1">
+                                <div class="well">
+                                    <div class="btn-group" role="group">
+                                        {% if not container['status_str'].startswith('Up') %}
+                                        <a href="{{ url_for('user.unmanaged.start', id=container['container_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-play"></span> Run </a>
+                                        {% else %}
+                                        <a href="{{ url_for('user.unmanaged.stop', id=container['container_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-stop"></span> Stop </a>
+                                        <a href="{{ url_for('user.unmanaged.restart', id=container['container_id']) }}" class="btn btn-default" role="button"><span class="glyphicon glyphicon-repeat"></span> Restart </a>
+                                        {% endif %}
+                                        <a href="{{ url_for('user.unmanaged.remove', id=container['container_id']) }}" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-remove"></span> Remove </a>
+                                    </div>
+                                    {% if 'ports' in container and container['ports'] %}
+                                    {% for port in container['ports'] %}
+                                    <a class="btn btn-sm btn-{% if port.h %}primary{% else %}default disabled{% endif %}" href="{% if port.p == '0.0.0.0' %}{{ default_host }}{% else %}//{{ port.p }}{% endif %}:{{ port.h }}" role="button" target="_blank"><span class="glyphicon glyphicon-eye-{% if port.h %}open{% else %}close{% endif %}"></span> {{ port.c }} </a>
+                                    {% endfor%}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
+            {% else %}
+            <p>No unmanaged container exist.</p>
             {% endif %}
         </div>
     </div>
@@ -240,6 +308,9 @@
 }
 div.gpu-col {
     padding: 0 25px;
+}
+.label.label-inline-block {
+    display: inline-block;
 }
 </style>
 <link href="{{url_for('static', filename='assets/vendor/bootstrap-slider/css/bootstrap-slider.min.css')}}" type="text/css" rel="stylesheet">

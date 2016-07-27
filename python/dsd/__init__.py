@@ -1,1 +1,1 @@
-# Intentionally left empty
+from commands import create_sample_data

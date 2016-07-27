@@ -112,33 +112,47 @@
                 <div class="panel-heading">
                     <h2 class="panel-title">GPUs</h2>
                 </div>
+                {% if gpu_lst %}
                 <div class="panel-body">
                     <p>Usage of your GPUs.</p>
+                    {% if gpu_global %}
+                    <ul class="list-inline">
+                        <li>Driver Version: <span class="badge">{{ gpu_global['DriverVersion'] }}</span></li>
+                        <li>CUDA Version: <span class="badge">{{ gpu_global['CudaVersion'] }}</span></li>
+                    </ul>
+                    {% endif %}
                 </div>
-                <table class="table table-striped table-hover">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>type</th>
-                            <th>Memory-Usage</th>
-                            <th>Volatile</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td>K20</td>
-                            <td>300/2000</td>
-                            <td>80%</td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td>K20</td>
-                            <td>300/2000</td>
-                            <td>80%</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Model</th>
+                                <th>Memory</th>
+                                <th>Utilization</th>
+                                <th>Processes</th>
+                                <th>Containers</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for gpu in gpu_lst %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ gpu['Model'] }}</td>
+                                <td>{{ gpu['MemoryUsed'] }} / {{ gpu['MemoryTotal'] }} MB</td>
+                                <td>{{ gpu['UtilizationGpu'] }}</td>
+                                <td>{{ gpu['Processes']|default([], true)|length }}</td>
+                                <td>{{ gpu['containers']|default('-') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="panel-body">
+                    <p>No GPU detected.</p>
+                </div>
+                {% endif %}
                 <div class="panel-footer"><a href="{{ url_for('manage.gpu') }}">Details &raquo;</a></div>
             </div>
         </div>

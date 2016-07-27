@@ -1,6 +1,7 @@
 from flask import request, session, redirect, url_for, render_template, flash
 from dsd.ui.web import app
 from dsd.ui.web.utils import *
+from bson.objectid import ObjectId
 
 @app.route("/", methods=['GET'])
 def index():
@@ -25,9 +26,9 @@ def login():
         user, message = check_login(username, password)
         if user:
             session['is_login'] = True
-            user_id = str(user['_id'])
+            user_oid = str(user['_id'])
             del user['_id'] # session cannot hold ObjectId from MongoDB
-            user['id'] = user_id
+            user['oid'] = user_oid
             session['user'] = user
             flash(message)
             return redirect_back()
@@ -68,7 +69,15 @@ def profile():
                 db.users.save(user)
                 flash('Password has been updated!', 'success')
                 return redirect(url_for('profile'))
-        return render_template('profile.html', base=base, user=session['user'], error=error)
+
+        if is_admin() and 'oid' in request.args:
+            user = db.users.find_one({'_id':ObjectId(request.args['oid'])})
+            if not user:
+                flash('Specific user not found.', 'warning')
+        else:
+            user = session['user']
+
+        return render_template('profile.html', base=base, user=user, error=error)
     else:
         return invalid_login()
 
