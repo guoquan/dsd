@@ -1,4 +1,4 @@
-FROM nvidia/cuda:7.5-cudnn4-devel
+FROM nvidia/cuda:7.5-cudnn5-devel
 MAINTAINER Jianyong Wang <wangjianyongscu@gmail.com>
 
 ENV REFRESHED_AT 2016-05-05
@@ -7,12 +7,16 @@ RUN apt-get update && apt-get install -y python-pip
 RUN pip install --upgrade pip
 
 RUN apt-get install -y \
+  build-essential \
   git \
   libopenblas-dev \
   libopencv-dev \
   python-dev \
   python-numpy \
-  python-setuptools
+  python-scipy \
+  python-setuptools \
+  wget \
+  unzip
 
 # install ipython
 # install jupyter
