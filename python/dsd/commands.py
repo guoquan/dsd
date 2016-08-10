@@ -96,12 +96,17 @@ def create_sample_data(db):
     pprint.pprint(config)
 
     # add gpu lists
+    print '-' * 20
+    print '[dsd] Save GPU list:'
     nvd = get_nvd(test_config=config)
     if nvd:
         for i in range(len(nvd.gpuInfo())):
             gpu = {'index':i,
                    'container_oids':[]}
             db.gpus.save(gpu)
+            pprint.pprint(gpu)
+    else:
+        print '[dsd] Could not connect to nvidia-docker host'
 
     # add some init users
     user1={}
