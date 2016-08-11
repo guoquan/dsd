@@ -8,4 +8,4 @@ sudo docker pull --all-tags dsdgroup/jupyter
 # mxnet
 sudo docker pull --all-tags dsdgroup/mxnet
 # theano
-sudo docker build --all-tags dsdgroup/theano
+sudo docker pull --all-tags dsdgroup/theano
