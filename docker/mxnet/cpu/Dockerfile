@@ -14,7 +14,7 @@ RUN cd /root && git clone --recursive https://github.com/dmlc/mxnet && cd mxnet 
 # install to local python directory
 #RUN cd /root/mxnet/python && python setup.py install
 # or just use PYTHONPATH, as this is more flexible
-ENV PYTHONPATH /mxnet/python:$PYTHONPATH
+ENV PYTHONPATH /root/mxnet/python:$PYTHONPATH
 
 # python pakcage
 # graphviz ensures the visualization of mx.viz.plot_network in ipython notebook

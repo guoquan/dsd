@@ -15,10 +15,10 @@ RUN pip install --upgrade --no-deps git+git://github.com/Theano/Theano.git
 
 # Set up .theanorc for CUDA
 RUN echo "[global]" > /root/.theanorc && \
-    echo "device=gpu" > /root/.theanorc && \
-    echo "floatX=float32" > /root/.theanorc && \
-    echo "optimizer_including=cudnn" > /root/.theanorc && \
-    echo "[lib]" > /root/.theanorc && \
-    echo "cnmem=0.1" > /root/.theanorc && \
-    echo "[nvcc]" > /root/.theanorc && \
-    echo "fastmath=True" > /root/.theanorc
+    echo "device=gpu" >> /root/.theanorc && \
+    echo "floatX=float32" >> /root/.theanorc && \
+    echo "optimizer_including=cudnn" >> /root/.theanorc && \
+    echo "[lib]" >> /root/.theanorc && \
+    echo "cnmem=0.1" >> /root/.theanorc && \
+    echo "[nvcc]" >> /root/.theanorc && \
+    echo "fastmath=True" >> /root/.theanorc
