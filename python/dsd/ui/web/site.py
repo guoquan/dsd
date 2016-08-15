@@ -19,7 +19,11 @@ def index():
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
-        return render_template('login.html', error=None, next=get_redirect_target())
+        if is_login():
+            flash('You have already logged in as %s. To login as other users, please logout first.' % session['user']['username'], 'warning')
+            return redirect(url_for('index'))
+        else:
+            return render_template('login.html', error=None, next=get_redirect_target())
     elif request.method == 'POST':
         username = request.form['username']
         password = request.form['password']

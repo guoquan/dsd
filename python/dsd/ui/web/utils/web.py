@@ -3,6 +3,8 @@ from flask import session, redirect, url_for, flash, request
 from urlparse import urlparse, urljoin
 from dsd.ui.web.utils.basic import *
 
+_logger = logging.getLogger()
+
 def check_login(username, password):
     user = db.users.find_one({'username':username})
     if not user:
