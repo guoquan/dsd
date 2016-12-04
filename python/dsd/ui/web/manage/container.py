@@ -58,7 +58,7 @@ def manage_container():
                                managed_alive=managed_alive, managed_gpu=managed_gpu, managed_alive_gpu=managed_alive_gpu,
                                unmanaged_alive=unmanaged_alive,
                                user_lst=user_lst,
-                               default_host=request.url_root.rsplit(':')[1])
+                               default_host=request.url_root.rsplit(':')[1].rstrip('/'))
     else:
         return invalid_login('Administrators only. Login again.')
 

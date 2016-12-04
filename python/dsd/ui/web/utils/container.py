@@ -3,6 +3,8 @@ from flask import session
 from dsd.sys.docker.pydocker import HC, HCP
 from bson.objectid import ObjectId
 from dsd.ui.web.utils.basic import *
+import urllib2
+import requests
 
 _logger = logging.getLogger()
 
@@ -51,9 +53,6 @@ def critical_change(target, source):
     return None
 
 def save_container(container, source, user):
-    if db.containers.find_one({'user_oid':user['_id'], 'name':source['name']}):
-        raise SystemError('You already have a container with the same name %s! Choose another name for your new container.' % source['name'])
-
     critical = critical_change(container, source)
     container['name'] = source['name']
     #container['auth_image_oid'] = ObjectId(source['auth_image_oid']) # don't allow change image
@@ -120,6 +119,8 @@ def create_ps(container, user):
 
     if container['gpu']:
         nvd = get_nvd()
+        if not nvd:
+            return no_host_redirect('Unable to connect to the nvidia-docker host.', )
         try:
             gpu_indexes = gpu_dispatch(container['gpu'])
             gpu_params = nvd.cliParams(dev=gpu_indexes)
@@ -217,6 +218,8 @@ def container_add(source, user_oid=None):
     user = get_user(user_oid)
     if user['max_container'] <= db.containers.find({'user_oid':user['_id']}).count():
         raise SystemError('You can have at most %d containers.' % user['max_container'])
+    if db.containers.find_one({'user_oid':user['_id'], 'name':source['name']}):
+        raise SystemError('You already have a container with the same name %s! Choose another name for your new container.' % source['name'])
     container = {'user_oid':user['_id'],
                  'auth_image_oid':ObjectId(source['auth_image_oid'])}
     save_container(container, source, user)

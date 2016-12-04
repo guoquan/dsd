@@ -41,7 +41,7 @@ def index():
                                max_gpu=session['user']['max_gpu'],
                                max_disk=session['user']['max_disk'],
                                container_lst=container_lst,
-                               default_host=request.url_root.rsplit(':')[1],
+                               default_host=request.url_root.rsplit(':')[1].rstrip('/'),
                                gpu_global=gpu_global,
                                gpu_lst=gpu_lst,
                                user_gpu=user_gpu,

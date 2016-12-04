@@ -3,8 +3,6 @@ from dsd.ui.web import app
 from dsd.ui.web.utils import *
 from bson.objectid import ObjectId
 import threading
-import urllib2
-import requests
 
 @app.route("/user/container", endpoint='user.container', methods=['GET'])
 def user_container():
@@ -45,7 +43,7 @@ def user_container():
                                container_lst=container_lst,
                                gpu_num=gpu_num,
                                unmanaged_lst = unmanaged_lst,
-                               default_host=request.url_root.rsplit(':')[1])
+                               default_host=request.url_root.rsplit(':')[1].rstrip('/'))
     else:
         return invalid_login()
 

@@ -90,5 +90,5 @@ def error():
     error_message = request.values['error']
     next = request.values['next']
     if not next or not is_safe_url(next):
-        next = '#'
+        next = url_for('index')
     return render_template('error.html', error=error_message, next=next)

@@ -60,7 +60,7 @@ def no_host_redirect(state_message=None, user_back=None):
         flash(state_message + ' Please check the system configuration.', 'danger')
         return redirect(url_for('manage.system'))
     else:
-        return redirect(url_for('error', error=state_message+' Please contact system administrator.', next=get_redirect_target()))
+        return redirect(url_for('error', error=state_message+' Please contact the system administrator.', next=user_back))
 
 def default_url_for(next, **next_args):
     if 'next' in request.values:

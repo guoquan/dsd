@@ -52,7 +52,7 @@ def manage_user_oid(oid):
                 ps = docker.container(container['ps_id'])
                 container.update(ps)
             return render_template('manage_user_oid.html', user=user,
-                                   default_host=request.url_root.rsplit(':')[1])
+                                   default_host=request.url_root.rsplit(':')[1].rstrip('/'))
         else:
             try:
                 error = None
@@ -114,7 +114,7 @@ def manage_user_oid(oid):
                         else:
                             container['status_str'] = 'Initial'
                 return render_template('manage_user_oid.html', user=user, error=error,
-                                       default_host=request.url_root.rsplit(':')[1])
+                                       default_host=request.url_root.rsplit(':')[1].rstrip('/'))
 
             flash('User %s is updated.' % user['username'], 'success')
             return redirect(url_for('manage.user.oid', oid=user['_id']))
