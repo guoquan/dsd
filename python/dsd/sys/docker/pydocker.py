@@ -57,7 +57,7 @@ def _human_time_abs_delta(delta):
         return u'%d minutes' % minutes
     hours = int(minutes / 60)
     if hours == 1:
-        return u'About a hour'
+        return u'About an hour'
     elif hours < 48:
         return u'%d hours' % hours
     elif hours < 24*7*2:
